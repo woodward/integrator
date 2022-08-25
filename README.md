@@ -1,6 +1,9 @@
 # Momentum
 
-**TODO: Add description**
+** Coming Soon! **
+
+A project for physics simulation which employs a variety of dynamics algorithms.
+Intended for use by analysis by engineers.
 
 ## Installation
 
