@@ -1,13 +1,18 @@
 defmodule Momentum.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/woodward/momentum"
+
   def project do
     [
       app: :momentum,
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      # Hex
+      description: "mechanics (physics) in Elixir",
+      package: package()
     ]
   end
 
@@ -23,6 +28,16 @@ defmodule Momentum.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Greg Woodward"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url},
+      files: ~w(README.md lib)
     ]
   end
 end
