@@ -1,4 +1,5 @@
 defmodule MomentumTest do
+  @moduledoc false
   use ExUnit.Case
   doctest Momentum
 
