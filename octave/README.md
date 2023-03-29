@@ -10,3 +10,9 @@ https://octave.sourceforge.io/octave/function/ode45.html
 
 Matlab ode45 documentation:
 https://www.mathworks.com/help/matlab/ref/ode45.html
+
+
+Example: Solve the Van der Pol equation
+
+fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
+[t,y] = ode45 (fvdp, [0, 20], [2, 0]);
