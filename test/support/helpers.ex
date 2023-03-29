@@ -3,7 +3,7 @@ defmodule Momentum.Helpers do
   import ExUnit.Assertions
 
   @doc """
-  Asserts `lhs` is close to `rhs`.  Copied from Nx.Helpers (which is not in the released version)
+  Asserts `lhs` is close to `rhs`.  Copied from Nx.Helpers (which is not in the released version of Nx)
 
   https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex
   """
@@ -23,5 +23,23 @@ defmodule Momentum.Helpers do
       #{inspect(rhs)}
       """)
     end
+  end
+
+  def assert_lists_equal(actual_list, expected_list, delta \\ 0.001) do
+    assert length(actual_list) == length(expected_list)
+
+    Enum.zip(actual_list, expected_list)
+    |> Enum.map(fn {actual, expected} ->
+      assert_in_delta(actual, expected, delta)
+    end)
+  end
+
+  def assert_nx_lists_equal(actual_list, expected_list, opts \\ []) do
+    assert length(actual_list) == length(expected_list)
+
+    Enum.zip(actual_list, expected_list)
+    |> Enum.map(fn {actual, expected} ->
+      assert_all_close(actual, expected, opts)
+    end)
   end
 end

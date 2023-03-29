@@ -32,22 +32,4 @@ defmodule Momentum.Integrator.RungeKutta45Test do
       Nx.tensor([String.to_float(String.trim(y0)), String.to_float(String.trim(y1))])
     end)
   end
-
-  defp assert_lists_equal(actual_list, expected_list, delta \\ 0.001) do
-    assert length(actual_list) == length(expected_list)
-
-    Enum.zip(actual_list, expected_list)
-    |> Enum.map(fn {actual, expected} ->
-      assert_in_delta(actual, expected, delta)
-    end)
-  end
-
-  defp assert_nx_lists_equal(actual_list, expected_list) do
-    assert length(actual_list) == length(expected_list)
-
-    Enum.zip(actual_list, expected_list)
-    |> Enum.map(fn {actual, expected} ->
-      assert_all_close(actual, expected)
-    end)
-  end
 end
