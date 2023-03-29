@@ -16,3 +16,6 @@ Example: Solve the Van der Pol equation
 
 fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
 [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
+
+Using ode45:
+https://www.eng.auburn.edu/~tplacek/courses/3600/ode45berkley.pdf
