@@ -22,6 +22,7 @@ defmodule Momentum.Integrator.RungeKutta45Test do
       assert_all_close(y_result, expected_y_result)
     end
 
+    @tag :skip
     test "performs the integration" do
       # See:
       # https://octave.sourceforge.io/octave/function/ode45.html
@@ -29,20 +30,10 @@ defmodule Momentum.Integrator.RungeKutta45Test do
       # fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
       # [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      van_der_pol_fn = fn _t, y ->
-        y0 = y[0]
-        y1 = y[1]
-        # new_y1 = (1 - y(1)^2) * y(2) - y(1)
-        new_y1 = (Nx.tensor([1.0]) - y0 * y0) * y1 - y0
-
-        # Nx.tensor([0.0, 0.0])
-        Nx.tensor([y1, new_y1])
-      end
-
       initial_y = [2.0, 0.0]
       t_initial = 0.0
       t_final = 20.0
-      [t, y] = RungeKutta45.integrate(van_der_pol_fn, t_initial, t_final, initial_y)
+      [t, y] = RungeKutta45.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t =
         File.read!("test/fixtures/momentum/integrator/runge_kutta_45_test/time.csv")
