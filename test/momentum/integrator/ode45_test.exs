@@ -1,7 +1,7 @@
-defmodule Momentum.Integrator.RungeKutta45Test do
+defmodule Momentum.Integrator.Ode45Test do
   @moduledoc false
   use Momentum.TestCase
-  alias Momentum.Integrator.RungeKutta45
+  alias Momentum.Integrator.Ode45
 
   describe "overall" do
     test "van_der_pol_fn" do
@@ -33,7 +33,7 @@ defmodule Momentum.Integrator.RungeKutta45Test do
       initial_y = [2.0, 0.0]
       t_initial = 0.0
       t_final = 20.0
-      [t, y] = RungeKutta45.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
+      [t, y] = Ode45.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t =
         File.read!("test/fixtures/momentum/integrator/runge_kutta_45_test/time.csv")
