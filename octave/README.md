@@ -35,3 +35,36 @@ plot(t,y,'-o')
 
 Using ode45:
 https://www.eng.auburn.edu/~tplacek/courses/3600/ode45berkley.pdf
+
+==================================================================================================
+Visual representation of octave call stack:
+
+ode45
+  odeset
+  odedefaults
+  odeset
+  odemergeopts
+  starting_stepsize
+    AbsRel_norm
+    AbsRel_norm
+    AbsRel_norm
+  integrate_adaptive
+    ---------------------------------
+    kahan
+    runge_kutta_45_dorpri
+    AbsRel_norm
+    runge_kutta_interpolate
+    call output function
+    compute dt
+    ---------------------------------
+    kahan
+    runge_kutta_45_dorpri
+    AbsRel_norm
+    runge_kutta_interpolate
+    call output function
+    compute dt
+    ---------------------------------
+    ...
+    not checking if integration was successful
+    integrate_adaptive -- end of function    
+    
