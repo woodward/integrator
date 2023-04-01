@@ -40,29 +40,32 @@ https://www.eng.auburn.edu/~tplacek/courses/3600/ode45berkley.pdf
 Visual representation of octave call stack:
 
 ode45
-  odeset
-  odedefaults
-  odeset
-  odemergeopts
-  starting_stepsize
-    AbsRel_norm
-    AbsRel_norm
-    AbsRel_norm
-  integrate_adaptive
+  odeset                             (ode45:                         116)
+  odedefaults                        (ode45:                         160)
+  odeset                             (ode45:                         163)
+  odemergeopts                       (ode45:                         173) 
+  starting_stepsize                  (ode45:                         199)
+    AbsRel_norm                        (starting_stepsize:            50)
+    AbsRel_norm                        (starting_stepsize:            57)
+    AbsRel_norm                        (starting_stepsize:            73)
+  integrate_adaptive                 (ode45:                         239)
+    <main simulation loop>             (integrate_adaptive:          143)
     ---------------------------------
-    kahan
-    runge_kutta_45_dorpri
-    AbsRel_norm
-    runge_kutta_interpolate
-    call output function
-    compute dt
+    kahan                                (integrate_adaptive:        146)
+    runge_kutta_45_dorpri                (integrate_adaptive:        147)
+    AbsRel_norm                          (integrate_adaptive:        157)
+    runge_kutta_interpolate              (integrate_adaptive:        211)
+      hermite_quartic_interpolation        (runge_kutta_interpolate:  50)
+    call output function                 (integrate_adaptive:        224)
+    compute dt                           (integrate_adaptive:        267)
     ---------------------------------
-    kahan
-    runge_kutta_45_dorpri
-    AbsRel_norm
-    runge_kutta_interpolate
-    call output function
-    compute dt
+    kahan                                (integrate_adaptive:        146)
+    runge_kutta_45_dorpri                (integrate_adaptive:        147)
+    AbsRel_norm                          (integrate_adaptive:        157)
+    runge_kutta_interpolate              (integrate_adaptive:        211)
+      hermite_quartic_interpolation        (runge_kutta_interpolate:  50)
+    call output function                 (integrate_adaptive:        224)
+    compute dt                           (integrate_adaptive:        267)
     ---------------------------------
     ...
     not checking if integration was successful
