@@ -1,9 +1,8 @@
 # Integrator
 
-** Coming Soon! **
+** Coming soon! **
 
-A project for physics simulation which employs a variety of dynamics algorithms.
-Intended for use by analysis by engineers.
+Numerical integrator in Elixir.
 
 ## Installation
 
