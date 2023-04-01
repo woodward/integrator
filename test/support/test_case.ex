@@ -5,7 +5,7 @@ defmodule Integrator.TestCase do
 
   using do
     quote do
-      import Integrator.TestHelpers
+      import Integrator.Helpers
     end
   end
 end
