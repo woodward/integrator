@@ -5,7 +5,7 @@ defmodule Momentum.TestCase do
 
   using do
     quote do
-      import Momentum.Helpers
+      import Momentum.TestHelpers
     end
   end
 end
