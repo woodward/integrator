@@ -1,4 +1,4 @@
-defmodule Momentum.TestHelpers do
+defmodule Integrator.TestHelpers do
   @moduledoc false
   import ExUnit.Assertions
 

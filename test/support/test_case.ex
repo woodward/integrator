@@ -1,11 +1,11 @@
-defmodule Momentum.TestCase do
+defmodule Integrator.TestCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate
 
   using do
     quote do
-      import Momentum.TestHelpers
+      import Integrator.TestHelpers
     end
   end
 end

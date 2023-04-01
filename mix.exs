@@ -1,11 +1,11 @@
-defmodule Momentum.MixProject do
+defmodule Integrator.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/woodward/momentum"
+  @source_url "https://github.com/woodward/integrator"
 
   def project do
     [
-      app: :momentum,
+      app: :integrator,
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,

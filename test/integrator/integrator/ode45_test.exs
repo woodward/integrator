@@ -1,7 +1,7 @@
-defmodule Momentum.Integrator.Ode45Test do
+defmodule Integrator.Integrator.Ode45Test do
   @moduledoc false
-  use Momentum.TestCase
-  alias Momentum.Integrator.Ode45
+  use Integrator.TestCase
+  alias Integrator.Integrator.Ode45
 
   describe "overall" do
     test "van_der_pol_fn" do
@@ -36,11 +36,11 @@ defmodule Momentum.Integrator.Ode45Test do
       [t, y] = Ode45.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t =
-        File.read!("test/fixtures/momentum/integrator/runge_kutta_45_test/time.csv")
+        File.read!("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
         |> String.split("\n", trim: true)
         |> Enum.map(&String.to_float(String.trim(&1)))
 
-      expected_y = read_nx_list("test/fixtures/momentum/integrator/runge_kutta_45_test/y.csv")
+      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/y.csv")
 
       assert_lists_equal(t, expected_t)
       assert_nx_lists_equal(y, expected_y)
