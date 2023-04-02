@@ -1,7 +1,6 @@
-defmodule Integrator.Integrator.Ode45Test do
+defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
-  alias Integrator.Integrator.Ode45
 
   describe "overall" do
     test "van_der_pol_fn" do
@@ -33,7 +32,7 @@ defmodule Integrator.Integrator.Ode45Test do
       initial_y = [2.0, 0.0]
       t_initial = 0.0
       t_final = 20.0
-      [t, y] = Ode45.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
+      [t, y] = Integrator.ode45(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t =
         File.read!("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
@@ -45,18 +44,6 @@ defmodule Integrator.Integrator.Ode45Test do
       assert_lists_equal(t, expected_t)
       assert_nx_lists_equal(y, expected_y)
     end
-  end
-
-  def van_der_pol_fn(_t, y) do
-    # https://octave.sourceforge.io/octave/function/ode45.html
-    # From octave with y(1) => y(0) and y(2) => y(1):
-    # fvdp = @(t,y) [y(1); (1 - y(0)^2) * y(1) - y(0)];
-    y0 = y[0]
-    y1 = y[1]
-
-    one = Nx.tensor(1.0, type: :f32)
-    new_y1 = Nx.subtract(one, Nx.pow(y0, 2)) |> Nx.multiply(y1) |> Nx.subtract(y0)
-    Nx.stack([y1, new_y1])
   end
 
   defp read_nx_list(filename) do
