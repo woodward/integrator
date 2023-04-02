@@ -3,9 +3,9 @@ defmodule Integrator.Helpers do
   import ExUnit.Assertions
 
   @doc """
-  Asserts `lhs` is close to `rhs`.  Copied from Nx.Helpers (which is not in the released version of Nx)
-
-  https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex
+  Asserts `lhs` is close to `rhs`.
+  Copied from [Nx.Helpers](https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex)
+  (which is not included in the released version of Nx, so I cannot just invoke it).
   """
   def assert_all_close(lhs, rhs, opts \\ []) do
     atol = opts[:atol] || 1.0e-4
@@ -43,14 +43,18 @@ defmodule Integrator.Helpers do
     end)
   end
 
+  @doc """
+  From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but with
+  the translations:
+
+  y(1) => y(0) and y(2) => y(1):
+  fvdp = @(t,y) [y(1); (1 - y(0)^2) * y(1) - y(0)];
+  """
   def van_der_pol_fn(_t, y) do
-    # https://octave.sourceforge.io/octave/function/ode45.html
-    # From octave with y(1) => y(0) and y(2) => y(1):
-    # fvdp = @(t,y) [y(1); (1 - y(0)^2) * y(1) - y(0)];
     y0 = y[0]
     y1 = y[1]
 
-    one = Nx.tensor(1.0, type: :f32)
+    one = Nx.tensor(1.0, type: Nx.type(y))
     new_y1 = Nx.subtract(one, Nx.pow(y0, 2)) |> Nx.multiply(y1) |> Nx.subtract(y0)
     Nx.stack([y1, new_y1])
   end
