@@ -49,11 +49,13 @@ ode45
     AbsRel_norm                        (starting_stepsize:            57)
     AbsRel_norm                        (starting_stepsize:            73)
   integrate_adaptive                 (ode45:                         239)
+    init event handler (optional)      (integrate_adaptive:          122)
     <main simulation loop>             (integrate_adaptive:          143)
     ---------------------------------
     kahan                                (integrate_adaptive:        146)
     runge_kutta_45_dorpri                (integrate_adaptive:        147)
     AbsRel_norm                          (integrate_adaptive:        157)
+    ode_event_handler (optional)         (integrate_adaptive:        174)
     runge_kutta_interpolate              (integrate_adaptive:        211)
       hermite_quartic_interpolation        (runge_kutta_interpolate:  50)
     call output function                 (integrate_adaptive:        224)
