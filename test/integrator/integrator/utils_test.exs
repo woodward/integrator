@@ -4,8 +4,8 @@ defmodule Integrator.UtilsTest do
 
   alias Integrator.Utils
 
-  describe "absolute_relative_norm/6" do
-    test "general case for normcontrol: false" do
+  describe "abs_rel_norm/6" do
+    test "general case for norm_control: false" do
       # Values from Octave:
       #
       # x = [1.97537683003, -0.26652885197]
@@ -15,7 +15,7 @@ defmodule Integrator.UtilsTest do
       # normcontrol = false
       # y = [1.97537723429, -0.26653011403]
       #
-      # AbsRel_norm (x, x_old, AbsTol, RelTol, normcontrol, y)
+      # AbsRel_norm (x, x_old, AbsTol, RelTol, norm_control, y)
 
       x = Nx.tensor([1.97537683003, -0.26652885197])
       x_old = Nx.tensor([1.99566026409, -0.12317664679])
@@ -24,12 +24,12 @@ defmodule Integrator.UtilsTest do
       y = Nx.tensor([1.97537723429, -0.26653011403])
       expected_norm = Nx.tensor(0.00473516383083)
 
-      norm = Utils.absolute_relative_norm(x, x_old, y, abs_tolerance, rel_tolerance, normcontrol: false)
+      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, norm_control: false)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    test "general case for normcontrol: true" do
+    test "general case for norm_control: true" do
       # Values from Octave:
       #
       # x = [1.99465419035, 0.33300240425]
@@ -39,7 +39,7 @@ defmodule Integrator.UtilsTest do
       # normcontrol = true
       # y = [1.99402286380, 0.33477644992]
       #
-      # AbsRel_norm (x, x_old, AbsTol, RelTol, normcontrol, y)
+      # AbsRel_norm (x, x_old, AbsTol, RelTol, norm_control, y)
 
       x = Nx.tensor([1.99465419035, 0.33300240425])
       x_old = Nx.tensor([1.64842646336, 1.78609260054])
@@ -48,7 +48,7 @@ defmodule Integrator.UtilsTest do
       y = Nx.tensor([1.99402286380, 0.33477644992])
       expected_norm = Nx.tensor(0.77474409123)
 
-      norm = Utils.absolute_relative_norm(x, x_old, y, abs_tolerance, rel_tolerance, normcontrol: true)
+      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, norm_control: true)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
