@@ -1,4 +1,4 @@
-defmodule Integrator.Integrator.AdaptiveStepsize do
+defmodule Integrator.AdaptiveStepsize do
   @moduledoc false
 
   def integrate() do
