@@ -5,6 +5,35 @@ defmodule Integrator.RungeKuttaTest do
   import Nx, only: :sigils
   alias Integrator.RungeKutta
 
+  describe "dormand_prince" do
+    test "gives the correct result" do
+      t = Nx.tensor(19.711, type: :f64)
+      x = Nx.tensor([1.9265, 0.7353], type: :f64)
+      dt = Nx.tensor(0.2893, type: :f64)
+
+      k_vals = ~M[
+         2.1068   1.8570   1.6938   1.0933   1.2077   1.0641   0.7353
+        -4.1080  -4.6688  -4.7104  -4.4778  -4.5190  -4.3026  -3.9202
+      ]f64
+
+      opts = []
+
+      {t_next} = RungeKutta.dormand_prince_45(&van_der_pol_fn/2, t, x, dt, k_vals, opts)
+
+      expected_t_next = Nx.tensor(20.0, type: :f64)
+      expected_x_next = ~V[ 2.007378 -0.071766 ]f64
+
+      expected_x_est = ~V[ 2.007393 -0.071892 ]f64
+
+      expected_k = ~M[
+           0.735294   0.508467   0.426833   0.026514  -0.057984  -0.116136  -0.071766
+          -3.920232  -3.432015  -3.214602  -2.106530  -1.871609  -1.681243  -1.789958
+      ]f64
+
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
+    end
+  end
+
   describe "hermite_quartic_interpolation" do
     test "gives the correct result" do
       # Values from Octave:

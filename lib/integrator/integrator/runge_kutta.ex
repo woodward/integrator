@@ -3,7 +3,9 @@ defmodule Integrator.RungeKutta do
 
   import Nx.Defn
 
-  def dormand_prince_45() do
+  defn dormand_prince_45(ode_fn, t, x, dt, k_vals, opts \\ []) do
+    t_next = t + dt
+    {t_next}
   end
 
   @coefs_u_half Nx.tensor(
