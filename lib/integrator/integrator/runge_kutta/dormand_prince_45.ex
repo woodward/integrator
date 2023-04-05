@@ -1,6 +1,9 @@
 defmodule Integrator.RungeKutta.DormandPrince45 do
   @moduledoc false
 
+  alias Integrator.RungeKutta
+  @behaviour RungeKutta
+
   import Nx.Defn
 
   @a Nx.tensor(
@@ -19,6 +22,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @c Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
   @c_prime Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
 
+  @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
     t_next = t + dt
     s = t + dt * @b
@@ -86,6 +90,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
                   type: :f64
                 )
 
+  @impl RungeKutta
   defn interpolate(t, x, der, t_out) do
     hermite_quartic_interpolation(t, x, der, t_out)
   end
