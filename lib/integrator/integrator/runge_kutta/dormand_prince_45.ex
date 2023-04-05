@@ -86,6 +86,10 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
                   type: :f64
                 )
 
+  defn interpolate(t, x, der, t_out) do
+    hermite_quartic_interpolation(t, x, der, t_out)
+  end
+
   @doc """
   Performs a 4th order Hermite interpolation. Used by an ODE solver to interpolate the
   solution at the time `t_out`.

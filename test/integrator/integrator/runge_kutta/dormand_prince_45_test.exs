@@ -67,7 +67,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
   end
 
   describe "hermite_quartic_interpolation" do
-    test "gives the correct result" do
+    setup do
       # Values from Octave:
       #
       # t = [ 19.4067624192,   19.7106968201 ]
@@ -107,7 +107,23 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
         1.77097584066   1.41075566029   1.05684789008   0.73529371547
       ]f64
 
+      [t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out]
+    end
+
+    test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = DormandPrince45.hermite_quartic_interpolation(t, x, der, t_out)
+
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
+    end
+
+    test "the interpolate function wraps the hermite_quartic_interpolation function", %{
+      t: t,
+      x: x,
+      der: der,
+      t_out: t_out,
+      expected_x_out: expected_x_out
+    } do
+      x_out = DormandPrince45.interpolate(t, x, der, t_out)
 
       assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
     end
