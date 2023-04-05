@@ -77,4 +77,12 @@ defmodule Integrator.NxTest do
   def x_2_3_in_defn(x) do
     Nx.stack([x[1][2], x[1][3]])
   end
+
+  describe "getting a sum of a column" do
+    test "it works" do
+      vec = Nx.tensor([1.0, 2.0, -3.0])
+      _sum = Nx.abs(vec) |> Nx.sum()
+      # IO.inspect(sum)
+    end
+  end
 end

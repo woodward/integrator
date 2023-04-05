@@ -33,7 +33,36 @@ defmodule Integrator.RungeKuttaTest do
       assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    test "works when evaluating the first timestep" do
+    test "gives the correct result when no existing k_vals" do
+      # Used Octave function:
+      #  [t,y] = ode45 (fvdp, [0, 20], [2, 1]);
+      # i.e., the initial values for y have been changed from [2, 0] to [2, 1]
+      # (so that it's not a zero value)
+
+      t = Nx.tensor(0.0, type: :f64)
+      x = Nx.tensor([2.0, 1.0], type: :f64)
+      dt = Nx.tensor(0.068129, type: :f64)
+
+      k_vals = ~M[
+         0.0 0.0 0.0 0.0 0.0 0.0 0.0
+         0.0 0.0 0.0 0.0 0.0 0.0 0.0
+       ]f64
+
+      {t_next, x_next, x_est, k} = RungeKutta.dormand_prince_45(&van_der_pol_fn/2, t, x, dt, k_vals)
+
+      expected_t_next = Nx.tensor(0.068129, type: :f64)
+      expected_x_next = ~V[ 2.0571  0.6839 ]f64
+      expected_x_est = ~V[ 2.0571   0.6839 ]f64
+
+      expected_k = ~M[
+           1.0000   0.9319   0.8999   0.7429   0.7162   0.6836   0.6839
+          -5.0000  -4.8602  -4.7894  -4.4195  -4.3536  -4.2690  -4.2670
+        ]f64
+
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
     end
   end
 

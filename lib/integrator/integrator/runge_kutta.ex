@@ -30,8 +30,16 @@ defmodule Integrator.RungeKutta do
 
     # Do an if statement here in the future for when we do NOT use the last k_vals for the first evaluation
     # i.e., it becomes another function evaluation
-    k0 = Nx.slice_along_axis(k_vals, 6, length_of_x - 1, axis: 1) |> Nx.flatten()
-    # k0 checks out
+
+    last_k_vals_col = Nx.slice_along_axis(k_vals, 6, length_of_x - 1, axis: 1) |> Nx.flatten()
+    last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < 1.0e-04
+
+    k0 =
+      if last_col_empty? do
+        ode_fn.(t, x) |> Nx.flatten()
+      else
+        last_k_vals_col
+      end
 
     # Octave code:
     # k(:,2) = feval (fcn, s(2), x + k(:,1)   * aa(2, 1).'  , args{:});
