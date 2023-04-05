@@ -33,11 +33,11 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    test "gives the correct result when no existing k_vals" do
+    test "gives the correct result when there are no existing k_vals" do
       # Used Octave function:
       #  [t,y] = ode45 (fvdp, [0, 20], [2, 1]);
       # i.e., the initial values for y have been changed from [2, 0] to [2, 1]
-      # (so that it's not a zero value)
+      # (so that both y values are non-zero)
 
       t = Nx.tensor(0.0, type: :f64)
       x = Nx.tensor([2.0, 1.0], type: :f64)
@@ -68,26 +68,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
   describe "hermite_quartic_interpolation" do
     setup do
-      # Values from Octave:
-      #
-      # t = [ 19.4067624192,   19.7106968201 ]
-      #
-      #  x =
-      #
-      #    1.49652504841   1.92651431954
-      #    2.10676183153   0.73529371547
-      #
-      #  der =
-      #
-      #     2.10676183153   1.85704689071   1.69384014677   1.09328301986   1.20767740745   1.06405291882   0.73529371547
-      #    -4.10804009148  -4.66882299445  -4.71039008294  -4.47781878341  -4.51898062008  -4.30261858646  -3.92023192271
-      #
-      #  t_out = [ 19.4827460194,   19.5587296196, 19.6347132198,  19.7106968201 ]
-      #
-      #  x_out =
-      #
-      #   1.64398703647   1.76488148020   1.85862355568   1.92651431954
-      #   1.77097584066   1.41075566029   1.05684789008   0.73529371547
+      # These test values were obtained from Octave:
 
       t = ~V[ 19.4067624192  19.7106968201 ]f64
 
@@ -112,19 +93,11 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
     test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = DormandPrince45.hermite_quartic_interpolation(t, x, der, t_out)
-
       assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
     end
 
-    test "the interpolate function wraps the hermite_quartic_interpolation function", %{
-      t: t,
-      x: x,
-      der: der,
-      t_out: t_out,
-      expected_x_out: expected_x_out
-    } do
+    test "the interpolate function delegates", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = DormandPrince45.interpolate(t, x, der, t_out)
-
       assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
     end
   end
