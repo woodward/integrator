@@ -24,13 +24,8 @@ defmodule Integrator.RungeKutta do
     s = t + dt * @b
     cc = dt * @c
     aa = dt * @a
-    # k = zeros (rows (x), 7);
+
     {length_of_x} = Nx.shape(x)
-    # k = Nx.broadcast(0.0, {length_of_x, 7})
-
-    # Do an if statement here in the future for when we do NOT use the last k_vals for the first evaluation
-    # i.e., it becomes another function evaluation
-
     last_k_vals_col = Nx.slice_along_axis(k_vals, 6, length_of_x - 1, axis: 1) |> Nx.flatten()
     last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < 1.0e-04
 
@@ -41,27 +36,13 @@ defmodule Integrator.RungeKutta do
         last_k_vals_col
       end
 
-    # Octave code:
-    # k(:,2) = feval (fcn, s(2), x + k(:,1)   * aa(2, 1).'  , args{:});
-    # k(:,3) = feval (fcn, s(3), x + k(:,1:2) * aa(3, 1:2).', args{:});
-    # k(:,4) = feval (fcn, s(4), x + k(:,1:3) * aa(4, 1:3).', args{:});
-    # k(:,5) = feval (fcn, s(5), x + k(:,1:4) * aa(5, 1:4).', args{:});
-    # k(:,6) = feval (fcn, s(6), x + k(:,1:5) * aa(6, 1:5).', args{:});
+    aa_1 = Nx.slice_along_axis(aa, 1, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 1)
+    # Note that aa_1 is the also equal to aa[1][0]
+    aa_2 = Nx.slice_along_axis(aa, 2, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 2)
+    aa_3 = Nx.slice_along_axis(aa, 3, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 3)
+    aa_4 = Nx.slice_along_axis(aa, 4, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 4)
+    aa_5 = Nx.slice_along_axis(aa, 5, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 5)
 
-    # Octave code with indices converted to zero based:
-    # k(:,1) = feval (fcn, s(1), x + k(:,0)   * aa(1, 0).'  , args{:});
-    # k(:,2) = feval (fcn, s(2), x + k(:,0:1) * aa(2, 0:1).', args{:});
-    # k(:,3) = feval (fcn, s(3), x + k(:,0:2) * aa(3, 0:2).', args{:});
-    # k(:,4) = feval (fcn, s(4), x + k(:,0:3) * aa(4, 0:3).', args{:});
-    # k(:,5) = feval (fcn, s(5), x + k(:,0:4) * aa(5, 0:4).', args{:});
-
-    aa_1 = aa[1][0]
-    aa_2 = Nx.stack([aa[2][0], aa[2][1]])
-    aa_3 = Nx.stack([aa[3][0], aa[3][1], aa[3][2]])
-    aa_4 = Nx.stack([aa[4][0], aa[4][1], aa[4][2], aa[4][3]])
-    aa_5 = Nx.stack([aa[5][0], aa[5][1], aa[5][2], aa[5][3], aa[5][4]])
-
-    # k1 checks out
     k1 = ode_fn.(s[1], x + k0 * aa_1)
     k_0_1 = Nx.stack([k0, k1])
     k_0_1_t = k_0_1 |> Nx.transpose()

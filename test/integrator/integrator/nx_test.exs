@@ -85,4 +85,16 @@ defmodule Integrator.NxTest do
       # IO.inspect(sum)
     end
   end
+
+  describe "slicing to get specific rows" do
+    test "works" do
+      full_matrix = Nx.iota({6, 6})
+      # IO.inspect(full_matrix, label: "full_matrix")
+      _most_of_last_row = Nx.slice_along_axis(full_matrix, 5, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 5)
+      # IO.inspect(most_of_last_row, label: "most_of_last_row")
+
+      _next_to_last_row = Nx.slice_along_axis(full_matrix, 4, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 4)
+      # IO.inspect(next_to_last_row, label: "next_to_last_row")
+    end
+  end
 end
