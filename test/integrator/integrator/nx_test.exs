@@ -1,6 +1,7 @@
 defmodule Integrator.NxTest do
   @moduledoc false
   use Integrator.TestCase
+  import Nx.Defn
 
   describe "getting a column" do
     test "can get a column from a matrix" do
@@ -34,5 +35,46 @@ defmodule Integrator.NxTest do
       _column = Nx.new_axis(full_matrix, 1)
       # IO.inspect(column)
     end
+  end
+
+  describe "create a zero matrix with a certain number of rows" do
+    test "create it" do
+      x = Nx.tensor([1, 2])
+      {length_of_x} = Nx.shape(x)
+      _with_zeros = Nx.broadcast(0.0, {length_of_x, 7})
+
+      # IO.inspect(with_zeros, label: "with_zeros")
+    end
+  end
+
+  describe "does stack work in defn?" do
+    test "check on it" do
+      k1 = Nx.tensor([1, 2])
+      k2 = Nx.tensor([3, 4])
+      _k = try_to_stack(k1, k2)
+      # IO.inspect(k)
+    end
+  end
+
+  defn try_to_stack(k1, k2) do
+    Nx.stack([k1, k2]) |> Nx.transpose()
+  end
+
+  describe "get an x-y element of a tensor" do
+    test "works" do
+      full_matrix = Nx.iota({3, 4})
+      # IO.inspect(full_matrix, label: "full_matrix")
+
+      _x_2_3 = full_matrix[1][2]
+
+      # IO.inspect(x_2_3, label: "x_2_3")
+
+      _x_2_3 = x_2_3_in_defn(full_matrix)
+      # IO.inspect(x_2_3, label: "x_2_3")
+    end
+  end
+
+  def x_2_3_in_defn(x) do
+    Nx.stack([x[1][2], x[1][3]])
   end
 end

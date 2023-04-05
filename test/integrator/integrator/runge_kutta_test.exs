@@ -16,13 +16,10 @@ defmodule Integrator.RungeKuttaTest do
         -4.1080  -4.6688  -4.7104  -4.4778  -4.5190  -4.3026  -3.9202
       ]f64
 
-      opts = []
-
-      {t_next} = RungeKutta.dormand_prince_45(&van_der_pol_fn/2, t, x, dt, k_vals, opts)
+      {t_next, x_next, x_est, k} = RungeKutta.dormand_prince_45(&van_der_pol_fn/2, t, x, dt, k_vals)
 
       expected_t_next = Nx.tensor(20.0, type: :f64)
       expected_x_next = ~V[ 2.007378 -0.071766 ]f64
-
       expected_x_est = ~V[ 2.007393 -0.071892 ]f64
 
       expected_k = ~M[
@@ -31,6 +28,12 @@ defmodule Integrator.RungeKuttaTest do
       ]f64
 
       assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
+    end
+
+    test "works when evaluating the first timestep" do
     end
   end
 
