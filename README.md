@@ -1,23 +1,25 @@
 # Integrator
 
-** Coming soon! **
-
-Numerical integrator in Elixir.
+Numerical integrator written in Elixir for non-stiff differential equations.  `Integrator` 
+an adaptation of the [Octave](https://octave.sourceforge.io/octave/function/ode45.html) and 
+[Matlab](https://www.mathworks.com/help/matlab/ref/ode45.html) `ode45` integrator. 
+This library heavily leverages [Elixir Nx](https://github.com/elixir-nx/nx).
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `integrator` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `integrator` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:integrator, "~> 0.1.0"}
+    {:integrator, "~> 0.1"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/integrator>.
+The docs can be found at <https://hexdocs.pm/integrator>.
+
+## Usage
+
+See the Livebooks for examples of usage.
 

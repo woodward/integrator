@@ -3,18 +3,23 @@ defmodule Integrator.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/woodward/integrator"
+  @version "0.1.0"
 
   def project do
     [
       app: :integrator,
-      version: "0.1.0",
-      elixir: "~> 1.13",
+      version: @version,
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       # Hex
-      description: "mechanics (physics) in Elixir",
+      description: "Numerical integration in Elixir",
       package: package(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+      #
+      # Docs
+      name: "Integrator",
+      docs: docs()
     ]
   end
 
@@ -38,6 +43,17 @@ defmodule Integrator.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:nx, "~> 0.5"}
+    ]
+  end
+
+  defp docs() do
+    [
+      main: "readme",
+      source_url: @source_url,
+      extras: [
+        "guides/intro-to-integrator.livemd",
+        "guides/examples-of-usage.livemd"
+      ]
     ]
   end
 
