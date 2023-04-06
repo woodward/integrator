@@ -91,11 +91,6 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       [t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out]
     end
 
-    test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
-      x_out = DormandPrince45.hermite_quartic_interpolation(t, x, der, t_out)
-      assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
-    end
-
     test "the interpolate function delegates", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = DormandPrince45.interpolate(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
