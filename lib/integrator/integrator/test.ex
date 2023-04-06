@@ -2,6 +2,7 @@ defmodule Integrator.Test do
   @moduledoc """
   Functions to be used in testing
   """
+  import Nx.Defn
 
   @doc """
   From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but with
@@ -10,7 +11,7 @@ defmodule Integrator.Test do
   y(1) => y(0) and y(2) => y(1):
   fvdp = @(t,y) [y(1); (1 - y(0)^2) * y(1) - y(0)];
   """
-  def van_der_pol_fn(_t, y) do
+  defn van_der_pol_fn(_t, y) do
     y0 = y[0]
     y1 = y[1]
 
