@@ -107,7 +107,54 @@ defmodule Integrator.Utils do
     x1 + x2 + x3 + x4 + x5
   end
 
-  def starting_stepsize() do
+  @doc """
+  Computes a good initial timestep for an ODE solver of order `order`
+  using the algorithm described in the reference below.
+
+  The input argument `ode_fn`, is the function describing the differential
+  equations, `t0` is the initial time, and `x0` is the initial
+  condition.  `abs_tol` and `rel_tol` are the absolute and relative
+  tolerance on the ODE integration.
+
+  Reference:
+
+  E. Hairer, S.P. Norsett and G. Wanner,
+  "Solving Ordinary Differential Equations I: Nonstiff Problems",
+  Springer.
+  """
+  defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
+    # Compute norm of initial conditions
+    {length_of_x} = Nx.shape(x0)
+    y_zeros = Nx.broadcast(0.0, {length_of_x})
+    d0 = abs_rel_norm(x0, x0, y_zeros, abs_tol, rel_tol, opts)
+
+    y = ode_fn.(t0, x0)
+
+    d1 = abs_rel_norm(y, y, y_zeros, abs_tol, rel_tol, opts)
+
+    h0 =
+      if d0 < 1.0e-5 or d1 < 1.0e-5 do
+        1.0e-6
+      else
+        0.01 * (d0 / d1)
+      end
+
+    # Compute one step of Explicit-Euler
+    x1 = x0 + h0 * y
+
+    # Approximate the derivative norm
+    yh = ode_fn.(t0 + h0, x1)
+
+    d2 = 1.0 / h0 * abs_rel_norm(yh - y, yh - y, y_zeros, abs_tol, rel_tol, opts)
+
+    h1 =
+      if Nx.max(d1, d2) <= 1.0e-15 do
+        Nx.max(1.0e-6, h0 * 1.0e-3)
+      else
+        Nx.pow(1.0e-2 / Nx.max(d1, d2), 1 / (order + 1))
+      end
+
+    Nx.min(100.0 * h0, h1)
   end
 
   defnp sum_sq(x) do

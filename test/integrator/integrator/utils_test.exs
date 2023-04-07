@@ -6,7 +6,7 @@ defmodule Integrator.UtilsTest do
   alias Integrator.Utils
 
   describe "abs_rel_norm/6" do
-    test "general case for norm_control: false" do
+    test "when norm_control: false" do
       # These test values were obtained from Octave:
       x = Nx.tensor([1.97537683003, -0.26652885197])
       x_old = Nx.tensor([1.99566026409, -0.12317664679])
@@ -20,7 +20,7 @@ defmodule Integrator.UtilsTest do
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    test "general case for norm_control: true" do
+    test "when norm_control: true" do
       # These test values were obtained from Octave:
       x = Nx.tensor([1.99465419035, 0.33300240425])
       x_old = Nx.tensor([1.64842646336, 1.78609260054])
@@ -32,6 +32,20 @@ defmodule Integrator.UtilsTest do
       norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, norm_control: true)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
+    end
+  end
+
+  describe "starting_stepsize" do
+    test "works" do
+      order = 5
+      t0 = 0.0
+      x0 = ~V[2.0 0.0]f64
+      abs_tol = 1.0e-06
+      rel_tol = 1.0e-03
+
+      starting_stepsize = Utils.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control: false)
+
+      assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
     end
   end
 
