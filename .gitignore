@@ -8,7 +8,11 @@
 /deps/
 
 # Where third-party dependencies like ExDoc output generated docs.
-/doc/
+/doc/dist/
+/doc/.build
+/doc/*.epub
+/doc/*.html
+/doc/*.livemd
 
 # Ignore .fetch files in case you like to edit your project deps locally.
 /.fetch
