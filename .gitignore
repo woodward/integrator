@@ -19,6 +19,7 @@
 !/doc/before_closing_head_tag.html
 !/doc/before_closing_body_tag.html
 !/doc/docs_config.js
+!/doc/katex_config.js
 
 # Ignore .fetch files in case you like to edit your project deps locally.
 /.fetch
