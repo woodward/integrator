@@ -41,10 +41,21 @@ defmodule Integrator.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      # {:ex_doc, path: "/Users/Greg/Development/ex_doc", only: :dev, runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:nx, "~> 0.5"}
     ]
   end
+
+  # WORKS
+  # 0.27.3
+  # 0.28.3
+  # 0.28.4
+  # 0.28.5
+
+  # DOES NOT WORK
+  # 0.28.6
+  # 0.29.4
 
   defp package do
     [
@@ -65,13 +76,16 @@ defmodule Integrator.MixProject do
         "guides/examples-of-usage.livemd"
       ],
       before_closing_head_tag: &before_closing_head_tag/1,
-      before_closing_body_tag: &before_closing_body_tag/1
+      before_closing_body_tag: &before_closing_body_tag/1,
+      doc_config: "doc_config/docs_config.js"
     ]
   end
 
   def before_closing_head_tag(:epub), do: ""
-  def before_closing_head_tag(:html), do: File.read!("doc/before_closing_head_tag.html")
+  def before_closing_head_tag(:html), do: File.read!("doc_config/before_closing_head_tag.html")
+  # def before_closing_head_tag(:html), do: ""
 
   def before_closing_body_tag(:epub), do: ""
-  def before_closing_body_tag(:html), do: File.read!("doc/before_closing_body_tag.html")
+  def before_closing_body_tag(:html), do: File.read!("doc_config/before_closing_body_tag.html")
+  # def before_closing_body_tag(:html), do: ""
 end
