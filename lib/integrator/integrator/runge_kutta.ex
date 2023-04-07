@@ -7,4 +7,6 @@ defmodule Integrator.RungeKutta do
 
   # @callback interpolate(t, x, der, t_out) :: {}
   @callback interpolate(any(), any(), any(), any()) :: any()
+
+  @callback order() :: integer()
 end

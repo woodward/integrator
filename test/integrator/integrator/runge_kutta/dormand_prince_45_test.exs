@@ -5,6 +5,10 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
   import Nx, only: :sigils
   alias Integrator.RungeKutta.DormandPrince45
 
+  test "order/0" do
+    assert DormandPrince45.order() == 5
+  end
+
   describe "dormand_prince" do
     test "gives the correct result" do
       t = Nx.tensor(19.711, type: :f64)

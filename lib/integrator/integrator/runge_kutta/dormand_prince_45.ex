@@ -38,6 +38,9 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @c Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
   @c_prime Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
 
+  @impl RungeKutta
+  def order, do: 5
+
   @doc """
   Integrates a system of ODEs with
   [Dormand-Prince]](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).
