@@ -124,8 +124,7 @@ defmodule Integrator.Utils do
   """
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
-    {length_of_x} = Nx.shape(x0)
-    y_zeros = Nx.broadcast(0.0, {length_of_x})
+    y_zeros = zero_vector(x0)
     d0 = abs_rel_norm(x0, x0, y_zeros, abs_tol, rel_tol, opts)
 
     y = ode_fn.(t0, x0)
@@ -159,5 +158,13 @@ defmodule Integrator.Utils do
 
   defnp sum_sq(x) do
     (x * x) |> Nx.sum() |> Nx.sqrt()
+  end
+
+  @doc """
+  Creates a zero vector that has the length of `x`
+  """
+  defn zero_vector(x) do
+    {length_of_x} = Nx.shape(x)
+    Nx.broadcast(0.0, {length_of_x})
   end
 end
