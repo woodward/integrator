@@ -1,8 +1,10 @@
 defmodule Integrator.AdaptiveStepsize do
   @moduledoc false
   import Nx.Defn
+  alias Integrator.Utils
 
-  def integrate() do
+  defn integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, x0, order, opts \\ []) do
+    Utils.zero_vector(x0)
   end
 
   @doc """
