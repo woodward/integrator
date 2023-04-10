@@ -37,8 +37,6 @@ defmodule Integrator.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       #
@@ -72,17 +70,5 @@ defmodule Integrator.MixProject do
   end
 
   def before_closing_head_tag(:epub), do: ""
-
-  def before_closing_head_tag(:html) do
-    # File.cp("doc_config/docs_config.js", "doc")
-    # File.cp("doc_config/katex_config.js", "doc")
-
-    File.read!("doc_config/before_closing_head_tag.html")
-  end
-
-  # def before_closing_head_tag(:html), do: ""
-
-  def before_closing_body_tag(:epub), do: ""
-  def before_closing_body_tag(:html), do: File.read!("doc_config/before_closing_body_tag.html")
-  # def before_closing_body_tag(:html), do: ""
+  def before_closing_head_tag(:html), do: File.read!("doc_config/before_closing_head_tag.html")
 end
