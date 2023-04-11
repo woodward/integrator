@@ -13,13 +13,28 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Test.van_der_pol_fn/2
 
-      t_start = Nx.tensor(0.0, type: :f64)
-      t_end = Nx.tensor(2.0, type: :f64)
+      t_start = 0.0
+      t_end = 2.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = []
+      initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, x0, order, opts)
-      IO.inspect(result, label: "result")
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+
+      temp = result.temp
+      assert_all_close(temp.dt, 0.068129)
+      assert_all_close(temp.factor, Nx.tensor(0.8511))
+
+      # assert result.count_loop == 50
+      # assert result.count_cyles == 78
+      # assert result.count_save == 2
+      # assert result.unhandled_termination == 1
+
+      # expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
+      # expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/y.csv")
+
+      # assert_lists_equal(result.output_t, expected_t)
+      # assert_all_close(result.output_y, expected_y)
     end
   end
 
