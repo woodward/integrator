@@ -42,6 +42,7 @@ defmodule Integrator.MixProject do
       #
       {:ex_doc, github: "elixir-lang/ex_doc", commit: "2c581239e0989fdc91e3c83b4ce28ef4fe0adda6", only: :dev, runtime: false},
       # {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:math, "~> 0.7"},
       {:nx, "~> 0.5"}
     ]
   end
