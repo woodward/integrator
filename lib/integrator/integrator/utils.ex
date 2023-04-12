@@ -167,4 +167,23 @@ defmodule Integrator.Utils do
     {length_of_x} = Nx.shape(x)
     Nx.broadcast(0.0, {length_of_x})
   end
+
+  def columns_as_list(matrix, start_index, end_index \\ nil) do
+    matrix_t = Nx.transpose(matrix)
+
+    end_index =
+      if end_index do
+        end_index
+      else
+        {_n_rows, n_cols} = Nx.shape(matrix)
+        n_cols - 1
+      end
+
+    start_index..end_index
+    |> Enum.reduce([], fn i, acc ->
+      col = Nx.slice_along_axis(matrix_t, i, 1, axis: 0) |> Nx.flatten()
+      [col | acc]
+    end)
+    |> Enum.reverse()
+  end
 end

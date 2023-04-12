@@ -88,4 +88,36 @@ defmodule Integrator.UtilsTest do
       assert_all_close(y, expected_y)
     end
   end
+
+  describe "columns_as_list" do
+    test "works" do
+      matrix = Nx.iota({2, 5})
+      cols_as_list = Utils.columns_as_list(matrix, 1, 3)
+
+      expected_cols_as_list = [
+        # Nx.tensor([0, 5]),
+        Nx.tensor([1, 6]),
+        Nx.tensor([2, 7]),
+        Nx.tensor([3, 8])
+        # Nx.tensor([4, 9]),
+      ]
+
+      assert cols_as_list == expected_cols_as_list
+    end
+
+    test "goes all the way to the end if the end_index is left out" do
+      matrix = Nx.iota({2, 5})
+      cols_as_list = Utils.columns_as_list(matrix, 1)
+
+      expected_cols_as_list = [
+        # Not present: Nx.tensor([0, 5]),
+        Nx.tensor([1, 6]),
+        Nx.tensor([2, 7]),
+        Nx.tensor([3, 8]),
+        Nx.tensor([4, 9])
+      ]
+
+      assert cols_as_list == expected_cols_as_list
+    end
+  end
 end
