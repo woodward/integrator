@@ -98,63 +98,63 @@ defmodule Integrator.AdaptiveStepsize do
     k_vals = Nx.broadcast(0.0, {length_x, k_length})
     temp = %{temp | k_vals: k_vals}
 
-    step_acc = %StepAccumulator{
+    step = %StepAccumulator{
       t_new: t_start,
       x_new: x0,
       dt: dt,
       k_vals: k_vals
     }
 
-    step_forward(step_acc, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, opts)
+    step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, opts)
     %__MODULE__{temp: temp}
   end
 
-  def step_forward(step_acc, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, opts) when t_old >= t_end do
-    step_acc
+  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, opts) when t_old >= t_end do
+    step
   end
 
-  def step_forward(step_acc, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, opts) do
-    {step_acc, error} = compute_step(step_acc, stepper_fn, ode_fn, opts)
+  def step_forward(step, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, opts) do
+    {step, error} = compute_step(step, stepper_fn, ode_fn, opts)
 
-    step_acc =
+    step =
       if Nx.less(error, 1.0) == @nx_true do
-        step_acc = %{
-          step_acc
-          | count_loop: step_acc.count_loop + 1,
-            i_step: step_acc.i_step + 1,
+        step = %{
+          step
+          | count_loop: step.count_loop + 1,
+            i_step: step.i_step + 1,
             i_reject: 0,
             terminal_event: false,
             terminal_output: false
         }
 
-        step_acc = %{step_acc | ode_t: [step_acc.t_new | step_acc.ode_t]}
-        step_acc = %{step_acc | ode_x: [step_acc.x_new | step_acc.ode_x]}
+        step = %{step | ode_t: [step.t_new | step.ode_t]}
+        step = %{step | ode_x: [step.x_new | step.ode_x]}
 
-        tadd = Nx.linspace(step_acc.t_old, step_acc.t_new, n: @refine + 1, type: Nx.type(step_acc.x_old))
-        # Get rid of tadd[0]:
+        tadd = Nx.linspace(step.t_old, step.t_new, n: @refine + 1, type: Nx.type(step.x_old))
+        # Get rid of the first element (tadd[0]) via this slice:
         tadd = Nx.slice_along_axis(tadd, 1, @refine, axis: 0)
 
-        t = Nx.stack([step_acc.t_old, step_acc.t_new])
-        x = Nx.stack([step_acc.x_old, step_acc.x_new]) |> Nx.transpose()
+        t = Nx.stack([step.t_old, step.t_new])
+        x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
 
-        x_out = interpolate_fn.(t, x, step_acc.k_vals, tadd)
+        x_out = interpolate_fn.(t, x, step.k_vals, tadd)
         x_out_as_cols = Utils.columns_as_list(x_out, 0, @refine) |> Enum.reverse()
-        step_acc = %{step_acc | output_x: x_out_as_cols ++ step_acc.output_x}
-        step_acc = %{step_acc | output_x: [step_acc.x_new | step_acc.output_x]}
-        %{step_acc | output_t: Nx.to_list(tadd) ++ step_acc.output_t}
+        step = %{step | output_x: x_out_as_cols ++ step.output_x}
+        step = %{step | output_x: [step.x_new | step.output_x]}
+        %{step | output_t: Nx.to_list(tadd) ++ step.output_t}
       else
-        step_acc
+        step
       end
 
-    step_forward(step_acc, Nx.to_number(step_acc.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, opts)
+    step_forward(step, Nx.to_number(step.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, opts)
   end
 
-  def compute_step(step_acc, stepper_fn, ode_fn, opts) do
-    x_old = step_acc.x_new
-    t_old = step_acc.t_new
-    options_comp_old = step_acc.options_comp
-    k_vals = step_acc.k_vals
-    dt = step_acc.dt
+  def compute_step(step, stepper_fn, ode_fn, opts) do
+    x_old = step.x_new
+    t_old = step.t_new
+    options_comp_old = step.options_comp
+    k_vals = step.k_vals
+    dt = step.dt
 
     {_t_new, options_comp} = kahan_sum(t_old, options_comp_old, dt)
     {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
@@ -166,8 +166,8 @@ defmodule Integrator.AdaptiveStepsize do
     error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: norm_control)
 
     {%{
-       step_acc
-       | count_cycles: step_acc.count_cycles + 1,
+       step
+       | count_cycles: step.count_cycles + 1,
          x_old: x_old,
          t_old: t_old,
          x_new: x_next,
