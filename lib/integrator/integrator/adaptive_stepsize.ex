@@ -130,18 +130,18 @@ defmodule Integrator.AdaptiveStepsize do
         step_acc = %{step_acc | ode_t: [step_acc.t_new | step_acc.ode_t]}
         step_acc = %{step_acc | ode_x: [step_acc.x_new | step_acc.ode_x]}
 
-        IO.inspect(step_acc.t_old, label: "step_acc.t_old")
-        IO.inspect(step_acc.t_new, label: "step_acc.t_new")
-        IO.inspect(@refine + 1, label: "refine + 1")
-        IO.inspect(Nx.type(step_acc.x_old), label: "type of x_old")
-
         tadd = Nx.linspace(step_acc.t_old, step_acc.t_new, n: @refine + 1, type: Nx.type(step_acc.x_old))
-        IO.puts("-----------------------------------")
-        IO.inspect(tadd, label: "tadd")
+        # Get rid of tadd[0]:
+        tadd = Nx.slice_along_axis(tadd, 1, @refine, axis: 0)
 
-        # x_out = interpolate_fn.(t, x, der, t_out)
+        t = Nx.stack([step_acc.t_old, step_acc.t_new])
+        x = Nx.stack([step_acc.x_old, step_acc.x_new]) |> Nx.transpose()
 
-        step_acc
+        x_out = interpolate_fn.(t, x, step_acc.k_vals, tadd)
+        x_out_as_cols = Utils.columns_as_list(x_out, 0, @refine) |> Enum.reverse()
+        step_acc = %{step_acc | output_x: x_out_as_cols ++ step_acc.output_x}
+        step_acc = %{step_acc | output_x: [step_acc.x_new | step_acc.output_x]}
+        %{step_acc | output_t: Nx.to_list(tadd) ++ step_acc.output_t}
       else
         step_acc
       end

@@ -54,6 +54,18 @@ defmodule Integrator.NxTest do
       _k = try_to_stack(k1, k2)
       # IO.inspect(k)
     end
+
+    test "does stack work " do
+      t1 = Nx.tensor(0.1)
+      t2 = Nx.tensor(0.2)
+      _t_stack = Nx.stack([t1, t2])
+      # IO.inspect(t_stack)
+
+      x1 = Nx.tensor([1, 2, 3])
+      x2 = Nx.tensor([4, 5, 6])
+      _x_stack = Nx.stack([x1, x2]) |> Nx.transpose()
+      # IO.inspect(x_stack)
+    end
   end
 
   defn try_to_stack(k1, k2) do
@@ -95,6 +107,14 @@ defmodule Integrator.NxTest do
 
       _next_to_last_row = Nx.slice_along_axis(full_matrix, 4, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, 4)
       # IO.inspect(next_to_last_row, label: "next_to_last_row")
+    end
+  end
+
+  describe "slice to get part of a vector" do
+    test "works" do
+      vec = Nx.tensor([1, 2, 3, 4, 5])
+      _sliced = Nx.slice_along_axis(vec, 1, 4, axis: 0)
+      # IO.inspect(sliced)
     end
   end
 end
