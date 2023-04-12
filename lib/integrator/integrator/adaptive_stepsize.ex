@@ -18,6 +18,7 @@ defmodule Integrator.AdaptiveStepsize do
       :t_old,
       :t_new,
       :x_old,
+      :x_new,
       :dt,
       :k_vals,
       count_loop: 0,
@@ -51,7 +52,12 @@ defmodule Integrator.AdaptiveStepsize do
 
   # @factor_min 0.8
   # @factor_max 1.5
+
+  # Is refine from the ode order? and should not be hard-wired?
   @refine 4
+
+  @nx_true Nx.tensor(1, type: :u8)
+  # @nx_false Nx.tensor(1, type: :u8)
 
   @doc """
 
@@ -71,7 +77,7 @@ defmodule Integrator.AdaptiveStepsize do
     # i_step = 1
 
     # t_new = t_start
-    t_old = t_start
+    # t_old = t_start
     # ode_t = t_start
     # output_t = t_start
 
@@ -86,9 +92,15 @@ defmodule Integrator.AdaptiveStepsize do
     # , type: Nx.type(x0))
     k_vals = Nx.broadcast(0.0, {length_x, k_length})
     temp = %{temp | k_vals: k_vals}
-    step_acc = %StepAccumulator{t_old: t_start, dt: dt, k_vals: k_vals, x_old: x0}
 
-    step_forward(step_acc, t_old, t_end, stepper_fn, interpolate_fn, ode_fn)
+    step_acc = %StepAccumulator{
+      t_new: t_start,
+      x_new: x0,
+      dt: dt,
+      k_vals: k_vals
+    }
+
+    step_forward(step_acc, t_start, t_end, stepper_fn, interpolate_fn, ode_fn)
     %__MODULE__{temp: temp}
   end
 
@@ -100,7 +112,7 @@ defmodule Integrator.AdaptiveStepsize do
     {step_acc, error} = compute_step(step_acc, stepper_fn, ode_fn)
 
     step_acc =
-      if error < 1.0 do
+      if Nx.less(error, 1.0) == @nx_true do
         step_acc = %{
           step_acc
           | count_loop: step_acc.count_loop + 1,
@@ -113,6 +125,15 @@ defmodule Integrator.AdaptiveStepsize do
         step_acc = %{step_acc | ode_t: [step_acc.t_new | step_acc.ode_t]}
         step_acc = %{step_acc | ode_x: [step_acc.x_new | step_acc.ode_x]}
 
+        IO.inspect(step_acc.t_old, label: "step_acc.t_old")
+        IO.inspect(step_acc.t_new, label: "step_acc.t_new")
+        IO.inspect(@refine + 1, label: "refine + 1")
+        IO.inspect(Nx.type(step_acc.x_old), label: "type of x_old")
+
+        tadd = Nx.linspace(step_acc.t_old, step_acc.t_new, n: @refine + 1, type: Nx.type(step_acc.x_old))
+        IO.puts("-----------------------------------")
+        IO.inspect(tadd, label: "tadd")
+
         # x_out = interpolate_fn.(t, x, der, t_out)
 
         step_acc
@@ -120,24 +141,32 @@ defmodule Integrator.AdaptiveStepsize do
         step_acc
       end
 
-    step_forward(step_acc, step_acc.t_old, t_end, stepper_fn, interpolate_fn, ode_fn)
+    step_forward(step_acc, Nx.to_number(step_acc.t_new), t_end, stepper_fn, interpolate_fn, ode_fn)
   end
 
-  def compute_step(s, stepper_fn, ode_fn) do
-    {_t_new, options_comp} = kahan_sum(s.t_old, s.options_comp, s.dt)
-    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, s.t_old, s.x_old, s.dt, s.k_vals)
+  def compute_step(step_acc, stepper_fn, ode_fn) do
+    x_old = step_acc.x_new
+    t_old = step_acc.t_new
+    options_comp_old = step_acc.options_comp
+    k_vals = step_acc.k_vals
+    dt = step_acc.dt
+
+    {_t_new, options_comp} = kahan_sum(t_old, options_comp_old, dt)
+    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
 
     # Pass these in as options:
     abs_tol = 1.0e-06
     rel_tol = 1.0e-03
     norm_control = false
-    error = Utils.abs_rel_norm(x_next, s.x_old, x_est, abs_tol, rel_tol, norm_control: norm_control)
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: norm_control)
 
     {%{
-       s
-       | count_cycles: s.count_cycles + 1,
-         x_old: x_next,
-         t_old: t_next,
+       step_acc
+       | count_cycles: step_acc.count_cycles + 1,
+         x_old: x_old,
+         t_old: t_old,
+         x_new: x_next,
+         t_new: t_next,
          k_vals: k_vals,
          options_comp: options_comp
      }, error}
