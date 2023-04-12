@@ -59,11 +59,16 @@ defmodule Integrator.AdaptiveStepsize do
   @nx_true Nx.tensor(1, type: :u8)
   # @nx_false Nx.tensor(1, type: :u8)
 
+  def default_opts() do
+    []
+  end
+
   @doc """
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
+    opts = default_opts() |> Keyword.merge(opts)
     dt = initial_tstep
 
     # Formula taken from Hairer
@@ -100,16 +105,16 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: k_vals
     }
 
-    step_forward(step_acc, t_start, t_end, stepper_fn, interpolate_fn, ode_fn)
+    step_forward(step_acc, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, opts)
     %__MODULE__{temp: temp}
   end
 
-  def step_forward(step_acc, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn) when t_old >= t_end do
+  def step_forward(step_acc, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, opts) when t_old >= t_end do
     step_acc
   end
 
-  def step_forward(step_acc, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn) do
-    {step_acc, error} = compute_step(step_acc, stepper_fn, ode_fn)
+  def step_forward(step_acc, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, opts) do
+    {step_acc, error} = compute_step(step_acc, stepper_fn, ode_fn, opts)
 
     step_acc =
       if Nx.less(error, 1.0) == @nx_true do
@@ -141,10 +146,10 @@ defmodule Integrator.AdaptiveStepsize do
         step_acc
       end
 
-    step_forward(step_acc, Nx.to_number(step_acc.t_new), t_end, stepper_fn, interpolate_fn, ode_fn)
+    step_forward(step_acc, Nx.to_number(step_acc.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, opts)
   end
 
-  def compute_step(step_acc, stepper_fn, ode_fn) do
+  def compute_step(step_acc, stepper_fn, ode_fn, opts) do
     x_old = step_acc.x_new
     t_old = step_acc.t_new
     options_comp_old = step_acc.options_comp

@@ -9,4 +9,6 @@ defmodule Integrator.RungeKutta do
   @callback interpolate(any(), any(), any(), any()) :: any()
 
   @callback order() :: integer()
+
+  @callback default_opts() :: Keyword.t()
 end
