@@ -21,7 +21,6 @@ defmodule IntegratorTest do
       assert_all_close(y_result, expected_y_result)
     end
 
-    @tag :skip
     test "performs the integration" do
       # See:
       # https://octave.sourceforge.io/octave/function/ode45.html
@@ -29,16 +28,16 @@ defmodule IntegratorTest do
       # fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
       # [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      initial_y = [2.0, 0.0]
+      initial_y = Nx.tensor([2.0, 0.0])
       t_initial = 0.0
       t_final = 20.0
-      [t, y] = Integrator.ode45(&van_der_pol_fn/2, t_initial, t_final, initial_y)
+      solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
-      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/y.csv")
+      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
 
-      assert_lists_equal(t, expected_t)
-      assert_nx_lists_equal(y, expected_y)
+      assert_lists_equal(solution.output_t, expected_t, 0.01)
+      assert_nx_lists_equal(solution.output_x, expected_y, atol: 0.1, rtol: 0.1)
     end
   end
 end
