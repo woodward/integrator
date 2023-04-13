@@ -96,13 +96,13 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def step_forward(step, t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
-    {newly_computed_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
+    {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
     step = step |> increment_compute_counter()
 
     step =
       if Nx.less(error_est, 1.0) == @nx_true do
         step
-        |> increment_step(newly_computed_step)
+        |> increment_step(new_step)
         |> interpolate(interpolate_fn, opts[:refine])
 
         # call to output function
