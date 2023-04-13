@@ -156,6 +156,7 @@
         ],
         disabled: [
           {Credo.Check.Warning.IoInspect, []},
+          {Credo.Check.Refactor.FunctionArity, []},
           #
           # Checks scheduled for next check update (opt-in for now, just replace `false` with `[]`)
 
