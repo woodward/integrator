@@ -33,10 +33,11 @@ defmodule Integrator.AdaptiveStepsize do
     unhandled_termination: true,
     terminal_event: false,
     terminal_output: false,
+    #
     ode_t: [],
     ode_x: [],
-    output_x: [],
-    output_t: []
+    output_t: [],
+    output_x: []
   ]
 
   @stepsize_factor_min 0.8
@@ -71,10 +72,15 @@ defmodule Integrator.AdaptiveStepsize do
       t_new: t_start,
       x_new: x0,
       dt: initial_tstep,
-      k_vals: initial_empty_k_vals(order, x0)
+      k_vals: initial_empty_k_vals(order, x0),
+      output_t: [t_start],
+      output_x: [x0],
+      ode_t: [t_start],
+      ode_x: [x0]
     }
 
     step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> reverse_results()
   end
 
   def initial_empty_k_vals(order, x) do
@@ -116,6 +122,17 @@ defmodule Integrator.AdaptiveStepsize do
 
     step
     |> step_forward(Nx.to_number(step.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  def reverse_results(step) do
+    %{
+      step
+      | output_x: step.output_x |> Enum.reverse(),
+        output_t: step.output_t |> Enum.reverse(),
+        #
+        ode_x: step.ode_x |> Enum.reverse(),
+        ode_t: step.ode_t |> Enum.reverse()
+    }
   end
 
   @doc """
@@ -198,10 +215,10 @@ defmodule Integrator.AdaptiveStepsize do
     x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
 
     x_out = interpolate_fn.(t, x, step.k_vals, tadd)
-    x_out_as_cols = Utils.columns_as_list(x_out, 0, refine) |> Enum.reverse()
+    x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
+
     step = %{step | output_x: x_out_as_cols ++ step.output_x}
-    step = %{step | output_x: [step.x_new | step.output_x]}
-    %{step | output_t: Nx.to_list(tadd) ++ step.output_t}
+    %{step | output_t: (Nx.to_list(tadd) |> Enum.reverse()) ++ step.output_t}
   end
 
   @doc """

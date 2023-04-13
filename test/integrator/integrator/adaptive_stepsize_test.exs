@@ -25,14 +25,14 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      # assert result.count_save == 2
-      # assert result.unhandled_termination == 1
+      assert result.count_save == 2
+      assert result.unhandled_termination == true
 
-      # expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
-      # expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/y.csv")
+      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
+      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
 
-      # assert_lists_equal(result.output_t, expected_t)
-      # assert_all_close(result.output_y, expected_y)
+      assert_lists_equal(result.output_t, expected_t, 0.01)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 0.1, rtol: 0.1)
     end
   end
 
