@@ -3,6 +3,16 @@ defmodule Integrator.AdaptiveStepsize do
   import Nx.Defn
   alias Integrator.Utils
 
+  defmodule ComputedStep do
+    @moduledoc false
+    defstruct [
+      :t_new,
+      :x_new,
+      :k_vals,
+      :options_comp
+    ]
+  end
+
   defstruct [
     :t_old,
     :t_new,
@@ -13,8 +23,8 @@ defmodule Integrator.AdaptiveStepsize do
     #
     options_comp: 0.0,
     #
-    count_loop: 0,
-    count_cycles: 0,
+    count_loop__increment_step: 0,
+    count_cycles__compute_step: 0,
     count_save: 2,
     #
     i_reject: 0,
@@ -55,7 +65,7 @@ defmodule Integrator.AdaptiveStepsize do
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
-    opts = default_opts() |> Keyword.merge(opts)
+    opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
 
     step = %__MODULE__{
       t_new: t_start,
@@ -80,15 +90,16 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def step_forward(step, t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
-    {step, error} = compute_step(step, stepper_fn, ode_fn, opts)
+    {newly_computed_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
+    step = step |> increment_compute_counter()
 
     step =
-      if Nx.less(error, 1.0) == @nx_true do
+      if Nx.less(error_est, 1.0) == @nx_true do
         step
-        |> increment_step()
+        |> increment_step(newly_computed_step)
         |> interpolate(interpolate_fn, opts[:refine])
 
-        # call output function
+        # call to output function
       else
         # Error condition
         step = %{step | i_reject: step.i_reject + 1}
@@ -100,9 +111,10 @@ defmodule Integrator.AdaptiveStepsize do
         step
       end
 
-    dt = compute_next_timestep(step.dt, Nx.to_number(error), order, t_old, t_end, opts)
+    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, t_old, t_end, opts)
+    step = %{step | dt: dt}
 
-    %{step | dt: dt}
+    step
     |> step_forward(Nx.to_number(step.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
@@ -125,17 +137,28 @@ defmodule Integrator.AdaptiveStepsize do
     min(abs(dt), abs(t_end - t_old))
   end
 
-  def increment_step(step) do
+  def increment_step(step, computed_step) do
     %{
       step
-      | count_loop: step.count_loop + 1,
+      | count_loop__increment_step: step.count_loop__increment_step + 1,
         i_step: step.i_step + 1,
         i_reject: 0,
         terminal_event: false,
         terminal_output: false,
         ode_t: [step.t_new | step.ode_t],
-        ode_x: [step.x_new | step.ode_x]
+        ode_x: [step.x_new | step.ode_x],
+        #
+        x_old: step.x_new,
+        t_old: step.t_new,
+        x_new: computed_step.x_new,
+        t_new: computed_step.t_new,
+        k_vals: computed_step.k_vals,
+        options_comp: computed_step.options_comp
     }
+  end
+
+  defp increment_compute_counter(step) do
+    %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
   def compute_step(step, stepper_fn, ode_fn, _opts) do
@@ -154,15 +177,11 @@ defmodule Integrator.AdaptiveStepsize do
     norm_control = false
     error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: norm_control)
 
-    {%{
-       step
-       | count_cycles: step.count_cycles + 1,
-         x_old: x_old,
-         t_old: t_old,
-         x_new: x_next,
-         t_new: t_next,
-         k_vals: k_vals,
-         options_comp: options_comp
+    {%ComputedStep{
+       x_new: x_next,
+       t_new: t_next,
+       k_vals: k_vals,
+       options_comp: options_comp
      }, error}
   end
 
