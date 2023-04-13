@@ -3,15 +3,6 @@ defmodule Integrator.AdaptiveStepsize do
   import Nx.Defn
   alias Integrator.Utils
 
-  defmodule TempResults do
-    @moduledoc false
-    defstruct [
-      :dt,
-      :factor,
-      :k_vals
-    ]
-  end
-
   defmodule StepAccumulator do
     @moduledoc false
     defstruct [
@@ -36,19 +27,6 @@ defmodule Integrator.AdaptiveStepsize do
       output_t: []
     ]
   end
-
-  defstruct [
-    :output_t,
-    :output_y,
-    #
-    # Temp results:
-    :temp,
-    #
-    count_loop: 0,
-    count_cycles: 0,
-    count_save: 2,
-    unhandled_termination: true
-  ]
 
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
@@ -79,29 +57,11 @@ defmodule Integrator.AdaptiveStepsize do
     opts = default_opts() |> Keyword.merge(opts)
     dt = initial_tstep
 
-    temp = %TempResults{dt: dt}
-
-    # norm_control = false
-
-    # i_out = 1
-    # i_step = 1
-
-    # t_new = t_start
-    # t_old = t_start
-    # ode_t = t_start
-    # output_t = t_start
-
-    # x_new = x0
-    # x_old = x0
-    # ode_x = x0
-    # output_x = x0
-
     # Figure out the correct way to do this!
     k_length = order + 2
     {length_x} = Nx.shape(x0)
     # , type: Nx.type(x0))
     k_vals = Nx.broadcast(0.0, {length_x, k_length})
-    temp = %{temp | k_vals: k_vals}
 
     step = %StepAccumulator{
       t_new: t_start,
@@ -111,10 +71,9 @@ defmodule Integrator.AdaptiveStepsize do
     }
 
     step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
-    %__MODULE__{temp: temp}
   end
 
-  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, order, opts) when t_old >= t_end do
+  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) when t_old >= t_end do
     step
   end
 
@@ -175,7 +134,7 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
-  def compute_step(step, stepper_fn, ode_fn, opts) do
+  def compute_step(step, stepper_fn, ode_fn, _opts) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
