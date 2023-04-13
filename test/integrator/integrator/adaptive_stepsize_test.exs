@@ -1,6 +1,7 @@
 defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
   use Integrator.TestCase
+  import Nx, only: :sigils
 
   alias Integrator.{AdaptiveStepsize, Test}
   alias Integrator.RungeKutta.DormandPrince45
@@ -96,6 +97,22 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       expected_dt = 0.289
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
+    end
+  end
+
+  describe "initial_empty_k_vals" do
+    test "returns a tensor with zeros that's the correct size" do
+      order = 5
+      x = ~V[ 1.0 2.0 3.0 ]f64
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
+
+      expected_k_vals = ~M[
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+      ]f64
+
+      assert_all_close(k_vals, expected_k_vals)
     end
   end
 end

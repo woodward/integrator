@@ -38,15 +38,16 @@ defmodule Integrator.AdaptiveStepsize do
   @default_refine 4
   @default_max_number_of_errors 5_000
   @default_max_step 2.0
+
   @epsilon 2.2204e-16
 
   @nx_true Nx.tensor(1, type: :u8)
-  # @nx_false Nx.tensor(1, type: :u8)
+  # @nx_false Nx.tensor(0, type: :u8)
 
   def default_opts() do
     [
-      max_number_of_errors: @default_max_number_of_errors,
       epsilon: @epsilon,
+      max_number_of_errors: @default_max_number_of_errors,
       max_step: @default_max_step,
       refine: @default_refine
     ]
@@ -58,22 +59,23 @@ defmodule Integrator.AdaptiveStepsize do
   """
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(opts)
-    dt = initial_tstep
-
-    # Figure out the correct way to do this!
-    k_length = order + 2
-    {length_x} = Nx.shape(x0)
-    # , type: Nx.type(x0))
-    k_vals = Nx.broadcast(0.0, {length_x, k_length})
 
     step = %StepAccumulator{
       t_new: t_start,
       x_new: x0,
-      dt: dt,
-      k_vals: k_vals
+      dt: initial_tstep,
+      k_vals: initial_empty_k_vals(order, x0)
     }
 
     step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  def initial_empty_k_vals(order, x) do
+    # Figure out the correct way to do this!
+    k_length = order + 2
+
+    {length_x} = Nx.shape(x)
+    Nx.broadcast(0.0, {length_x, k_length})
   end
 
   def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) when t_old >= t_end do
