@@ -3,34 +3,31 @@ defmodule Integrator.AdaptiveStepsize do
   import Nx.Defn
   alias Integrator.Utils
 
-  defmodule StepAccumulator do
-    @moduledoc false
-    defstruct [
-      :t_old,
-      :t_new,
-      :x_old,
-      :x_new,
-      :dt,
-      :k_vals,
-      #
-      options_comp: 0.0,
-      #
-      count_loop: 0,
-      count_cycles: 0,
-      count_save: 2,
-      #
-      i_reject: 0,
-      i_step: 0,
-      #
-      unhandled_termination: true,
-      terminal_event: false,
-      terminal_output: false,
-      ode_t: [],
-      ode_x: [],
-      output_x: [],
-      output_t: []
-    ]
-  end
+  defstruct [
+    :t_old,
+    :t_new,
+    :x_old,
+    :x_new,
+    :dt,
+    :k_vals,
+    #
+    options_comp: 0.0,
+    #
+    count_loop: 0,
+    count_cycles: 0,
+    count_save: 2,
+    #
+    i_reject: 0,
+    i_step: 0,
+    #
+    unhandled_termination: true,
+    terminal_event: false,
+    terminal_output: false,
+    ode_t: [],
+    ode_x: [],
+    output_x: [],
+    output_t: []
+  ]
 
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
@@ -60,7 +57,7 @@ defmodule Integrator.AdaptiveStepsize do
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(opts)
 
-    step = %StepAccumulator{
+    step = %__MODULE__{
       t_new: t_start,
       x_new: x0,
       dt: initial_tstep,
