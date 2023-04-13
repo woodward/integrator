@@ -21,8 +21,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
 
+      assert result.count_cycles == 78
       assert result.count_loop == 50
-      # assert result.count_cyles == 78
       # assert result.count_save == 2
       # assert result.unhandled_termination == 1
 

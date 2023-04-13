@@ -12,12 +12,16 @@ defmodule Integrator.AdaptiveStepsize do
       :x_new,
       :dt,
       :k_vals,
+      #
+      options_comp: 0.0,
+      #
       count_loop: 0,
       count_cycles: 0,
       count_save: 2,
+      #
       i_reject: 0,
       i_step: 0,
-      options_comp: 0.0,
+      #
       unhandled_termination: true,
       terminal_event: false,
       terminal_output: false,
@@ -31,9 +35,7 @@ defmodule Integrator.AdaptiveStepsize do
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
 
-  # Is refine from the ode order? and should not be hard-wired?
-  @refine 4
-
+  @default_refine 4
   @default_max_number_of_errors 5_000
   @default_max_step 2.0
   @epsilon 2.2204e-16
@@ -45,7 +47,8 @@ defmodule Integrator.AdaptiveStepsize do
     [
       max_number_of_errors: @default_max_number_of_errors,
       epsilon: @epsilon,
-      max_step: @default_max_step
+      max_step: @default_max_step,
+      refine: @default_refine
     ]
   end
 
@@ -84,7 +87,7 @@ defmodule Integrator.AdaptiveStepsize do
       if Nx.less(error, 1.0) == @nx_true do
         step
         |> increment_step()
-        |> interpolate(interpolate_fn, @refine)
+        |> interpolate(interpolate_fn, opts[:refine])
 
         # call output function
       else
@@ -111,7 +114,9 @@ defmodule Integrator.AdaptiveStepsize do
     # Avoid divisions by zero:
     error = error + opts[:epsilon]
 
+    # factor should be cached somehow; perhaps passed in in the options?
     factor = Math.pow(0.38, 1.0 / (order + 1))
+
     foo = factor * Math.pow(1 / error, 1 / (order + 1))
 
     dt = dt * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
