@@ -50,17 +50,25 @@ defmodule Integrator.AdaptiveStepsize do
     unhandled_termination: true
   ]
 
-  # @factor_min 0.8
-  # @factor_max 1.5
+  @stepsize_factor_min 0.8
+  @stepsize_factor_max 1.5
 
   # Is refine from the ode order? and should not be hard-wired?
   @refine 4
+
+  @default_max_number_of_errors 5_000
+  @default_max_step 2.0
+  @epsilon 2.2204e-16
 
   @nx_true Nx.tensor(1, type: :u8)
   # @nx_false Nx.tensor(1, type: :u8)
 
   def default_opts() do
-    []
+    [
+      max_number_of_errors: @default_max_number_of_errors,
+      epsilon: @epsilon,
+      max_step: @default_max_step
+    ]
   end
 
   @doc """
@@ -71,10 +79,7 @@ defmodule Integrator.AdaptiveStepsize do
     opts = default_opts() |> Keyword.merge(opts)
     dt = initial_tstep
 
-    # Formula taken from Hairer
-    factor = Math.pow(0.38, 1.0 / (order + 1))
-
-    temp = %TempResults{dt: dt, factor: factor}
+    temp = %TempResults{dt: dt}
 
     # norm_control = false
 
@@ -105,48 +110,69 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: k_vals
     }
 
-    step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, opts)
+    step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
     %__MODULE__{temp: temp}
   end
 
-  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, opts) when t_old >= t_end do
+  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, order, opts) when t_old >= t_end do
     step
   end
 
-  def step_forward(step, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, opts) do
+  def step_forward(step, t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     {step, error} = compute_step(step, stepper_fn, ode_fn, opts)
 
     step =
       if Nx.less(error, 1.0) == @nx_true do
-        step = %{
-          step
-          | count_loop: step.count_loop + 1,
-            i_step: step.i_step + 1,
-            i_reject: 0,
-            terminal_event: false,
-            terminal_output: false
-        }
+        step
+        |> increment_step()
+        |> interpolate(interpolate_fn, @refine)
 
-        step = %{step | ode_t: [step.t_new | step.ode_t]}
-        step = %{step | ode_x: [step.x_new | step.ode_x]}
-
-        tadd = Nx.linspace(step.t_old, step.t_new, n: @refine + 1, type: Nx.type(step.x_old))
-        # Get rid of the first element (tadd[0]) via this slice:
-        tadd = Nx.slice_along_axis(tadd, 1, @refine, axis: 0)
-
-        t = Nx.stack([step.t_old, step.t_new])
-        x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
-
-        x_out = interpolate_fn.(t, x, step.k_vals, tadd)
-        x_out_as_cols = Utils.columns_as_list(x_out, 0, @refine) |> Enum.reverse()
-        step = %{step | output_x: x_out_as_cols ++ step.output_x}
-        step = %{step | output_x: [step.x_new | step.output_x]}
-        %{step | output_t: Nx.to_list(tadd) ++ step.output_t}
+        # call output function
       else
+        # Error condition
+        step = %{step | i_reject: step.i_reject + 1}
+
+        if step.i_reject > opts[:max_number_of_errors] do
+          raise "Too many errors"
+        end
+
         step
       end
 
-    step_forward(step, Nx.to_number(step.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, opts)
+    dt = compute_next_timestep(step.dt, Nx.to_number(error), order, t_old, t_end, opts)
+
+    %{step | dt: dt}
+    |> step_forward(Nx.to_number(step.t_new), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  @doc """
+  Formula taken from Hairer
+  """
+  def compute_next_timestep(dt, error, order, t_old, t_end, opts) do
+    # Avoid divisions by zero:
+    error = error + opts[:epsilon]
+
+    factor = Math.pow(0.38, 1.0 / (order + 1))
+    foo = factor * Math.pow(1 / error, 1 / (order + 1))
+
+    dt = dt * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
+    dt = min(abs(dt), opts[:max_step])
+
+    # ## Make sure we don't go past t_end:
+    min(abs(dt), abs(t_end - t_old))
+  end
+
+  def increment_step(step) do
+    %{
+      step
+      | count_loop: step.count_loop + 1,
+        i_step: step.i_step + 1,
+        i_reject: 0,
+        terminal_event: false,
+        terminal_output: false,
+        ode_t: [step.t_new | step.ode_t],
+        ode_x: [step.x_new | step.ode_x]
+    }
   end
 
   def compute_step(step, stepper_fn, ode_fn, opts) do
@@ -175,6 +201,25 @@ defmodule Integrator.AdaptiveStepsize do
          k_vals: k_vals,
          options_comp: options_comp
      }, error}
+  end
+
+  def interpolate(step, _interpolate_fn, refine) when refine == 1 do
+    step
+  end
+
+  def interpolate(step, interpolate_fn, refine) do
+    tadd = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
+    # Get rid of the first element (tadd[0]) via this slice:
+    tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
+
+    t = Nx.stack([step.t_old, step.t_new])
+    x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
+
+    x_out = interpolate_fn.(t, x, step.k_vals, tadd)
+    x_out_as_cols = Utils.columns_as_list(x_out, 0, refine) |> Enum.reverse()
+    step = %{step | output_x: x_out_as_cols ++ step.output_x}
+    step = %{step | output_x: [step.x_new | step.output_x]}
+    %{step | output_t: Nx.to_list(tadd) ++ step.output_t}
   end
 
   @doc """

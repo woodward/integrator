@@ -23,7 +23,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       temp = result.temp
       assert_all_close(temp.dt, 0.068129)
-      assert_all_close(temp.factor, Nx.tensor(0.8511))
 
       # assert result.count_loop == 50
       # assert result.count_cyles == 78
@@ -51,6 +50,55 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert_all_close(sum, expected_sum, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(comp, expected_comp, atol: 1.0e-14, rtol: 1.0e-14)
+    end
+  end
+
+  describe "compute_next_timestep" do
+    test "basic case" do
+      dt = 0.068129
+      error = 0.0015164936598390992
+      order = 5
+      t_old = 0.0
+      t_end = 2.0
+
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16)
+
+      expected_dt = 0.1022
+      assert_in_delta(new_dt, expected_dt, 1.0e-05)
+    end
+
+    test "uses option :max_step" do
+      dt = 0.068129
+      error = 0.0015164936598390992
+      order = 5
+      t_old = 0.0
+      t_end = 2.0
+
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, epsilon: 2.2204e-16)
+
+      expected_dt = 0.05
+      assert_in_delta(new_dt, expected_dt, 1.0e-05)
+    end
+
+    test "does not go past t_end" do
+      dt = 0.3039
+      error = 0.4414
+      order = 5
+      t_old = 19.711
+      t_end = 20.0
+
+      # fac = 0.8511
+      # dt_after_times_min = 0.2964
+      # options_maxstep = 2
+      # tspan_end = 20
+      # t_old = 19.711
+      # abs_tspan_end = 0.2893
+      # dt = 0.2893
+
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16)
+
+      expected_dt = 0.289
+      assert_in_delta(new_dt, expected_dt, 1.0e-05)
     end
   end
 end
