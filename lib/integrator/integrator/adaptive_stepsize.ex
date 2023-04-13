@@ -178,7 +178,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
-  def compute_step(step, stepper_fn, ode_fn, _opts) do
+  def compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
@@ -189,10 +189,8 @@ defmodule Integrator.AdaptiveStepsize do
     {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
 
     # Pass these in as options:
-    abs_tol = 1.0e-06
-    rel_tol = 1.0e-03
     norm_control = false
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: norm_control)
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: norm_control)
 
     {%ComputedStep{
        x_new: x_next,
