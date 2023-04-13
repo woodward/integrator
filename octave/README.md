@@ -17,6 +17,10 @@ https://www.mathworks.com/help/matlab/ref/ode45.html
 fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
 [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
 
+To simulate with more precision:  
+opts = odeset("AbsTol", 1.0e-10, "RelTol", 1.0e-10)
+[t,y] = ode45 (fvdp, [0, 20], [2, 0], opts);
+
 plot(t,y(:,1),'-o',t,y(:,2),'-o')
 title('Solution of van der Pol Equation (\mu = 1) with ODE45');
 xlabel('Time t');
@@ -35,6 +39,19 @@ plot(t,y,'-o')
 
 Some notes on the usage of Octave's ode45:
 https://www.eng.auburn.edu/~tplacek/courses/3600/ode45berkley.pdf
+
+To write values to a file [see here](https://en.wikibooks.org/wiki/Octave_Programming_Tutorial/Text_and_file_output)
+format long   (to get extra precision)
+file_id = fopen('mydata.txt', 'w');
+
+Then:
+fdisp(file_id, value)
+or
+fprintf(file_id, '%f\n', value)
+fprintf(file_id, '%d\n', value)
+
+fclose(file_id)
+
 
 ---------------------------------------
 

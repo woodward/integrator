@@ -39,5 +39,19 @@ defmodule IntegratorTest do
       assert_lists_equal(solution.output_t, expected_t, 0.01)
       assert_nx_lists_equal(solution.output_x, expected_y, atol: 0.1, rtol: 0.1)
     end
+
+    test "performs the integration - high fidelity" do
+      initial_y = Nx.tensor([2.0, 0.0])
+      t_initial = 0.0
+      t_final = 20.0
+      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
+      solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y, opts)
+
+      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity.csv")
+      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity.csv")
+
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-02)
+      assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-02, rtol: 1.0e-02)
+    end
   end
 end
