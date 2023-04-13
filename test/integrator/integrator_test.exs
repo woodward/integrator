@@ -2,7 +2,7 @@ defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
 
-  describe "overall" do
+  describe "test setup" do
     test "van_der_pol_fn" do
       x = Nx.tensor(0.0341, type: :f32)
       y = Nx.tensor([1.9975, -0.0947], type: :f32)
@@ -20,17 +20,24 @@ defmodule IntegratorTest do
       expected_y_result = Nx.tensor([expected_y0, expected_y1])
       assert_all_close(y_result, expected_y_result)
     end
+  end
 
-    test "performs the integration" do
+  describe "overall" do
+    setup do
+      initial_y = Nx.tensor([2.0, 0.0])
+      t_initial = 0.0
+      t_final = 20.0
+
+      [initial_y: initial_y, t_initial: t_initial, t_final: t_final]
+    end
+
+    test "performs the integration", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
       # See:
       # https://octave.sourceforge.io/octave/function/ode45.html
       #
       # fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
       # [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      initial_y = Nx.tensor([2.0, 0.0])
-      t_initial = 0.0
-      t_final = 20.0
       solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
@@ -40,10 +47,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_y, atol: 0.1, rtol: 0.1)
     end
 
-    test "performs the integration - high fidelity" do
-      initial_y = Nx.tensor([2.0, 0.0])
-      t_initial = 0.0
-      t_final = 20.0
+    test "performs the integration - high fidelity", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
       solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y, opts)
 
