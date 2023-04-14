@@ -43,7 +43,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &Test.van_der_pol_fn/2
 
       t_start = 0.0
-      # t_end = 4.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
@@ -59,6 +58,11 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity.csv")
       expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity.csv")
 
+      # data = result.output_t |> Enum.join("\n")
+      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity-elixir.csv", data)
+      #
+      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
+      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity-elixir.csv", data)
       assert_lists_equal(result.output_t, expected_t, 1.0e-02)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
