@@ -1,7 +1,7 @@
 defmodule Integrator.AdaptiveStepsize do
   @moduledoc false
   import Nx.Defn
-  alias Integrator.Utils
+  alias Integrator.{MaxErrorsExceededError, Utils}
 
   defmodule ComputedStep do
     @moduledoc false
@@ -123,11 +123,14 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def bump_error_count(step, opts) do
-    # Error condition
     step = %{step | error_count: step.error_count + 1}
 
     if step.error_count > opts[:max_number_of_errors] do
-      raise "Too many errors"
+      raise MaxErrorsExceededError,
+        message: "Too many errors",
+        error_count: step.error_count,
+        max_number_of_errors: opts[:max_number_of_errors],
+        step: step
     end
 
     step

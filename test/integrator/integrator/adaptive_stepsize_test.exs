@@ -66,6 +66,26 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_lists_equal(result.output_t, expected_t, 1.0e-02)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
+
+    test "throws an exception if too many errors" do
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Test.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 20.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      initial_tstep = 0.007418363820761442
+
+      # Set the max_number_of_errors to 1 so that an exception should be thrown:
+      opts = [abs_tol: 1.0e-2, rel_tol: 1.0e-2, max_number_of_errors: 1]
+
+      assert_raise Integrator.MaxErrorsExceededError, "Too many errors", fn ->
+        AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      end
+    end
   end
 
   describe "kahan_sum" do
