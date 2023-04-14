@@ -107,14 +107,7 @@ defmodule Integrator.AdaptiveStepsize do
 
         # call to output function
       else
-        # Error condition
-        step = %{step | i_reject: step.i_reject + 1}
-
-        if step.i_reject > opts[:max_number_of_errors] do
-          raise "Too many errors"
-        end
-
-        step
+        bump_error_count(step, opts)
       end
 
     dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, t_old, t_end, opts)
@@ -122,6 +115,17 @@ defmodule Integrator.AdaptiveStepsize do
 
     step
     |> step_forward(t_old(step, dt), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  def bump_error_count(step, opts) do
+    # Error condition
+    step = %{step | i_reject: step.i_reject + 1}
+
+    if step.i_reject > opts[:max_number_of_errors] do
+      raise "Too many errors"
+    end
+
+    step
   end
 
   def t_old(%{i_reject: i_reject} = step, dt) when i_reject > 0 do
