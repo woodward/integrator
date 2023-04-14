@@ -227,8 +227,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def interpolate(step, _interpolate_fn, refine) when refine == 1 do
-    # implement me! add the result to output_x and and output_t
-    step
+    step = %{step | output_t: [Nx.to_number(step.t_new) | step.output_t]}
+    %{step | output_x: [step.x_new | step.output_x]}
   end
 
   def interpolate(step, interpolate_fn, refine) when refine > 1 do
