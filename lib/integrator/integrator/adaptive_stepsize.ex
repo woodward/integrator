@@ -220,10 +220,11 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def interpolate(step, _interpolate_fn, refine) when refine == 1 do
+    # implement me! add the result to output_x and and output_t
     step
   end
 
-  def interpolate(step, interpolate_fn, refine) do
+  def interpolate(step, interpolate_fn, refine) when refine > 1 do
     tadd = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
