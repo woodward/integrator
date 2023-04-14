@@ -27,7 +27,8 @@ defmodule Integrator.AdaptiveStepsize do
     count_cycles__compute_step: 0,
     count_save: 2,
     #
-    i_reject: 0,
+    # ireject in Octave:
+    error_count: 0,
     i_step: 0,
     #
     unhandled_termination: true,
@@ -123,20 +124,20 @@ defmodule Integrator.AdaptiveStepsize do
 
   def bump_error_count(step, opts) do
     # Error condition
-    step = %{step | i_reject: step.i_reject + 1}
+    step = %{step | error_count: step.error_count + 1}
 
-    if step.i_reject > opts[:max_number_of_errors] do
+    if step.error_count > opts[:max_number_of_errors] do
       raise "Too many errors"
     end
 
     step
   end
 
-  def t_next(%{i_reject: i_reject} = step, dt) when i_reject > 0 do
+  def t_next(%{error_count: error_count} = step, dt) when error_count > 0 do
     Nx.to_number(step.t_old) + dt
   end
 
-  def t_next(%{i_reject: i_reject} = step, _dt) when i_reject == 0 do
+  def t_next(%{error_count: error_count} = step, _dt) when error_count == 0 do
     Nx.to_number(step.t_new)
   end
 
@@ -175,7 +176,7 @@ defmodule Integrator.AdaptiveStepsize do
       step
       | count_loop__increment_step: step.count_loop__increment_step + 1,
         i_step: step.i_step + 1,
-        i_reject: 0,
+        error_count: 0,
         terminal_event: false,
         terminal_output: false
     }
