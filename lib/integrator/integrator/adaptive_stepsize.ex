@@ -34,8 +34,11 @@ defmodule Integrator.AdaptiveStepsize do
     terminal_event: false,
     terminal_output: false,
     #
+    # The output of the integration:
     ode_t: [],
     ode_x: [],
+    #
+    # The output of the integration, including the interpolated points:
     output_t: [],
     output_x: []
   ]
@@ -84,7 +87,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def initial_empty_k_vals(order, x) do
-    # Figure out the correct way to do this!
+    # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
     k_length = order + 2
 
     {length_x} = Nx.shape(x)
