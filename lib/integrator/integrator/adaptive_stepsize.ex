@@ -119,10 +119,17 @@ defmodule Integrator.AdaptiveStepsize do
 
     dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, t_old, t_end, opts)
     step = %{step | dt: dt}
-    t_old = if step.i_reject > 0, do: Nx.to_number(step.t_old) + dt, else: Nx.to_number(step.t_new)
 
     step
-    |> step_forward(t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step_forward(t_old(step, dt), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  def t_old(%{i_reject: i_reject} = step, dt) when i_reject > 0 do
+    Nx.to_number(step.t_old) + dt
+  end
+
+  def t_old(%{i_reject: i_reject} = step, _dt) when i_reject == 0 do
+    Nx.to_number(step.t_new)
   end
 
   def reverse_results(step) do
