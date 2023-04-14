@@ -102,7 +102,8 @@ defmodule Integrator.AdaptiveStepsize do
     step =
       if Nx.less(error_est, 1.0) == @nx_true do
         step
-        |> increment_step(new_step)
+        |> increment_and_reset_counters()
+        |> merge_new_step(new_step)
         |> interpolate(interpolate_fn, opts[:refine])
 
         # call to output function
@@ -166,15 +167,21 @@ defmodule Integrator.AdaptiveStepsize do
     min(abs(dt), abs(t_end - t_old))
   end
 
-  def increment_step(step, computed_step) do
+  def increment_and_reset_counters(step) do
     %{
       step
       | count_loop__increment_step: step.count_loop__increment_step + 1,
         i_step: step.i_step + 1,
         i_reject: 0,
         terminal_event: false,
-        terminal_output: false,
-        ode_t: [step.t_new | step.ode_t],
+        terminal_output: false
+    }
+  end
+
+  def merge_new_step(step, computed_step) do
+    %{
+      step
+      | ode_t: [step.t_new | step.ode_t],
         ode_x: [step.x_new | step.ode_x],
         #
         x_old: step.x_new,
