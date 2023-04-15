@@ -15,9 +15,11 @@ defmodule Integrator.AdaptiveStepsize do
 
   defstruct [
     :t_old,
-    :t_new,
     :x_old,
+    #
+    :t_new,
     :x_new,
+    #
     :dt,
     :k_vals,
     #
@@ -43,9 +45,10 @@ defmodule Integrator.AdaptiveStepsize do
     output_t: [],
     output_x: [],
     #
-    # The next batch of data to be sent to the output fn:
-    output_fn_t: [],
-    output_fn_x: []
+    # The last chunk of points; will include the computed point plus the interpolated points (if
+    # interpolation is enabled) or just the computed point (if interpolation is disabled):
+    t_new_chunk: [],
+    x_new_chunk: []
   ]
 
   @stepsize_factor_min 0.8
@@ -85,6 +88,8 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: initial_empty_k_vals(order, x0)
     }
 
+    if opts[:output_fn], do: opts[:output_fn].([t_start], [x0])
+
     step =
       if opts[:cache_results?] do
         %{
@@ -93,17 +98,6 @@ defmodule Integrator.AdaptiveStepsize do
             output_x: [x0],
             ode_t: [t_start],
             ode_x: [x0]
-        }
-      else
-        step
-      end
-
-    step =
-      if opts[:output_fn] do
-        %{
-          step
-          | output_fn_t: [t_start],
-            output_fn_x: [x0]
         }
       else
         step
@@ -134,8 +128,8 @@ defmodule Integrator.AdaptiveStepsize do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
+        |> interpolate(interpolate_fn, opts[:refine])
         |> cache_results(opts[:cache_results?])
-        |> interpolate(interpolate_fn, opts[:refine], opts[:cache_results?])
         |> call_output_fn(opts[:output_fn])
       else
         bump_error_count(step, opts)
@@ -231,7 +225,9 @@ defmodule Integrator.AdaptiveStepsize do
     %{
       step
       | ode_t: [step.t_new | step.ode_t],
-        ode_x: [step.x_new | step.ode_x]
+        ode_x: [step.x_new | step.ode_x],
+        output_t: step.t_new_chunk ++ step.output_t,
+        output_x: step.x_new_chunk ++ step.output_x
     }
   end
 
@@ -261,22 +257,11 @@ defmodule Integrator.AdaptiveStepsize do
      }, error}
   end
 
-  def interpolate(step, _interpolate_fn, _refine, false = _cache_results?) do
-    step
+  def interpolate(step, _interpolate_fn, refine) when refine == 1 do
+    %{step | t_new_chunk: [Nx.to_number(step.t_new)], x_new_chunk: [step.x_new]}
   end
 
-  def interpolate(step, _interpolate_fn, refine, _cache_results?) when refine == 1 do
-    %{
-      step
-      | output_t: [Nx.to_number(step.t_new) | step.output_t],
-        output_x: [step.x_new | step.output_x],
-        #
-        output_fn_t: [Nx.to_number(step.t_new) | step.output_fn_t],
-        output_fn_x: [step.x_new | step.output_fn_x]
-    }
-  end
-
-  def interpolate(step, interpolate_fn, refine, _cache_results?) when refine > 1 do
+  def interpolate(step, interpolate_fn, refine) when refine > 1 do
     tadd = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
@@ -287,8 +272,7 @@ defmodule Integrator.AdaptiveStepsize do
     x_out = interpolate_fn.(t, x, step.k_vals, tadd)
     x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
 
-    step = %{step | output_x: x_out_as_cols ++ step.output_x}
-    %{step | output_t: (Nx.to_list(tadd) |> Enum.reverse()) ++ step.output_t}
+    %{step | x_new_chunk: x_out_as_cols, t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
   end
 
   def call_output_fn(step, output_fn) when is_nil(output_fn) do
@@ -296,8 +280,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def call_output_fn(step, output_fn) do
-    output_fn.(step.output_fn_t, step.output_fn_x)
-    %{step | output_fn_t: [], output_fn_x: []}
+    output_fn.(Enum.reverse(step.t_new_chunk), Enum.reverse(step.x_new_chunk))
+    step
   end
 
   @doc """
