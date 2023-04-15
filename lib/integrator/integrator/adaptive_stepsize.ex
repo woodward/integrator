@@ -118,7 +118,8 @@ defmodule Integrator.AdaptiveStepsize do
       if Nx.less(error_est, 1.0) == @nx_true do
         step
         |> increment_and_reset_counters()
-        |> merge_new_step(new_step, opts)
+        |> merge_new_step(new_step)
+        |> cache_results(opts[:cache_results])
         |> interpolate(interpolate_fn, opts[:refine], opts[:cache_results])
 
         # call to output function
@@ -196,8 +197,8 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
-  def merge_new_step(step, computed_step, opts) do
-    step = %{
+  def merge_new_step(step, computed_step) do
+    %{
       step
       | x_old: step.x_new,
         t_old: step.t_new,
@@ -206,16 +207,18 @@ defmodule Integrator.AdaptiveStepsize do
         k_vals: computed_step.k_vals,
         options_comp: computed_step.options_comp
     }
+  end
 
-    if opts[:cache_results] do
-      %{
-        step
-        | ode_t: [step.t_new | step.ode_t],
-          ode_x: [step.x_new | step.ode_x]
-      }
-    else
+  def cache_results(step, false = _cache_results?) do
+    step
+  end
+
+  def cache_results(step, true = _cache_results?) do
+    %{
       step
-    end
+      | ode_t: [step.t_new | step.ode_t],
+        ode_x: [step.x_new | step.ode_x]
+    }
   end
 
   defp increment_compute_counter(step) do
