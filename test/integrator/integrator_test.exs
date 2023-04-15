@@ -40,8 +40,8 @@ defmodule IntegratorTest do
 
       solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y)
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
-      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/default/t.csv")
+      expected_y = read_nx_list("test/fixtures/octave/van_der_pol/default/x.csv")
 
       assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-04, rtol: 1.0e-04)
@@ -51,8 +51,8 @@ defmodule IntegratorTest do
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
       solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_y, opts)
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity.csv")
-      expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/high_fidelity/t.csv")
+      expected_y = read_nx_list("test/fixtures/octave/van_der_pol/high_fidelity/x.csv")
 
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-05, rtol: 1.0e-05)

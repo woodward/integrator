@@ -35,8 +35,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_in_delta(last_time, 20.0, 1.0e-10)
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
-      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/default/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/default/x.csv")
 
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
@@ -66,8 +66,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 4109
       assert length(result.output_x) == 4109
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity.csv")
-      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/high_fidelity/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/high_fidelity/x.csv")
 
       # data = result.output_t |> Enum.join("\n")
       # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity-elixir.csv", data)
@@ -102,8 +102,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 51
       assert length(result.output_x) == 51
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1.csv")
-      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/no_interpolation/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/no_interpolation/x.csv")
 
       # data = result.output_t |> Enum.join("\n")
       # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1-elixir.csv", data)
@@ -148,8 +148,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_in_delta(last_time, 20.0, 1.0e-10)
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
-      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/default/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/default/x.csv")
 
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
@@ -189,8 +189,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 51
       assert length(result.output_x) == 51
 
-      expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1.csv")
-      expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1.csv")
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/no_interpolation/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/no_interpolation/x.csv")
 
       # data = result.output_t |> Enum.join("\n")
       # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1-elixir.csv", data)
