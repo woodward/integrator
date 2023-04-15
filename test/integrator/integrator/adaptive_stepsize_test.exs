@@ -1,9 +1,9 @@
 defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.DemoCase
   import Nx, only: :sigils
 
-  alias Integrator.{AdaptiveStepsize, Test}
+  alias Integrator.{AdaptiveStepsize, Demo}
   alias Integrator.RungeKutta.DormandPrince45
 
   describe "integrate" do
@@ -12,7 +12,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Test.van_der_pol_fn/2
+      ode_fn = &Demo.van_der_pol_fn/2
 
       t_start = 0.0
       # t_end = 4.0
@@ -44,7 +44,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Test.van_der_pol_fn/2
+      ode_fn = &Demo.van_der_pol_fn/2
 
       t_start = 0.0
       t_end = 20.0
@@ -76,7 +76,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Test.van_der_pol_fn/2
+      ode_fn = &Demo.van_der_pol_fn/2
 
       t_start = 0.0
       t_end = 20.0
@@ -108,7 +108,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Test.van_der_pol_fn/2
+      ode_fn = &Demo.van_der_pol_fn/2
 
       t_start = 0.0
       t_end = 20.0

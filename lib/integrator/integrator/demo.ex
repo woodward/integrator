@@ -1,4 +1,4 @@
-defmodule Integrator.Test do
+defmodule Integrator.Demo do
   @moduledoc """
   Functions to be used in testing
   """

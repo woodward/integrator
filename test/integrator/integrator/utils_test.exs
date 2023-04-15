@@ -1,6 +1,6 @@
 defmodule Integrator.UtilsTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.DemoCase
   import Nx, only: :sigils
 
   alias Integrator.Utils
