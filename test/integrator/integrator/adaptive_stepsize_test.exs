@@ -114,8 +114,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    @tag :skip
-    test "works - output function" do
+    test "works - output function with interpolation" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
       output_fn = fn t, x -> DummyOutput.add_data(dummy_output_name, %{t: t, x: x}) end
@@ -156,6 +155,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)
+      assert length(x_data) == 201
+      assert length(t_data) == 201
 
       assert_lists_equal(t_data, result.output_t, 1.0e-05)
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
