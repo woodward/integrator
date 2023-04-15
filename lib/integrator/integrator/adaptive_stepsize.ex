@@ -63,7 +63,7 @@ defmodule Integrator.AdaptiveStepsize do
       max_number_of_errors: @default_max_number_of_errors,
       max_step: @default_max_step,
       refine: @default_refine,
-      cache_results: @default_cache_results
+      cache_results?: @default_cache_results
     ]
   end
 
@@ -82,7 +82,7 @@ defmodule Integrator.AdaptiveStepsize do
     }
 
     step =
-      if opts[:cache_results] do
+      if opts[:cache_results?] do
         %{
           step
           | output_t: [t_start],
@@ -119,8 +119,8 @@ defmodule Integrator.AdaptiveStepsize do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
-        |> cache_results(opts[:cache_results])
-        |> interpolate(interpolate_fn, opts[:refine], opts[:cache_results])
+        |> cache_results(opts[:cache_results?])
+        |> interpolate(interpolate_fn, opts[:refine], opts[:cache_results?])
 
         # call to output function
       else
@@ -247,16 +247,16 @@ defmodule Integrator.AdaptiveStepsize do
      }, error}
   end
 
-  def interpolate(step, _interpolate_fn, _refine, false = _cache_results) do
+  def interpolate(step, _interpolate_fn, _refine, false = _cache_results?) do
     step
   end
 
-  def interpolate(step, _interpolate_fn, refine, _cache_results) when refine == 1 do
+  def interpolate(step, _interpolate_fn, refine, _cache_results?) when refine == 1 do
     step = %{step | output_t: [Nx.to_number(step.t_new) | step.output_t]}
     %{step | output_x: [step.x_new | step.output_x]}
   end
 
-  def interpolate(step, interpolate_fn, refine, _cache_results) when refine > 1 do
+  def interpolate(step, interpolate_fn, refine, _cache_results?) when refine > 1 do
     tadd = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)

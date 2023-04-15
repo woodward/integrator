@@ -114,7 +114,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       initial_tstep = 0.068129
-      opts = [cache_results: false]
+      opts = [cache_results?: false]
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
 
