@@ -89,7 +89,7 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: initial_empty_k_vals(order, x0)
     }
     |> cache_first_point(t_start, x0, opts[:cache_results?])
-    |> step_forward(t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
 
@@ -107,11 +107,17 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(0.0, {length_x, k_length})
   end
 
-  def step_forward(step, t_old, t_end, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) when t_old >= t_end do
+  def step_forward(step, t_old, t_end, _terminal_output, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+      when t_old >= t_end do
     step
   end
 
-  def step_forward(step, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+  def step_forward(step, _t_old, _t_end, terminal_output, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+      when terminal_output == :halt do
+    step
+  end
+
+  def step_forward(step, _t_old, t_end, _terminal_output, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
     step = step |> increment_compute_counter()
 
@@ -127,17 +133,11 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
-    case step.terminal_output do
-      :halt ->
-        step
+    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
+    step = %{step | dt: dt}
 
-      _ ->
-        dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
-        step = %{step | dt: dt}
-
-        step
-        |> step_forward(t_next(step, dt), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
-    end
+    step
+    |> step_forward(t_next(step, dt), t_end, step.terminal_output, stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
   def bump_error_count(step, opts) do
