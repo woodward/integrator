@@ -67,8 +67,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #
       # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
       # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity-elixir.csv", data)
-      assert_lists_equal(result.output_t, expected_t, 1.0e-02)
-      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
+      assert_lists_equal(result.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
     test "works - no data interpolation (refine == 1)" do
@@ -99,8 +99,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
       # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1-elixir.csv", data)
-      assert_lists_equal(result.output_t, expected_t, 1.0e-02)
-      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
     test "throws an exception if too many errors" do

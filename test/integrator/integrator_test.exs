@@ -43,8 +43,8 @@ defmodule IntegratorTest do
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
       expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 0.01)
-      assert_nx_lists_equal(solution.output_x, expected_y, atol: 0.1, rtol: 0.1)
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
     test "performs the integration - high fidelity", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
@@ -54,8 +54,8 @@ defmodule IntegratorTest do
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity.csv")
       expected_y = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-02)
-      assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-02, rtol: 1.0e-02)
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-05, rtol: 1.0e-05)
     end
   end
 end
