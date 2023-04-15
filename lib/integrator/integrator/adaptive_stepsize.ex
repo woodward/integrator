@@ -80,32 +80,24 @@ defmodule Integrator.AdaptiveStepsize do
   """
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    if fun = opts[:output_fn], do: fun.([t_start], [x0])
 
-    step = %__MODULE__{
+    %__MODULE__{
       t_new: t_start,
       x_new: x0,
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0)
     }
-
-    if opts[:output_fn], do: opts[:output_fn].([t_start], [x0])
-
-    step =
-      if opts[:cache_results?] do
-        %{
-          step
-          | output_t: [t_start],
-            output_x: [x0],
-            ode_t: [t_start],
-            ode_x: [x0]
-        }
-      else
-        step
-      end
-
-    step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> cache_first_point(t_start, x0, opts[:cache_results?])
+    |> step_forward(t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
+
+  def cache_first_point(step, t_start, x0, true = _cache_results?) do
+    %{step | output_t: [t_start], output_x: [x0], ode_t: [t_start], ode_x: [x0]}
+  end
+
+  def cache_first_point(step, _t_start, _x0, _cache_results?), do: step
 
   def initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
