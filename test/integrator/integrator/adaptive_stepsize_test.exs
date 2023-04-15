@@ -18,6 +18,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = []
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
@@ -53,6 +55,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.007418363820761442
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
@@ -88,8 +92,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
-      initial_tstep = 0.068129
       opts = [refine: 1]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 0.068129
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
 
@@ -130,6 +136,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [output_fn: output_fn]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
@@ -176,8 +184,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
-      initial_tstep = 0.068129
       opts = [refine: 1, output_fn: output_fn]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 0.068129
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
 
@@ -220,8 +230,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
-      initial_tstep = 0.068129
       opts = [cache_results?: false]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 0.068129
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
 
@@ -246,6 +258,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.007418363820761442
 
       # Set the max_number_of_errors to 1 so that an exception should be thrown:
@@ -306,14 +320,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       order = 5
       t_old = 19.711
       t_end = 20.0
-
-      # fac = 0.8511
-      # dt_after_times_min = 0.2964
-      # options_maxstep = 2
-      # tspan_end = 20
-      # t_old = 19.711
-      # abs_tspan_end = 0.2893
-      # dt = 0.2893
 
       new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16)
 
