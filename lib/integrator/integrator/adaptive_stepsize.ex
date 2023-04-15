@@ -41,7 +41,11 @@ defmodule Integrator.AdaptiveStepsize do
     #
     # The output of the integration, including the interpolated points:
     output_t: [],
-    output_x: []
+    output_x: [],
+    #
+    # The next batch of data to be sent to the output fn:
+    output_fn_t: [],
+    output_fn_x: []
   ]
 
   @stepsize_factor_min 0.8
@@ -94,6 +98,17 @@ defmodule Integrator.AdaptiveStepsize do
         step
       end
 
+    step =
+      if opts[:output_fn] do
+        %{
+          step
+          | output_fn_t: [t_start],
+            output_fn_x: [x0]
+        }
+      else
+        step
+      end
+
     step_forward(step, t_start, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
@@ -121,8 +136,7 @@ defmodule Integrator.AdaptiveStepsize do
         |> merge_new_step(new_step)
         |> cache_results(opts[:cache_results?])
         |> interpolate(interpolate_fn, opts[:refine], opts[:cache_results?])
-
-        # call to output function
+        |> call_output_fn(opts[:output_fn])
       else
         bump_error_count(step, opts)
       end
@@ -252,8 +266,14 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def interpolate(step, _interpolate_fn, refine, _cache_results?) when refine == 1 do
-    step = %{step | output_t: [Nx.to_number(step.t_new) | step.output_t]}
-    %{step | output_x: [step.x_new | step.output_x]}
+    %{
+      step
+      | output_t: [Nx.to_number(step.t_new) | step.output_t],
+        output_x: [step.x_new | step.output_x],
+        #
+        output_fn_t: [Nx.to_number(step.t_new) | step.output_fn_t],
+        output_fn_x: [step.x_new | step.output_fn_x]
+    }
   end
 
   def interpolate(step, interpolate_fn, refine, _cache_results?) when refine > 1 do
@@ -269,6 +289,15 @@ defmodule Integrator.AdaptiveStepsize do
 
     step = %{step | output_x: x_out_as_cols ++ step.output_x}
     %{step | output_t: (Nx.to_list(tadd) |> Enum.reverse()) ++ step.output_t}
+  end
+
+  def call_output_fn(step, output_fn) when is_nil(output_fn) do
+    step
+  end
+
+  def call_output_fn(step, output_fn) do
+    output_fn.(step.output_fn_t, step.output_fn_x)
+    %{step | output_fn_t: [], output_fn_x: []}
   end
 
   @doc """
