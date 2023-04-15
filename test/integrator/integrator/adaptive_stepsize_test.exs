@@ -28,11 +28,15 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert result.count_save == 2
       assert result.unhandled_termination == true
 
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_in_delta(last_time, 20.0, 1.0e-10)
+
       expected_t = read_csv("test/fixtures/integrator/integrator/runge_kutta_45_test/time.csv")
       expected_x = read_nx_list("test/fixtures/integrator/integrator/runge_kutta_45_test/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 0.01)
-      assert_nx_lists_equal(result.output_x, expected_x, atol: 0.1, rtol: 0.1)
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
     test "works - high fidelity" do

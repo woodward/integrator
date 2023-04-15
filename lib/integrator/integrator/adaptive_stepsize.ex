@@ -99,7 +99,7 @@ defmodule Integrator.AdaptiveStepsize do
     step
   end
 
-  def step_forward(step, t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+  def step_forward(step, _t_old, t_end, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
     step = step |> increment_compute_counter()
 
@@ -115,7 +115,7 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
-    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, t_old, t_end, opts)
+    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
     step = %{step | dt: dt}
 
     step
