@@ -103,6 +103,32 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    test "works - no caching of results" do
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 20.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      initial_tstep = 0.068129
+      opts = [cache_results: false]
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 78
+      assert result.count_loop__increment_step == 50
+      assert result.count_save == 2
+      assert result.unhandled_termination == true
+
+      assert Enum.empty?(result.output_t)
+      assert Enum.empty?(result.output_x)
+      assert Enum.empty?(result.ode_t)
+      assert Enum.empty?(result.ode_x)
+    end
+
     test "throws an exception if too many errors" do
       stepper_fn = &DormandPrince45.integrate/5
       interpolate_fn = &DormandPrince45.interpolate/4
