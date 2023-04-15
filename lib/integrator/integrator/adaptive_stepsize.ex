@@ -35,7 +35,7 @@ defmodule Integrator.AdaptiveStepsize do
     #
     unhandled_termination: true,
     terminal_event: false,
-    terminal_output: false,
+    terminal_output: :continue,
     #
     # The output of the integration:
     ode_t: [],
@@ -127,11 +127,17 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
-    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
-    step = %{step | dt: dt}
+    case step.terminal_output do
+      :halt ->
+        step
 
-    step
-    |> step_forward(t_next(step, dt), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+      _ ->
+        dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
+        step = %{step | dt: dt}
+
+        step
+        |> step_forward(t_next(step, dt), t_end, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    end
   end
 
   def bump_error_count(step, opts) do
@@ -272,8 +278,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def call_output_fn(step, output_fn) do
-    output_fn.(Enum.reverse(step.t_new_chunk), Enum.reverse(step.x_new_chunk))
-    step
+    result = output_fn.(Enum.reverse(step.t_new_chunk), Enum.reverse(step.x_new_chunk))
+    %{step | terminal_output: result}
   end
 
   @doc """

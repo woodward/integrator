@@ -220,6 +220,56 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    test "works - no data interpolation (refine == 1), no caching, output function with terminal output" do
+      dummy_output_name = :"dummy-output-#{inspect(self())}"
+      DummyOutput.start_link(name: dummy_output_name)
+      output_fn = fn t, x -> DummyOutput.add_data_and_halt(dummy_output_name, %{t: t, x: x}) end
+
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 20.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [refine: 1, output_fn: output_fn]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 0.068129
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 1
+      assert result.count_loop__increment_step == 1
+      assert result.count_save == 2
+      assert result.terminal_output == :halt
+      assert length(result.ode_t) == 2
+      assert length(result.ode_x) == 2
+      assert length(result.output_t) == 2
+      assert length(result.output_x) == 2
+
+      expected_t = read_csv("test/fixtures/octave/van_der_pol/aborted/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave/van_der_pol/aborted/x.csv")
+
+      # data = result.output_t |> Enum.join("\n")
+      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1-elixir.csv", data)
+
+      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
+      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1-elixir.csv", data)
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+
+      x_data = DummyOutput.get_x(dummy_output_name)
+      t_data = DummyOutput.get_t(dummy_output_name)
+      assert length(x_data) == 2
+      assert length(t_data) == 2
+
+      assert_lists_equal(t_data, result.output_t, 1.0e-04)
+      assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
+    end
+
     test "works - no caching of results" do
       stepper_fn = &DormandPrince45.integrate/5
       interpolate_fn = &DormandPrince45.interpolate/4
