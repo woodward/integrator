@@ -170,6 +170,51 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    test "works - event function with interpolation" do
+      nx_true = Nx.tensor(1, type: :u8)
+
+      event_fn = fn _t, x ->
+        Nx.less_equal(x[0], Nx.tensor(0.0)) == nx_true
+      end
+
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 20.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [event_fn: event_fn]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 0.068129
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 9
+      assert result.count_loop__increment_step == 8
+      assert result.count_save == 2
+      assert result.terminal_event == :halt
+      assert result.terminal_output == :continue
+
+      assert length(result.ode_t) == 9
+      assert length(result.ode_x) == 9
+      assert length(result.output_t) == 33
+      assert length(result.output_x) == 33
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_in_delta(last_time, 20.0, 1.0e-10)
+
+      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
+
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+    end
+
     test "works - no data interpolation (refine == 1) together with an output function" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -245,6 +290,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert result.count_loop__increment_step == 1
       assert result.count_save == 2
       assert result.terminal_output == :halt
+      assert result.terminal_event == :continue
       assert length(result.ode_t) == 2
       assert length(result.ode_x) == 2
       assert length(result.output_t) == 2

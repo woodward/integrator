@@ -34,7 +34,7 @@ defmodule Integrator.AdaptiveStepsize do
     i_step: 0,
     #
     unhandled_termination: true,
-    terminal_event: false,
+    terminal_event: :continue,
     terminal_output: :continue,
     #
     # The output of the integration:
@@ -197,9 +197,9 @@ defmodule Integrator.AdaptiveStepsize do
       step
       | count_loop__increment_step: step.count_loop__increment_step + 1,
         i_step: step.i_step + 1,
-        error_count: 0,
-        terminal_event: false,
-        terminal_output: false
+        error_count: 0
+        # terminal_event: false,
+        # terminal_output: false
     }
   end
 
