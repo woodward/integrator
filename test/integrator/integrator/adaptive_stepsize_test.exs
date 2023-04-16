@@ -328,7 +328,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
-      opts = [cache_results?: false]
+      opts = [store_resuts?: false]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129

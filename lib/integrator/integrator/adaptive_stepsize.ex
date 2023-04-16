@@ -57,7 +57,7 @@ defmodule Integrator.AdaptiveStepsize do
   @default_refine 4
   @default_max_number_of_errors 5_000
   @default_max_step 2.0
-  @default_cache_results true
+  @default_store_resuts true
 
   @epsilon 2.2204e-16
 
@@ -70,7 +70,7 @@ defmodule Integrator.AdaptiveStepsize do
       max_number_of_errors: @default_max_number_of_errors,
       max_step: @default_max_step,
       refine: @default_refine,
-      cache_results?: @default_cache_results
+      store_resuts?: @default_store_resuts
     ]
   end
 
@@ -88,16 +88,16 @@ defmodule Integrator.AdaptiveStepsize do
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0)
     }
-    |> cache_first_point(t_start, x0, opts[:cache_results?])
+    |> store_first_point(t_start, x0, opts[:store_resuts?])
     |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
 
-  def cache_first_point(step, t_start, x0, true = _cache_results?) do
+  def store_first_point(step, t_start, x0, true = _store_resuts?) do
     %{step | output_t: [t_start], output_x: [x0], ode_t: [t_start], ode_x: [x0]}
   end
 
-  def cache_first_point(step, _t_start, _x0, _cache_results?), do: step
+  def store_first_point(step, _t_start, _x0, _store_resuts?), do: step
 
   def initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
@@ -127,7 +127,7 @@ defmodule Integrator.AdaptiveStepsize do
         |> merge_new_step(new_step)
         |> interpolate(interpolate_fn, opts[:refine])
         |> call_event_fn(opts[:event_fn])
-        |> cache_results(opts[:cache_results?])
+        |> store_resuts(opts[:store_resuts?])
         |> call_output_fn(opts[:output_fn])
       else
         bump_error_count(step, opts)
@@ -219,11 +219,11 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
-  def cache_results(step, false = _cache_results?) do
+  def store_resuts(step, false = _store_resuts?) do
     step
   end
 
-  def cache_results(step, true = _cache_results?) do
+  def store_resuts(step, true = _store_resuts?) do
     %{
       step
       | ode_t: [step.t_new | step.ode_t],
