@@ -107,8 +107,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(0.0, {length_x, k_length})
   end
 
-  def step_forward(step, t_old, t_end, _terminal_output, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
-      when t_old >= t_end do
+  def step_forward(step, t_old, t_end, _halt?, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) when t_old >= t_end do
     step
   end
 
@@ -121,7 +120,7 @@ defmodule Integrator.AdaptiveStepsize do
     step = step |> increment_compute_counter()
 
     step =
-      if Nx.less(error_est, 1.0) == @nx_true do
+      if less_than_one?(error_est) do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
@@ -139,6 +138,8 @@ defmodule Integrator.AdaptiveStepsize do
     step
     |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
+
+  defp less_than_one?(error_est), do: Nx.less(error_est, 1.0) == @nx_true
 
   def halt?(%{terminal_event: :halt} = _step), do: :halt
   def halt?(%{terminal_output: :halt} = _step), do: :halt
