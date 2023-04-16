@@ -112,12 +112,11 @@ defmodule Integrator.AdaptiveStepsize do
     step
   end
 
-  def step_forward(step, _t_old, _t_end, terminal_output, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
-      when terminal_output == :halt do
+  def step_forward(step, _t_old, _t_end, :halt, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) do
     step
   end
 
-  def step_forward(step, _t_old, t_end, _terminal_output, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+  def step_forward(step, _t_old, t_end, _halt?, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
     step = step |> increment_compute_counter()
 
@@ -127,6 +126,7 @@ defmodule Integrator.AdaptiveStepsize do
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
         |> interpolate(interpolate_fn, opts[:refine])
+        |> call_event_fn(opts[:event_fn])
         |> cache_results(opts[:cache_results?])
         |> call_output_fn(opts[:output_fn])
       else
@@ -137,8 +137,12 @@ defmodule Integrator.AdaptiveStepsize do
     step = %{step | dt: dt}
 
     step
-    |> step_forward(t_next(step, dt), t_end, step.terminal_output, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
+
+  def halt?(%{terminal_event: :halt} = _step), do: :halt
+  def halt?(%{terminal_output: :halt} = _step), do: :halt
+  def halt?(_step), do: :continue
 
   def bump_error_count(step, opts) do
     step = %{step | error_count: step.error_count + 1}
@@ -280,6 +284,17 @@ defmodule Integrator.AdaptiveStepsize do
   def call_output_fn(step, output_fn) do
     result = output_fn.(Enum.reverse(step.t_new_chunk), Enum.reverse(step.x_new_chunk))
     %{step | terminal_output: result}
+  end
+
+  def call_event_fn(step, event_fn) when is_nil(event_fn) do
+    step
+  end
+
+  def call_event_fn(step, event_fn) do
+    t = Enum.reverse(step.t_new_chunk) |> List.first()
+    x = Enum.reverse(step.x_new_chunk) |> List.first()
+    output = event_fn.(t, x)
+    %{step | terminal_event: output.status}
   end
 
   @doc """

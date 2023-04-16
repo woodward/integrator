@@ -174,7 +174,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
       nx_true = Nx.tensor(1, type: :u8)
 
       event_fn = fn _t, x ->
-        Nx.less_equal(x[0], Nx.tensor(0.0)) == nx_true
+        answer = Nx.less_equal(x[0], Nx.tensor(0.0)) == nx_true
+        answer = if answer, do: :halt, else: :continue
+        %{status: answer}
       end
 
       stepper_fn = &DormandPrince45.integrate/5
@@ -206,7 +208,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 20.0, 1.0e-10)
+      assert_in_delta(last_time, 2.161317515510217, 1.0e-10)
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
