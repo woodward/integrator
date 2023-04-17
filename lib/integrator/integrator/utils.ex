@@ -176,6 +176,10 @@ defmodule Integrator.Utils do
     Nx.broadcast(0.0, {length_of_x})
   end
 
+  def sign(x) when x < 0.0, do: -1.0
+  def sign(x) when x > 0.0, do: 1.0
+  def sign(_x), do: 0.0
+
   def columns_as_list(matrix, start_index, end_index \\ nil) do
     matrix_t = Nx.transpose(matrix)
 
@@ -193,5 +197,19 @@ defmodule Integrator.Utils do
       [col | acc]
     end)
     |> Enum.reverse()
+  end
+
+  # In Octave, get these via eps("single") or eps("double")
+  @epislon_f32 1.1920929e-07
+  @epislon_f64 2.220446049250313e-16
+
+  def epsilon(:f32), do: @epislon_f32
+  def epsilon({:f, 32}), do: @epislon_f32
+
+  def epsilon(:f64), do: @epislon_f64
+  def epsilon({:f, 64}), do: @epislon_f64
+
+  def unique(values) do
+    MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
 end
