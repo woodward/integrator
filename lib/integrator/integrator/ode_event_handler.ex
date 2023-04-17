@@ -1,5 +1,7 @@
 defmodule Integrator.OdeEventHandler do
-  @moduledoc false
+  @moduledoc """
+  Perhaps these functions get moved into AdaptiveStepsize?
+  """
 
   defstruct status: :continue
 
