@@ -1,5 +1,8 @@
 # GNU Octave Code
 
+This code is NOT USED in any way in the Elixir Integrator library; it is just included 
+here purely as a reference, and is also used to generate the Octave test data (see test/fixtures/octave_results).
+
 The requisite files to run ode45 were copied from:
 https://github.com/gnu-octave/octave/tree/default/scripts/ode
 
