@@ -3,6 +3,8 @@ defmodule Integrator.NonlinearEqnRoot do
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1, unique: 1]
 
+  alias Integrator.NonlinearEqnRoot.BracketingFailureError
+
   defstruct [
     :a,
     :b,
@@ -158,6 +160,22 @@ defmodule Integrator.NonlinearEqnRoot do
       end
 
     %{z | c: c}
+  end
+
+  def bracketing(z) do
+    if sign(z.fa) * sign(z.fc) < 0 do
+      {%{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}, :continue}
+    else
+      if sign(z.fb) * sign(z.fc) < 0 do
+        {%{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}, :continue}
+      else
+        if z.fc == 0.0 do
+          {%{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}, :halt}
+        else
+          raise BracketingFailureError, step: z
+        end
+      end
+    end
   end
 
   def converged?(z, machine_eps, tolerance) do

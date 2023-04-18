@@ -3,6 +3,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   use Integrator.DemoCase
   import Nx, only: :sigils
 
+  alias Integrator.NonlinearEqnRoot.BracketingFailureError
   alias Integrator.{Utils, NonlinearEqnRoot}
 
   describe "fzero" do
@@ -304,6 +305,84 @@ defmodule Integrator.NonlinearEqnRootTest do
       z = NonlinearEqnRoot.c_too_close_to_a_or_b?(z, machine_epsilon, tolerance)
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
+    end
+  end
+
+  describe "bracketing" do
+    test "first case - move b down to c" do
+      z = %NonlinearEqnRoot{
+        a: nil,
+        b: 3.157162792479947,
+        c: 3.141592692610915,
+        #
+        fa: 3.901796897832363e-08,
+        fb: -1.556950978832860e-02,
+        fc: -3.902112221087341e-08
+      }
+
+      {z, :continue} = NonlinearEqnRoot.bracketing(z)
+
+      assert z.d == 3.157162792479947
+      assert z.fd == -1.556950978832860e-02
+
+      assert z.b == 3.141592692610915
+      assert z.fb == -3.902112221087341e-08
+    end
+
+    test "second case - move a up to c" do
+      z = %NonlinearEqnRoot{
+        a: 3.141281736699444,
+        b: nil,
+        c: 3.141592614571824,
+        #
+        fa: 3.109168853400020e-04,
+        fb: -1.556950978832860e-02,
+        fc: 3.901796897832363e-08
+      }
+
+      {z, :continue} = NonlinearEqnRoot.bracketing(z)
+
+      assert z.d == 3.141281736699444
+      assert z.fd == 3.109168853400020e-04
+
+      assert z.a == 3.141592614571824
+      assert z.fa == 3.901796897832363e-08
+    end
+
+    test "third case - c is already at the root" do
+      z = %NonlinearEqnRoot{
+        a: nil,
+        b: nil,
+        c: 1.0,
+        #
+        fa: nil,
+        fb: nil,
+        fc: 0.0
+      }
+
+      {z, :halt} = NonlinearEqnRoot.bracketing(z)
+
+      assert z.a == 1.0
+      assert z.fa == 0.0
+
+      assert z.b == 1.0
+      assert z.fb == 0.0
+    end
+
+    test "fourth case - bracketing didn't work (note that this is an artificial, non-real-life case)" do
+      z = %NonlinearEqnRoot{
+        a: nil,
+        b: nil,
+        c: 1.0,
+        #
+        fa: nil,
+        fb: nil,
+        fc: 0.1
+      }
+
+      assert_raise BracketingFailureError, fn ->
+        {z, :halt} = NonlinearEqnRoot.bracketing(z)
+      end
     end
   end
 end
