@@ -104,4 +104,96 @@ defmodule Integrator.ZeroSolverTest do
       assert ZeroSolver.converged?(z, machine_epsilon, tolerance) == :halt
     end
   end
+
+  describe "secant" do
+    test "works" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %ZeroSolver{
+        a: 3,
+        b: 4,
+        u: 3,
+        #
+        fa: 0.141120008059867,
+        fb: -0.756802495307928,
+        fu: 0.141120008059867
+      }
+
+      c = ZeroSolver.compute(z, :secant)
+
+      assert_in_delta(c, 3.157162792479947, 1.0e-15)
+    end
+  end
+
+  describe "bisect" do
+    test "works" do
+      z = %ZeroSolver{a: 3, b: 4}
+      assert ZeroSolver.compute(z, :bisect) == 3.5
+    end
+  end
+
+  describe "double_secant" do
+    test "works" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %ZeroSolver{
+        a: 3.141592614571824,
+        b: 3.157162792479947,
+        u: 3.141592614571824,
+        fa: 3.901796897832363e-08,
+        fb: -1.556950978832860e-02,
+        fu: 3.901796897832363e-08
+      }
+
+      c = ZeroSolver.compute(z, :double_secant)
+
+      assert_in_delta(c, 3.141592692610915, 1.0e-12)
+    end
+  end
+
+  describe "too_far?/1" do
+    test "returns true if too far" do
+      z = %ZeroSolver{
+        a: 3.2,
+        b: 3.4,
+        c: 3.0,
+        u: 4.0
+      }
+
+      assert ZeroSolver.too_far?(z) == true
+    end
+
+    test "returns false if not too far" do
+      z = %ZeroSolver{
+        a: 3.141592614571824,
+        b: 3.157162792479947,
+        c: 3.141592692610915,
+        u: 3.141592614571824
+      }
+
+      assert ZeroSolver.too_far?(z) == false
+    end
+  end
+
+  describe "inverse_cubic_interpolation" do
+    test "works" do
+      z = %ZeroSolver{
+        a: 3.141281736699444,
+        b: 3.157162792479947,
+        d: 3.0,
+        e: 4.0,
+        fa: 3.109168853400020e-04,
+        fb: -1.556950978832860e-02,
+        fd: 0.141120008059867,
+        fe: -0.756802495307928
+      }
+
+      c = ZeroSolver.compute(z, :inverse_cubic_interpolation)
+      assert_in_delta(c, 3.141592614571824, 1.0e-12)
+    end
+  end
 end

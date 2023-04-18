@@ -67,19 +67,38 @@ defmodule Integrator.ZeroSolver do
     z
   end
 
-  def compute(:inverse_cubic_interpolation) do
-  end
-
   def compute(:quadratic_interpolation_plus_newton) do
   end
 
-  def compute(:secant) do
+  def compute(z, :inverse_cubic_interpolation) do
+    q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
+    q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
+    q31 = (z.a - z.b) * z.fa / (z.fb - z.fa)
+    d21 = (z.b - z.d) * z.fd / (z.fd - z.fb)
+    d31 = (z.a - z.b) * z.fb / (z.fb - z.fa)
+
+    q22 = (d21 - q11) * z.fb / (z.fe - z.fb)
+    q32 = (d31 - q21) * z.fa / (z.fd - z.fa)
+    d32 = (d31 - q21) * z.fd / (z.fd - z.fa)
+    q33 = (d32 - q22) * z.fa / (z.fe - z.fa)
+
+    z.a + q31 + q32 + q33
   end
 
-  def compute(:double_secant) do
+  def compute(z, :double_secant) do
+    z.u - 2.0 * (z.b - z.a) / (z.fb - z.fa) * z.fu
   end
 
-  def compute(:bisection) do
+  def compute(z, :bisect) do
+    0.5 * (z.b + z.a)
+  end
+
+  def compute(z, :secant) do
+    z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
+  end
+
+  def too_far?(z) do
+    abs(z.c - z.u) > 0.5 * (z.b - z.a)
   end
 
   def next_compute(:bisect), do: :quadratic
