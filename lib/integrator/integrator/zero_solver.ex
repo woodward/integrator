@@ -67,7 +67,30 @@ defmodule Integrator.ZeroSolver do
     z
   end
 
-  def compute(:quadratic_interpolation_plus_newton) do
+  def compute(z, :quadratic_interpolation_plus_newton) do
+    a0 = z.fa
+    a1 = (z.fb - z.fa) / (z.b - z.a)
+    a2 = ((z.fd - z.fb) / (z.d - z.b) - a1) / (z.d - z.a)
+
+    ## Modification 1: this is simpler and does not seem to be worse.
+    c = z.a - a0 / a1
+
+    if a2 != 0 do
+      1..z.itype
+      |> Enum.reduce(c, fn _i, c ->
+        pc = a0 + (a1 + a2 * (c - z.b)) * (c - z.a)
+        pdc = a1 + a2 * (2 * c - z.a - z.b)
+
+        if pdc == 0 do
+          _c = z.a - a0 / a1
+          raise "Need to handle this case somehow"
+        end
+
+        c - pc / pdc
+      end)
+    else
+      c
+    end
   end
 
   def compute(z, :inverse_cubic_interpolation) do

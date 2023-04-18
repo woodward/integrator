@@ -181,6 +181,10 @@ defmodule Integrator.ZeroSolverTest do
 
   describe "inverse_cubic_interpolation" do
     test "works" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
       z = %ZeroSolver{
         a: 3.141281736699444,
         b: 3.157162792479947,
@@ -194,6 +198,29 @@ defmodule Integrator.ZeroSolverTest do
 
       c = ZeroSolver.compute(z, :inverse_cubic_interpolation)
       assert_in_delta(c, 3.141592614571824, 1.0e-12)
+    end
+  end
+
+  describe "quadratic_interpolation_plus_newton" do
+    test "works" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %ZeroSolver{
+        a: 3,
+        b: 3.157162792479947,
+        d: 4,
+        fa: 0.141120008059867,
+        fb: -1.556950978832860e-02,
+        fd: -0.756802495307928,
+        fe: 0.141120008059867,
+        itype: 2
+      }
+
+      c = ZeroSolver.compute(z, :quadratic_interpolation_plus_newton)
+
+      assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
   end
 end
