@@ -1,4 +1,4 @@
-defmodule Integrator.ZeroEqnSolver do
+defmodule Integrator.EqnZeroSolver do
   @moduledoc false
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1, unique: 1]

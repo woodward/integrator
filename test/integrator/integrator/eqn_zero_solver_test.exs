@@ -1,9 +1,9 @@
-defmodule Integrator.ZeroEqnSolverTest do
+defmodule Integrator.EqnZeroSolverTest do
   @moduledoc false
   use Integrator.DemoCase
   import Nx, only: :sigils
 
-  alias Integrator.{Utils, ZeroEqnSolver}
+  alias Integrator.{Utils, EqnZeroSolver}
 
   describe "fzero" do
     @tag :skip
@@ -30,7 +30,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         nil
       end
 
-      t_zero = ZeroEqnSolver.find(zero_fn, t_old, t_new)
+      t_zero = EqnZeroSolver.find(zero_fn, t_old, t_new)
 
       expected_t_zero = 2.161317515510217
       assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
@@ -68,7 +68,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       x0 = 3.0
       x1 = 4.0
 
-      x = ZeroEqnSolver.find(&Math.sin/1, x0, x1)
+      x = EqnZeroSolver.find(&Math.sin/1, x0, x1)
 
       expected_x = 3.141592653589795
       assert_in_delta(x, expected_x, 1.0e-02)
@@ -81,7 +81,7 @@ defmodule Integrator.ZeroEqnSolverTest do
     # x = fzero(fun, [3, 4])
 
     test "returns :continue if not yet converged" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.141592614571824,
         b: 3.157162792479947,
         u: 3.141592614571824
@@ -90,11 +90,11 @@ defmodule Integrator.ZeroEqnSolverTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      assert ZeroEqnSolver.converged?(z, machine_epsilon, tolerance) == :continue
+      assert EqnZeroSolver.converged?(z, machine_epsilon, tolerance) == :continue
     end
 
     test "returns :halt if converged" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.141592653589793,
         b: 3.141592653589795,
         u: 3.141592653589793
@@ -103,7 +103,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      assert ZeroEqnSolver.converged?(z, machine_epsilon, tolerance) == :halt
+      assert EqnZeroSolver.converged?(z, machine_epsilon, tolerance) == :halt
     end
   end
 
@@ -113,7 +113,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3,
         b: 4,
         u: 3,
@@ -123,7 +123,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         fu: 0.141120008059867
       }
 
-      c = ZeroEqnSolver.compute(z, :secant)
+      c = EqnZeroSolver.compute(z, :secant)
 
       assert_in_delta(c, 3.157162792479947, 1.0e-15)
     end
@@ -131,8 +131,8 @@ defmodule Integrator.ZeroEqnSolverTest do
 
   describe "bisect" do
     test "works" do
-      z = %ZeroEqnSolver{a: 3, b: 4}
-      assert ZeroEqnSolver.compute(z, :bisect) == 3.5
+      z = %EqnZeroSolver{a: 3, b: 4}
+      assert EqnZeroSolver.compute(z, :bisect) == 3.5
     end
   end
 
@@ -142,7 +142,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.141592614571824,
         b: 3.157162792479947,
         u: 3.141592614571824,
@@ -151,7 +151,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         fu: 3.901796897832363e-08
       }
 
-      c = ZeroEqnSolver.compute(z, :double_secant)
+      c = EqnZeroSolver.compute(z, :double_secant)
 
       assert_in_delta(c, 3.141592692610915, 1.0e-12)
     end
@@ -159,25 +159,25 @@ defmodule Integrator.ZeroEqnSolverTest do
 
   describe "too_far?/1" do
     test "returns true if too far" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.2,
         b: 3.4,
         c: 3.0,
         u: 4.0
       }
 
-      assert ZeroEqnSolver.too_far?(z) == true
+      assert EqnZeroSolver.too_far?(z) == true
     end
 
     test "returns false if not too far" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.141592614571824,
         b: 3.157162792479947,
         c: 3.141592692610915,
         u: 3.141592614571824
       }
 
-      assert ZeroEqnSolver.too_far?(z) == false
+      assert EqnZeroSolver.too_far?(z) == false
     end
   end
 
@@ -187,7 +187,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3.141281736699444,
         b: 3.157162792479947,
         d: 3.0,
@@ -198,7 +198,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         fe: -0.756802495307928
       }
 
-      c = ZeroEqnSolver.compute(z, :inverse_cubic_interpolation)
+      c = EqnZeroSolver.compute(z, :inverse_cubic_interpolation)
       assert_in_delta(c, 3.141592614571824, 1.0e-12)
     end
   end
@@ -209,7 +209,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         a: 3,
         b: 3.157162792479947,
         d: 4,
@@ -220,7 +220,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         itype: 2
       }
 
-      c = ZeroEqnSolver.compute(z, :quadratic_interpolation_plus_newton)
+      c = EqnZeroSolver.compute(z, :quadratic_interpolation_plus_newton)
 
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
@@ -228,7 +228,7 @@ defmodule Integrator.ZeroEqnSolverTest do
 
   describe "check_for_nonmonotonicity/1" do
     test "monotonic" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         d: 3.141281736699444,
         fa: 3.901796897832363e-08,
         fb: -1.556950978832860e-02,
@@ -236,13 +236,13 @@ defmodule Integrator.ZeroEqnSolverTest do
         fd: 3.109168853400020e-04
       }
 
-      z = ZeroEqnSolver.check_for_nonmonotonicity(z)
+      z = EqnZeroSolver.check_for_nonmonotonicity(z)
       assert_in_delta(z.e, 3.141281736699444, 1.0e-12)
       assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
     end
 
     test "non-monotonic" do
-      z = %ZeroEqnSolver{
+      z = %EqnZeroSolver{
         d: 3.141281736699444,
         fa: -3.911796897832363e-08,
         fb: -1.556950978832860e-02,
@@ -250,7 +250,7 @@ defmodule Integrator.ZeroEqnSolverTest do
         fd: 3.109168853400020e-04
       }
 
-      z = ZeroEqnSolver.check_for_nonmonotonicity(z)
+      z = EqnZeroSolver.check_for_nonmonotonicity(z)
       assert_in_delta(z.fe, -3.902112221087341e-08, 1.0e-12)
     end
   end
