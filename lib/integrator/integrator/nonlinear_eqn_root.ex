@@ -1,4 +1,4 @@
-defmodule Integrator.EqnZeroSolver do
+defmodule Integrator.NonlinearEqnRoot do
   @moduledoc false
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1, unique: 1]
@@ -48,7 +48,7 @@ defmodule Integrator.EqnZeroSolver do
   def set_tolerance([{:tolerance, tolerance}] = opts) when not is_nil(tolerance), do: opts
   def set_tolerance(opts), do: opts |> Keyword.merge(tolerance: epsilon(opts[:type]))
 
-  def find(zero_fn, a, b, opts \\ []) do
+  def find_zero(zero_fn, a, b, opts \\ []) do
     # Do some tests for opts
     opts = default_opts |> Keyword.merge(opts) |> set_tolerance()
 
