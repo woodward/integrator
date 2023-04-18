@@ -87,11 +87,13 @@ defmodule Integrator.NonlinearEqnRoot do
         pdc = a1 + a2 * (2 * c - z.a - z.b)
 
         if pdc == 0 do
-          _c = z.a - a0 / a1
-          raise "Need to handle this case somehow"
+          # Octave does a break here - is the c = 0 caught downstream? Need to handle this case somehow"
+          # Note that there is NO test case for this case, as I couldn't figure out how to set up
+          # the initial conditions to reach here
+          z.a - a0 / a1
+        else
+          c - pc / pdc
         end
-
-        c - pc / pdc
       end)
     else
       c
