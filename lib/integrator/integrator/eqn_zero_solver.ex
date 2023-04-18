@@ -26,7 +26,10 @@ defmodule Integrator.EqnZeroSolver do
     # Maybe these don't need to be stored on the struct, but will be just what is invoked?
     itype: 1,
     type: :foo,
-    next_type: :bar
+    next_type: :bar,
+    #
+    bracket_t: [],
+    bracket_y: []
   ]
 
   @default_max_fn_eval_count 1000
@@ -67,7 +70,7 @@ defmodule Integrator.EqnZeroSolver do
     z
   end
 
-  def compute(z, :quadratic_interpolation_plus_newton) do
+  def interpolate(z, :quadratic_interpolation_plus_newton) do
     a0 = z.fa
     a1 = (z.fb - z.fa) / (z.b - z.a)
     a2 = ((z.fd - z.fb) / (z.d - z.b) - a1) / (z.d - z.a)
@@ -93,7 +96,7 @@ defmodule Integrator.EqnZeroSolver do
     end
   end
 
-  def compute(z, :inverse_cubic_interpolation) do
+  def interpolate(z, :inverse_cubic_interpolation) do
     q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
     q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
     q31 = (z.a - z.b) * z.fa / (z.fb - z.fa)
@@ -108,15 +111,15 @@ defmodule Integrator.EqnZeroSolver do
     z.a + q31 + q32 + q33
   end
 
-  def compute(z, :double_secant) do
+  def interpolate(z, :double_secant) do
     z.u - 2.0 * (z.b - z.a) / (z.fb - z.fa) * z.fu
   end
 
-  def compute(z, :bisect) do
+  def interpolate(z, :bisect) do
     0.5 * (z.b + z.a)
   end
 
-  def compute(z, :secant) do
+  def interpolate(z, :secant) do
     z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
   end
 

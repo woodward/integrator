@@ -123,7 +123,7 @@ defmodule Integrator.EqnZeroSolverTest do
         fu: 0.141120008059867
       }
 
-      c = EqnZeroSolver.compute(z, :secant)
+      c = EqnZeroSolver.interpolate(z, :secant)
 
       assert_in_delta(c, 3.157162792479947, 1.0e-15)
     end
@@ -132,7 +132,7 @@ defmodule Integrator.EqnZeroSolverTest do
   describe "bisect" do
     test "works" do
       z = %EqnZeroSolver{a: 3, b: 4}
-      assert EqnZeroSolver.compute(z, :bisect) == 3.5
+      assert EqnZeroSolver.interpolate(z, :bisect) == 3.5
     end
   end
 
@@ -151,7 +151,7 @@ defmodule Integrator.EqnZeroSolverTest do
         fu: 3.901796897832363e-08
       }
 
-      c = EqnZeroSolver.compute(z, :double_secant)
+      c = EqnZeroSolver.interpolate(z, :double_secant)
 
       assert_in_delta(c, 3.141592692610915, 1.0e-12)
     end
@@ -198,7 +198,7 @@ defmodule Integrator.EqnZeroSolverTest do
         fe: -0.756802495307928
       }
 
-      c = EqnZeroSolver.compute(z, :inverse_cubic_interpolation)
+      c = EqnZeroSolver.interpolate(z, :inverse_cubic_interpolation)
       assert_in_delta(c, 3.141592614571824, 1.0e-12)
     end
   end
@@ -220,7 +220,7 @@ defmodule Integrator.EqnZeroSolverTest do
         itype: 2
       }
 
-      c = EqnZeroSolver.compute(z, :quadratic_interpolation_plus_newton)
+      c = EqnZeroSolver.interpolate(z, :quadratic_interpolation_plus_newton)
 
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
