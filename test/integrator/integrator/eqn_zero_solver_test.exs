@@ -254,4 +254,22 @@ defmodule Integrator.EqnZeroSolverTest do
       assert_in_delta(z.fe, -3.902112221087341e-08, 1.0e-12)
     end
   end
+
+  describe "compute_new_point" do
+    test "works" do
+      z = %EqnZeroSolver{
+        c: 3.141281736699444,
+        iteration_count: 1,
+        fn_eval_count: 3,
+        fc: 7
+      }
+
+      zero_fn = &Math.sin/1
+      z = EqnZeroSolver.compute_new_point(z, zero_fn)
+
+      assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
+      assert z.iteration_count == 2
+      assert z.fn_eval_count == 4
+    end
+  end
 end

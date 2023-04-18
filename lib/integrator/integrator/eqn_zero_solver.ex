@@ -129,8 +129,11 @@ defmodule Integrator.EqnZeroSolver do
 
   def next_compute(:bisect), do: :quadratic
 
-  def compute_new_point(z) do
-    z
+  def compute_new_point(z, zero_fn) do
+    fc = zero_fn.(z.c)
+    #  fval = fc    What is this used for?
+    # Move the incrementing of the interation count elsewhere?
+    %{z | fc: fc, fn_eval_count: z.fn_eval_count + 1, iteration_count: z.iteration_count + 1}
   end
 
   # Modification 2: skip inverse cubic interpolation nonmonotonicity is detected.
