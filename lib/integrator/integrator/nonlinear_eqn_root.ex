@@ -141,7 +141,7 @@ defmodule Integrator.NonlinearEqnRoot do
   end
 
   # Modification 2: skip inverse cubic interpolation nonmonotonicity is detected.
-  def check_for_nonmonotonicity(z) do
+  def check_for_non_monotonicity(z) do
     if sign(z.fc - z.fa) * sign(z.fc - z.fb) >= 0 do
       # The new point broke monotonicity.
       # Disable inverse cubic:

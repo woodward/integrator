@@ -227,7 +227,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "check_for_nonmonotonicity/1" do
+  describe "check_for_non_monotonicity/1" do
     test "monotonic" do
       z = %NonlinearEqnRoot{
         d: 3.141281736699444,
@@ -237,7 +237,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fd: 3.109168853400020e-04
       }
 
-      z = NonlinearEqnRoot.check_for_nonmonotonicity(z)
+      z = NonlinearEqnRoot.check_for_non_monotonicity(z)
       assert_in_delta(z.e, 3.141281736699444, 1.0e-12)
       assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
     end
@@ -251,7 +251,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fd: 3.109168853400020e-04
       }
 
-      z = NonlinearEqnRoot.check_for_nonmonotonicity(z)
+      z = NonlinearEqnRoot.check_for_non_monotonicity(z)
       assert_in_delta(z.fe, -3.902112221087341e-08, 1.0e-12)
     end
   end
