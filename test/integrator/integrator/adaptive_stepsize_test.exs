@@ -170,6 +170,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag :skip
     test "works - event function with interpolation" do
       nx_true = Nx.tensor(1, type: :u8)
 

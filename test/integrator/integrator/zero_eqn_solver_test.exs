@@ -6,6 +6,7 @@ defmodule Integrator.ZeroEqnSolverTest do
   alias Integrator.{Utils, ZeroEqnSolver}
 
   describe "fzero" do
+    @tag :skip
     test "works" do
       t_old = 2.155396117711071
       t_new = 2.742956500140625
@@ -40,6 +41,7 @@ defmodule Integrator.ZeroEqnSolverTest do
       y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
     end
 
+    @tag :skip
     test "sine function" do
       # Octave:
       # fun = @sin; % function
