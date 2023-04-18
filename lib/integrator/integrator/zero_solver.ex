@@ -130,6 +130,17 @@ defmodule Integrator.ZeroSolver do
     z
   end
 
+  # Modification 2: skip inverse cubic interpolation nonmonotonicity is detected.
+  def check_for_nonmonotonicity(z) do
+    if sign(z.fc - z.fa) * sign(z.fc - z.fb) >= 0 do
+      # The new point broke monotonicity.
+      # Disable inverse cubic:
+      %{z | fe: z.fc}
+    else
+      %{z | e: z.d, fe: z.fd}
+    end
+  end
+
   def converged?(z, machine_eps, tolerance) do
     if z.b - z.a <= 2 * (2 * abs(z.u) * machine_eps + tolerance) do
       :halt

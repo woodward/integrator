@@ -223,4 +223,33 @@ defmodule Integrator.ZeroSolverTest do
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
   end
+
+  describe "check_for_nonmonotonicity/1" do
+    test "monotonic" do
+      z = %ZeroSolver{
+        d: 3.141281736699444,
+        fa: 3.901796897832363e-08,
+        fb: -1.556950978832860e-02,
+        fc: -3.902112221087341e-08,
+        fd: 3.109168853400020e-04
+      }
+
+      z = ZeroSolver.check_for_nonmonotonicity(z)
+      assert_in_delta(z.e, 3.141281736699444, 1.0e-12)
+      assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
+    end
+
+    test "non-monotonic" do
+      z = %ZeroSolver{
+        d: 3.141281736699444,
+        fa: -3.911796897832363e-08,
+        fb: -1.556950978832860e-02,
+        fc: -3.902112221087341e-08,
+        fd: 3.109168853400020e-04
+      }
+
+      z = ZeroSolver.check_for_nonmonotonicity(z)
+      assert_in_delta(z.fe, -3.902112221087341e-08, 1.0e-12)
+    end
+  end
 end
