@@ -57,19 +57,17 @@ defmodule Integrator.OdeEventHandlerTest do
     end
   end
 
-  describe "foo" do
-    describe "fzero plus interpolate" do
-      test "works" do
-        t_old = 2.155396117711071
-        t_new = 2.742956500140625
-        y_old = ~V[ 1.283429405203074e-02 -2.160506093425276e+00 ]f64
-        y_new = ~V[ -1.452959132853812 -2.187778875125423 ]f64
+  describe "fzero plus interpolate" do
+    test "works" do
+      t_old = 2.155396117711071
+      t_new = 2.742956500140625
+      y_old = ~V[ 1.283429405203074e-02 -2.160506093425276e+00 ]f64
+      y_new = ~V[ -1.452959132853812 -2.187778875125423 ]f64
 
-        #  call some function here
+      #  call some function here
 
-        t_zero = 2.161317515510217
-        y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
-      end
+      t_zero = 2.161317515510217
+      y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
     end
   end
 end
