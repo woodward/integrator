@@ -147,6 +147,19 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  def c_too_close_to_a_or_b?(z, machine_eps, tolerance) do
+    delta = 2 * 0.7 * (2 * abs(z.u) * machine_eps + tolerance)
+
+    c =
+      if z.b - z.a <= 2 * delta do
+        (z.a + z.b) / 2
+      else
+        max(z.a + delta, min(z.b - delta, z.c))
+      end
+
+    %{z | c: c}
+  end
+
   def converged?(z, machine_eps, tolerance) do
     if z.b - z.a <= 2 * (2 * abs(z.u) * machine_eps + tolerance) do
       :halt

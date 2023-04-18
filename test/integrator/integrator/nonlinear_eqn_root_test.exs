@@ -30,7 +30,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         nil
       end
 
-      t_zero = NonlinearEqnRoot.find(zero_fn, t_old, t_new)
+      t_zero = NonlinearEqnRoot.find_zero(zero_fn, t_old, t_new)
 
       expected_t_zero = 2.161317515510217
       assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
@@ -68,7 +68,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 3.0
       x1 = 4.0
 
-      x = NonlinearEqnRoot.find(&Math.sin/1, x0, x1)
+      x = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
 
       expected_x = 3.141592653589795
       assert_in_delta(x, expected_x, 1.0e-02)
@@ -270,6 +270,40 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
       assert z.iteration_count == 2
       assert z.fn_eval_count == 4
+    end
+  end
+
+  describe "c_too_close_to_a_or_b?" do
+    test "when c is NOT too close" do
+      z = %NonlinearEqnRoot{
+        a: 3.0,
+        b: 4.0,
+        c: 3.157162792479947,
+        u: 3
+      }
+
+      machine_epsilon = 2.220446049250313e-16
+      tolerance = 2.220446049250313e-16
+
+      z = NonlinearEqnRoot.c_too_close_to_a_or_b?(z, machine_epsilon, tolerance)
+
+      assert_in_delta(z.c, 3.157162792479947, 1.0e-16)
+    end
+
+    test "when c IS too close" do
+      z = %NonlinearEqnRoot{
+        a: 3.157162792479947,
+        b: 3.157162792479948,
+        c: 3.157162792479947,
+        u: 3.157162792479947
+      }
+
+      machine_epsilon = 2.220446049250313e-16
+      tolerance = 2.220446049250313e-16
+
+      z = NonlinearEqnRoot.c_too_close_to_a_or_b?(z, machine_epsilon, tolerance)
+
+      assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
     end
   end
 end
