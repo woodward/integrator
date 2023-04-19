@@ -137,6 +137,66 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
+  describe "merge_default_opts/1" do
+    test "returns defaults if no opts are provided" do
+      opts = []
+
+      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+               machine_eps: 2.220446049250313e-16,
+               tolerance: 2.220446049250313e-16,
+               max_iterations: 1000,
+               max_fn_eval_count: 1000,
+               type: :f64
+             ]
+    end
+
+    test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
+      opts = [type: :f64]
+
+      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+               machine_eps: 2.220446049250313e-16,
+               tolerance: 2.220446049250313e-16,
+               max_iterations: 1000,
+               max_fn_eval_count: 1000,
+               type: :f64
+             ]
+
+      opts = [type: :f32]
+
+      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+               machine_eps: 1.1920929e-7,
+               tolerance: 1.1920929e-7,
+               max_iterations: 1000,
+               max_fn_eval_count: 1000,
+               type: :f32
+             ]
+    end
+
+    test "use the value for :machine_eps if one is provided" do
+      opts = [machine_eps: 1.0e-05]
+
+      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+               tolerance: 2.220446049250313e-16,
+               max_iterations: 1000,
+               max_fn_eval_count: 1000,
+               type: :f64,
+               machine_eps: 1.0e-05
+             ]
+    end
+
+    test "use the value for :tolerance if one is provided" do
+      opts = [tolerance: 1.0e-05]
+
+      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+               machine_eps: 2.220446049250313e-16,
+               max_iterations: 1000,
+               max_fn_eval_count: 1000,
+               type: :f64,
+               tolerance: 1.0e-05
+             ]
+    end
+  end
+
   describe "converged?" do
     # From Octave for:
     # fun = @sin

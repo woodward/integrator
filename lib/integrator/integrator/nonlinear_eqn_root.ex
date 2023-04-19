@@ -52,18 +52,14 @@ defmodule Integrator.NonlinearEqnRoot do
     ]
   end
 
-  def set_tolerance([{:tolerance, tolerance}] = opts) when not is_nil(tolerance), do: opts
-  def set_tolerance(opts), do: opts |> Keyword.merge(tolerance: epsilon(opts[:type]))
-
-  def set_machine_eps([{:machine_eps, machine_eps}] = opts) when not is_nil(machine_eps), do: opts
-  def set_machine_eps(opts), do: opts |> Keyword.merge(machine_eps: epsilon(opts[:type]))
+  def set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
+  def set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
 
   def merge_default_opts(opts) do
     default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
   end
 
   def find_zero(zero_fn, a, b, opts \\ []) do
-    # Do some tests for opts
     opts = opts |> merge_default_opts()
 
     fa = zero_fn.(a)
@@ -271,8 +267,6 @@ defmodule Integrator.NonlinearEqnRoot do
     abs(z.c - z.u) > 0.5 * (z.b - z.a)
   end
 
-  def next_compute(:bisect), do: :quadratic
-
   def compute_new_point(z, zero_fn) do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
@@ -314,6 +308,7 @@ defmodule Integrator.NonlinearEqnRoot do
         if z.fc == 0.0 do
           {:halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
         else
+          # Should never reach here
           raise BracketingFailureError, step: z
         end
       end
