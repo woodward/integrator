@@ -1,6 +1,7 @@
 defmodule Integrator.NonlinearEqnRootTest do
   @moduledoc false
   use Integrator.DemoCase
+  use Patch
   import Nx, only: :sigils
 
   alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
@@ -20,7 +21,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
       ]f64
 
-      y_vals = Nx.stack([y_old, y_new]) |> Nx.transpose()
+      _y_vals = Nx.stack([y_old, y_new]) |> Nx.transpose()
       # t_vals = Nx.tensor(t_old, t_new)
 
       # tnew = fzero(@(t2) evtfcn_val (evtfcn, t2, ...
@@ -43,8 +44,8 @@ defmodule Integrator.NonlinearEqnRootTest do
       expected_t_zero = 2.161317515510217
       assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
 
-      t_zero = 2.161317515510217
-      y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
+      _t_zero = 2.161317515510217
+      _y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
     end
 
     test "sine function" do
@@ -127,7 +128,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 3.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
       end
     end
 
@@ -137,16 +138,22 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 4.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
       end
     end
   end
 
   describe "merge_default_opts/1" do
+    setup do
+      expose(NonlinearEqnRoot, merge_default_opts: 1)
+
+      # assert Example.private_function(:argument) == {:ok, :argument}
+    end
+
     test "returns defaults if no opts are provided" do
       opts = []
 
-      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
@@ -158,7 +165,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
       opts = [type: :f64]
 
-      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
@@ -168,7 +175,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       opts = [type: :f32]
 
-      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 1.1920929e-7,
                tolerance: 1.1920929e-7,
                max_iterations: 1000,
@@ -180,7 +187,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the value for :machine_eps if one is provided" do
       opts = [machine_eps: 1.0e-05]
 
-      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
                max_fn_eval_count: 1000,
@@ -192,7 +199,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the value for :tolerance if one is provided" do
       opts = [tolerance: 1.0e-05]
 
-      assert NonlinearEqnRoot.merge_default_opts(opts) == [
+      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                max_iterations: 1000,
                max_fn_eval_count: 1000,

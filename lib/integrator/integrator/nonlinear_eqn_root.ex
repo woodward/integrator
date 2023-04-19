@@ -65,7 +65,7 @@ defmodule Integrator.NonlinearEqnRoot do
   def set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
   def set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
 
-  def merge_default_opts(opts) do
+  defp merge_default_opts(opts) do
     default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
   end
 
