@@ -42,8 +42,8 @@ defmodule Integrator.NonlinearEqnRoot do
           # Change itype to a more descriptive atom later:
           itype: integer(),
           #
-          bracket_t: [float()],
-          bracket_y: [float()]
+          bracket_x: [float()],
+          bracket_fx: [float()]
         }
 
   defstruct [
@@ -73,8 +73,8 @@ defmodule Integrator.NonlinearEqnRoot do
     # Change itype to a more descriptive atom later:
     itype: 1,
     #
-    bracket_t: [],
-    bracket_y: []
+    bracket_x: [],
+    bracket_fx: []
   ]
 
   defmodule BracketingFailureError do
@@ -126,13 +126,13 @@ defmodule Integrator.NonlinearEqnRoot do
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> %{z | x: u, fx: fu, bracket_t: [a, b], bracket_y: [fa, fb]}
+      :halt -> %{z | x: u, fx: fu, bracket_x: [a, b], bracket_fx: [fa, fb]}
     end
   end
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
   defp iterate(z, :halt, _zero_fn, _opts) do
-    %{z | x: z.u, fx: z.fu, bracket_t: [z.a, z.b], bracket_y: [z.fa, z.fb]}
+    %{z | x: z.u, fx: z.fu, bracket_x: [z.a, z.b], bracket_fx: [z.fa, z.fb]}
   end
 
   defp iterate(z, _status, zero_fn, opts) do
@@ -403,6 +403,7 @@ defmodule Integrator.NonlinearEqnRoot do
       end
 
     if z.itype == 2 do
+      # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd...
       %{z | mu_ba: @initial_mu * (z.b - z.a)}
     else
       z

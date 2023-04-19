@@ -85,12 +85,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.itype == 4
 
-      [x_low, x_high] = result.bracket_t
+      [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = result.bracket_y
+      [y1, y2] = result.bracket_fx
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -111,12 +111,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.itype == 4
 
-      [x_low, x_high] = result.bracket_t
+      [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = result.bracket_y
+      [y1, y2] = result.bracket_fx
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
