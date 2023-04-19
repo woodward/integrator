@@ -5,7 +5,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   import Nx, only: :sigils
 
   alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError, MaxIterationsExceededError}
-  alias Integrator.{NonlinearEqnRoot, Utils}
+  alias Integrator.{DummyOutput, NonlinearEqnRoot, Utils}
 
   describe "fzero" do
     @tag :skip
@@ -150,6 +150,43 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_raise MaxIterationsExceededError, fn ->
         NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1, opts)
       end
+    end
+
+    test "sine function - outputs values if a function is given" do
+      x0 = 3.0
+      x1 = 4.0
+
+      dummy_output_name = :"dummy-output-#{inspect(self())}"
+      DummyOutput.start_link(name: dummy_output_name)
+      output_fn = fn t, step -> DummyOutput.add_data(dummy_output_name, %{t: t, x: step}) end
+
+      opts = [nonlinear_eqn_root_output_fn: output_fn]
+
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1, opts)
+
+      x_data = DummyOutput.get_x(dummy_output_name)
+      t_data = DummyOutput.get_t(dummy_output_name)
+      assert length(x_data) == 6
+      assert length(t_data) == 6
+
+      converging_t_data = [
+        3.157162792479947,
+        3.157162792479945,
+        3.141596389566289,
+        3.1415888925885564,
+        3.1415926535897936,
+        3.1415926535897913
+      ]
+
+      assert_lists_equal(t_data, converging_t_data, 1.0e-15)
+      expected_t = converging_t_data |> Enum.reverse() |> hd()
+      assert_in_delta(result.x, expected_t, 1.0e-14)
+
+      converged = x_data |> Enum.reverse() |> hd()
+
+      assert converged.iteration_count == 6
+      assert converged.fn_eval_count == 8
+      assert_in_delta(converged.x, result.x, 1.0e-14)
     end
   end
 

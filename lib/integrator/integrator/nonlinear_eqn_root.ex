@@ -152,8 +152,7 @@ defmodule Integrator.NonlinearEqnRoot do
       |> compute_new_point(zero_fn, opts)
       |> check_for_non_monotonicity()
       |> bracket()
-
-    # call output function here!
+      |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
 
     z =
       z
@@ -378,6 +377,14 @@ defmodule Integrator.NonlinearEqnRoot do
         end
       end
     end
+  end
+
+  @spec call_output_fn({convergence_status(), t()}, fun()) :: {convergence_status(), t()}
+  defp call_output_fn(result, nil = _output_fn), do: result
+
+  defp call_output_fn({status, z}, output_fn) do
+    output_fn.(z.c, z)
+    {status, z}
   end
 
   @spec update_u(t()) :: t()
