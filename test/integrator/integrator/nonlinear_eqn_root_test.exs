@@ -3,7 +3,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   use Integrator.DemoCase
   import Nx, only: :sigils
 
-  alias Integrator.NonlinearEqnRoot.BracketingFailureError
+  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
   alias Integrator.NonlinearEqnRoot
 
   describe "fzero" do
@@ -114,6 +114,26 @@ defmodule Integrator.NonlinearEqnRootTest do
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
+    end
+
+    test "sine function - raises an error if invalid initial bracket - positive sine" do
+      # Sine is positive for both of these:
+      x0 = 2.5
+      x1 = 3.0
+
+      assert_raise InvalidInitialBracketError, fn ->
+        result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      end
+    end
+
+    test "sine function - raises an error if invalid initial bracket - negative sine" do
+      # Sine is negative for both of these:
+      x0 = 3.5
+      x1 = 4.0
+
+      assert_raise InvalidInitialBracketError, fn ->
+        result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      end
     end
   end
 

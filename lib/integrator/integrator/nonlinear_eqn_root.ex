@@ -3,7 +3,7 @@ defmodule Integrator.NonlinearEqnRoot do
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1, unique: 1]
 
-  alias Integrator.NonlinearEqnRoot.BracketingFailureError
+  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
   alias Integrator.Utils
 
   defstruct [
@@ -14,6 +14,7 @@ defmodule Integrator.NonlinearEqnRoot do
     :e,
     :u,
     #
+    # Function evaluations; e.g., fb is fn(b):
     :fa,
     :fb,
     :fc,
@@ -39,7 +40,7 @@ defmodule Integrator.NonlinearEqnRoot do
   @default_max_fn_eval_count 1000
   @default_max_iterations 1000
   @default_type :f64
-  @default_tolerance 0.01
+  @default_tolerance 1.0e-12
 
   @mu 0.5
 
@@ -57,9 +58,13 @@ defmodule Integrator.NonlinearEqnRoot do
   def set_machine_eps([{:machine_eps, machine_eps}] = opts) when not is_nil(machine_eps), do: opts
   def set_machine_eps(opts), do: opts |> Keyword.merge(machine_eps: epsilon(opts[:type]))
 
+  def merge_default_opts(opts) do
+    default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
+  end
+
   def find_zero(zero_fn, a, b, opts \\ []) do
     # Do some tests for opts
-    opts = default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
+    opts = opts |> merge_default_opts()
 
     fa = zero_fn.(a)
     fb = zero_fn.(b)
@@ -84,9 +89,8 @@ defmodule Integrator.NonlinearEqnRoot do
       mu_ba: @mu * (b - a)
     }
 
-    # Write a test for this:
     if sign(z.fa) * sign(z.fb) > 0.0 do
-      raise "fzero: not an valid initial bracket"
+      raise InvalidInitialBracketError, step: z
     end
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
