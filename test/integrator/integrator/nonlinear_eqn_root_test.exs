@@ -7,7 +7,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError, MaxIterationsExceededError}
   alias Integrator.{DummyOutput, NonlinearEqnRoot, Utils}
 
-  describe "fzero" do
+  describe "find_zero" do
     @tag :skip
     test "an actual usage taken from OdeEventHandler" do
       t_old = 2.155396117711071
@@ -39,7 +39,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         # Nx.to_number(x_out_as_cols[0][0])
       end
 
-      t_zero = NonlinearEqnRoot.find_zero(zero_fn, t_old, t_new)
+      t_zero = NonlinearEqnRoot.find_zero(zero_fn, [t_old, t_new])
 
       expected_t_zero = 2.161317515510217
       assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
@@ -74,7 +74,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 3.0
       x1 = 4.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -100,7 +100,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 4.0
       x1 = 3.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -128,7 +128,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 3.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
       end
     end
 
@@ -138,7 +138,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 4.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
       end
     end
 
@@ -148,7 +148,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [max_iterations: 2]
 
       assert_raise MaxIterationsExceededError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1, opts)
+        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
       end
     end
 
@@ -162,7 +162,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1, opts)
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)

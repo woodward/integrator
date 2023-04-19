@@ -99,8 +99,8 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @initial_mu 0.5
 
-  @spec find_zero(fun(), float(), float(), Keyword.t()) :: t()
-  def find_zero(zero_fn, a, b, opts \\ []) do
+  @spec find_zero(fun(), [float()], Keyword.t()) :: t()
+  def find_zero(zero_fn, [a, b], opts \\ []) do
     opts = opts |> merge_default_opts()
 
     fa = zero_fn.(a)
