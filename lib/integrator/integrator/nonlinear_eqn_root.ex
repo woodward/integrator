@@ -89,11 +89,11 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def iterate(z, :halt, _zero_fn, _opts) do
+  defp iterate(z, :halt, _zero_fn, _opts) do
     %{z | x: z.u, fx: z.fu, bracket_t: [z.a, z.b], bracket_y: [z.fa, z.fb]}
   end
 
-  def iterate(z, _status, zero_fn, opts) do
+  defp iterate(z, _status, zero_fn, opts) do
     machine_eps = opts[:machine_eps]
     tolerance = opts[:tolerance]
 
@@ -121,7 +121,7 @@ defmodule Integrator.NonlinearEqnRoot do
   defp halt?(_, :halt), do: :halt
   defp halt?(_, _), do: :continue
 
-  def zcase(%{itype: 1} = z) do
+  defp zcase(%{itype: 1} = z) do
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
     #   # Secant step.
     #   c = u - (a - b) / (fa - fb) * fu;
@@ -142,15 +142,15 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | c: c, d: z.u, fd: z.fu, itype: 5}
   end
 
-  def zcase(%{itype: 2} = z) do
+  defp zcase(%{itype: 2} = z) do
     zcase_two_and_three(z)
   end
 
-  def zcase(%{itype: 3} = z) do
+  defp zcase(%{itype: 3} = z) do
     zcase_two_and_three(z)
   end
 
-  def zcase(%{itype: 4} = z) do
+  defp zcase(%{itype: 4} = z) do
     # Octave:
     #   # Double secant step.
     #   c = u - 2*(b - a)/(fb - fa)*fu;
@@ -163,7 +163,7 @@ defmodule Integrator.NonlinearEqnRoot do
     c = interpolate(z, :double_secant)
 
     c =
-      if abs(c - z.u) > 0.5 * (z.b - z.a) do
+      if too_far?(c, z) do
         # Bisect if too far:
         interpolate(z, :bisect)
       else
@@ -173,7 +173,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: 5, c: c}
   end
 
-  def zcase(%{itype: 5} = z) do
+  defp zcase(%{itype: 5} = z) do
     # Octave:
     #   # Bisection step.
     #   c = 0.5 * (b + a);
@@ -182,7 +182,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: 2, c: c}
   end
 
-  def zcase_two_and_three(z) do
+  defp zcase_two_and_three(z) do
     length = length(Utils.unique([z.fa, z.fb, z.fd, z.fe]))
 
     c =
@@ -202,7 +202,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: z.itype + 1, c: c}
   end
 
-  def interpolate(z, :quadratic_interpolation_plus_newton) do
+  defp interpolate(z, :quadratic_interpolation_plus_newton) do
     a0 = z.fa
     a1 = (z.fb - z.fa) / (z.b - z.a)
     a2 = ((z.fd - z.fb) / (z.d - z.b) - a1) / (z.d - z.a)
@@ -230,7 +230,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def interpolate(z, :inverse_cubic_interpolation) do
+  defp interpolate(z, :inverse_cubic_interpolation) do
     q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
     q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
     q31 = (z.a - z.b) * z.fa / (z.fb - z.fa)
@@ -245,31 +245,31 @@ defmodule Integrator.NonlinearEqnRoot do
     z.a + q31 + q32 + q33
   end
 
-  def interpolate(z, :double_secant) do
+  defp interpolate(z, :double_secant) do
     z.u - 2.0 * (z.b - z.a) / (z.fb - z.fa) * z.fu
   end
 
-  def interpolate(z, :bisect) do
+  defp interpolate(z, :bisect) do
     0.5 * (z.b + z.a)
   end
 
-  def interpolate(z, :secant) do
+  defp interpolate(z, :secant) do
     z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
   end
 
-  def too_far?(z) do
-    abs(z.c - z.u) > 0.5 * (z.b - z.a)
+  defp too_far?(c, z) do
+    abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
-  def compute_new_point(z, zero_fn) do
+  defp compute_new_point(z, zero_fn) do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
     # Move the incrementing of the interation count elsewhere?
     %{z | fc: fc, x: z.c, fx: fc, fn_eval_count: z.fn_eval_count + 1, iteration_count: z.iteration_count + 1}
   end
 
-  @doc " Modification 2: skip inverse cubic interpolation nonmonotonicity is detected."
-  def check_for_non_monotonicity(z) do
+  # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
+  defp check_for_non_monotonicity(z) do
     if sign(z.fc - z.fa) * sign(z.fc - z.fb) >= 0 do
       # The new point broke monotonicity.
       # Disable inverse cubic:
@@ -279,7 +279,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def c_too_close_to_a_or_b?(z, machine_eps, tolerance) do
+  defp c_too_close_to_a_or_b?(z, machine_eps, tolerance) do
     delta = 2 * 0.7 * (2 * abs(z.u) * machine_eps + tolerance)
 
     c =
@@ -292,7 +292,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | c: c}
   end
 
-  def bracket(z) do
+  defp bracket(z) do
     if sign(z.fa) * sign(z.fc) < 0 do
       {:continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
     else
@@ -309,7 +309,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def update_u(z) do
+  defp update_u(z) do
     # Octave:
     #   if (abs (fa) < abs (fb))
     #     u = a; fu = fa;
@@ -324,7 +324,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def converged?(z, machine_eps, tolerance) do
+  defp converged?(z, machine_eps, tolerance) do
     if z.b - z.a <= 2 * (2 * abs(z.u) * machine_eps + tolerance) do
       :halt
     else
@@ -332,7 +332,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def skip_bisection_if_successful_reduction(z) do
+  defp skip_bisection_if_successful_reduction(z) do
     # Octave:
     #   if (itype == 5 && (b - a) <= mba)
     #     itype = 2;
@@ -358,7 +358,7 @@ defmodule Integrator.NonlinearEqnRoot do
   # ---------------------------------------
   # Option handling
 
-  def default_opts do
+  defp default_opts do
     [
       max_iterations: @default_max_iterations,
       max_fn_eval_count: @default_max_fn_eval_count,
@@ -366,8 +366,8 @@ defmodule Integrator.NonlinearEqnRoot do
     ]
   end
 
-  def set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
-  def set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
+  defp set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
+  defp set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
 
   defp merge_default_opts(opts) do
     default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
