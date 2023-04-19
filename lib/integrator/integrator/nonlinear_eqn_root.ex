@@ -159,7 +159,7 @@ defmodule Integrator.NonlinearEqnRoot do
     iterate(z, halt?(status_1, status_2), zero_fn, opts)
   end
 
-  @spec halt?(atom(), atom()) :: atom()
+  @spec halt?(convergence_status(), convergence_status()) :: convergence_status()
   defp halt?(:halt, _), do: :halt
   defp halt?(_, :halt), do: :halt
   defp halt?(_, _), do: :continue
