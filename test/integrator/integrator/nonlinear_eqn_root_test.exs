@@ -420,9 +420,9 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "c_too_close_to_a_or_b?" do
+  describe "adjust_if_too_close_to_a_or_b" do
     setup do
-      expose(NonlinearEqnRoot, c_too_close_to_a_or_b?: 3)
+      expose(NonlinearEqnRoot, adjust_if_too_close_to_a_or_b: 3)
     end
 
     test "when c is NOT too close" do
@@ -436,7 +436,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      z = private(NonlinearEqnRoot.c_too_close_to_a_or_b?(z, machine_epsilon, tolerance))
+      z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-16)
     end
@@ -452,7 +452,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      z = private(NonlinearEqnRoot.c_too_close_to_a_or_b?(z, machine_epsilon, tolerance))
+      z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
     end

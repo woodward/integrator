@@ -143,7 +143,7 @@ defmodule Integrator.NonlinearEqnRoot do
     {status_1, z} =
       z
       |> zcase()
-      |> c_too_close_to_a_or_b?(machine_eps, tolerance)
+      |> adjust_if_too_close_to_a_or_b(machine_eps, tolerance)
       |> compute_new_point(zero_fn)
       |> check_for_non_monotonicity()
       |> bracket()
@@ -315,7 +315,14 @@ defmodule Integrator.NonlinearEqnRoot do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
     # Move the incrementing of the interation count elsewhere?
-    %{z | fc: fc, x: z.c, fx: fc, fn_eval_count: z.fn_eval_count + 1, iteration_count: z.iteration_count + 1}
+    %{
+      z
+      | x: z.c,
+        fc: fc,
+        fx: fc,
+        fn_eval_count: z.fn_eval_count + 1,
+        iteration_count: z.iteration_count + 1
+    }
   end
 
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
@@ -330,8 +337,8 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  @spec c_too_close_to_a_or_b?(t(), float(), float()) :: t()
-  defp c_too_close_to_a_or_b?(z, machine_eps, tolerance) do
+  @spec adjust_if_too_close_to_a_or_b(t(), float(), float()) :: t()
+  defp adjust_if_too_close_to_a_or_b(z, machine_eps, tolerance) do
     delta = 2 * 0.7 * (2 * abs(z.u) * machine_eps + tolerance)
 
     c =
