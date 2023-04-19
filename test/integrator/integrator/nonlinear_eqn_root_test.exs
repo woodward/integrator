@@ -452,9 +452,9 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "compute_new_point" do
+  describe "fn_eval_new_point" do
     setup do
-      expose(NonlinearEqnRoot, compute_new_point: 3)
+      expose(NonlinearEqnRoot, fn_eval_new_point: 3)
     end
 
     test "works" do
@@ -467,7 +467,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       zero_fn = &Math.sin/1
       opts = [max_iterations: 1000]
-      z = private(NonlinearEqnRoot.compute_new_point(z, zero_fn, opts))
+      z = private(NonlinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
 
       assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
       assert_in_delta(z.fx, 3.109168853400020e-04, 1.0e-16)
@@ -491,7 +491,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       zero_fn = &Math.sin/1
 
       assert_raise MaxIterationsExceededError, fn ->
-        private(NonlinearEqnRoot.compute_new_point(z, zero_fn, opts))
+        private(NonlinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
       end
     end
   end

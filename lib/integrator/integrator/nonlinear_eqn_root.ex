@@ -14,7 +14,7 @@ defmodule Integrator.NonlinearEqnRoot do
           | :secant
 
   @type convergence_status :: :halt | :continue
-  @type zcase_id :: 1 | 2 | 3 | 4 | 5
+  @type compute_iteration_id :: 1 | 2 | 3 | 4 | 5
 
   @type t :: %__MODULE__{
           a: float() | nil,
@@ -41,7 +41,7 @@ defmodule Integrator.NonlinearEqnRoot do
           fn_eval_count: integer(),
           iteration_count: integer(),
           # Change itype to a more descriptive atom later:
-          itype: zcase_id(),
+          itype: compute_iteration_id(),
           #
           bracket_x: [float()],
           bracket_fx: [float()]
@@ -145,9 +145,9 @@ defmodule Integrator.NonlinearEqnRoot do
 
     {status_1, z} =
       z
-      |> zcase()
+      |> compute_iteration()
       |> adjust_if_too_close_to_a_or_b(machine_eps, tolerance)
-      |> compute_new_point(zero_fn, opts)
+      |> fn_eval_new_point(zero_fn, opts)
       |> check_for_non_monotonicity()
       |> bracket()
       |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
@@ -167,8 +167,8 @@ defmodule Integrator.NonlinearEqnRoot do
   defp halt?(_, :halt), do: :halt
   defp halt?(_, _), do: :continue
 
-  @spec zcase(t()) :: t()
-  defp zcase(%{itype: 1} = z) do
+  @spec compute_iteration(t()) :: t()
+  defp compute_iteration(%{itype: 1} = z) do
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
     #   # Secant step.
     #   c = u - (a - b) / (fa - fb) * fu;
@@ -190,15 +190,15 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | c: c, d: z.u, fd: z.fu, itype: 5}
   end
 
-  defp zcase(%{itype: 2} = z) do
-    zcase_two_and_three(z)
+  defp compute_iteration(%{itype: 2} = z) do
+    compute_iteration_two_or_three(z)
   end
 
-  defp zcase(%{itype: 3} = z) do
-    zcase_two_and_three(z)
+  defp compute_iteration(%{itype: 3} = z) do
+    compute_iteration_two_or_three(z)
   end
 
-  defp zcase(%{itype: 4} = z) do
+  defp compute_iteration(%{itype: 4} = z) do
     # Octave:
     #   # Double secant step.
     #   c = u - 2*(b - a)/(fb - fa)*fu;
@@ -221,7 +221,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: 5, c: c}
   end
 
-  defp zcase(%{itype: 5} = z) do
+  defp compute_iteration(%{itype: 5} = z) do
     # Octave:
     #   # Bisection step.
     #   c = 0.5 * (b + a);
@@ -230,8 +230,8 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: 2, c: c}
   end
 
-  @spec zcase_two_and_three(t()) :: t()
-  defp zcase_two_and_three(z) do
+  @spec compute_iteration_two_or_three(t()) :: t()
+  defp compute_iteration_two_or_three(z) do
     length = length(Utils.unique([z.fa, z.fb, z.fd, z.fe]))
 
     c =
@@ -312,8 +312,8 @@ defmodule Integrator.NonlinearEqnRoot do
     abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
-  @spec compute_new_point(t(), fun(), Keyword.t()) :: t()
-  defp compute_new_point(z, zero_fn, opts) do
+  @spec fn_eval_new_point(t(), fun(), Keyword.t()) :: t()
+  defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
     # Perhaps move the incrementing of the iteration count elsewhere?
