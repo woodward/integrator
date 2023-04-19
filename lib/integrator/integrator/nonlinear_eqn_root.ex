@@ -14,6 +14,7 @@ defmodule Integrator.NonlinearEqnRoot do
           | :secant
 
   @type convergence_status :: :halt | :continue
+  @type zcase_id :: 1 | 2 | 3 | 4 | 5
 
   @type t :: %__MODULE__{
           a: float() | nil,
@@ -40,7 +41,7 @@ defmodule Integrator.NonlinearEqnRoot do
           fn_eval_count: integer(),
           iteration_count: integer(),
           # Change itype to a more descriptive atom later:
-          itype: integer(),
+          itype: zcase_id(),
           #
           bracket_x: [float()],
           bracket_fx: [float()]
@@ -70,7 +71,7 @@ defmodule Integrator.NonlinearEqnRoot do
     #
     fn_eval_count: 0,
     iteration_count: 0,
-    # Change itype to a more descriptive atom later:
+    # Change itype to a more descriptive atom later (possibly):
     itype: 1,
     #
     bracket_x: [],
@@ -176,6 +177,7 @@ defmodule Integrator.NonlinearEqnRoot do
     # d = u; fd = fu;
     # itype = 5;
 
+    # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
     c =
       if abs(z.fa) <= 1000 * abs(z.fb) && abs(z.fb) <= 1000 * abs(z.fa) do
         interpolate(z, :secant)
