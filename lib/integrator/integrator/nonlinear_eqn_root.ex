@@ -88,6 +88,11 @@ defmodule Integrator.NonlinearEqnRoot do
     defexception message: "Invalid initial bracket", step: nil
   end
 
+  defmodule MaxIterationsExceededError do
+    @moduledoc false
+    defexception message: "Too many iterations; aborting", step: nil, iteration_count: nil
+  end
+
   @default_max_fn_eval_count 1000
   @default_max_iterations 1000
   @default_type :f64
@@ -144,7 +149,7 @@ defmodule Integrator.NonlinearEqnRoot do
       z
       |> zcase()
       |> adjust_if_too_close_to_a_or_b(machine_eps, tolerance)
-      |> compute_new_point(zero_fn)
+      |> compute_new_point(zero_fn, opts)
       |> check_for_non_monotonicity()
       |> bracket()
 
@@ -310,18 +315,24 @@ defmodule Integrator.NonlinearEqnRoot do
     abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
-  @spec compute_new_point(t(), fun()) :: t()
-  defp compute_new_point(z, zero_fn) do
+  @spec compute_new_point(t(), fun(), Keyword.t()) :: t()
+  defp compute_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
-    # Move the incrementing of the interation count elsewhere?
+    # Perhaps move the incrementing of the iteration count elsewhere?
+    iteration_count = z.iteration_count + 1
+
+    if iteration_count > opts[:max_iterations] do
+      raise MaxIterationsExceededError, step: z, iteration_count: iteration_count
+    end
+
     %{
       z
       | x: z.c,
         fc: fc,
         fx: fc,
         fn_eval_count: z.fn_eval_count + 1,
-        iteration_count: z.iteration_count + 1
+        iteration_count: iteration_count
     }
   end
 

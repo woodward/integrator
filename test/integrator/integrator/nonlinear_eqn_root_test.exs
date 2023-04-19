@@ -4,7 +4,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   use Patch
   import Nx, only: :sigils
 
-  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
+  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError, MaxIterationsExceededError}
   alias Integrator.{NonlinearEqnRoot, Utils}
 
   describe "fzero" do
@@ -139,6 +139,16 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert_raise InvalidInitialBracketError, fn ->
         NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      end
+    end
+
+    test "sine function - raises an error if max iterations exceeded" do
+      x0 = 3.0
+      x1 = 4.0
+      opts = [max_iterations: 2]
+
+      assert_raise MaxIterationsExceededError, fn ->
+        NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1, opts)
       end
     end
   end
@@ -397,7 +407,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "compute_new_point" do
     setup do
-      expose(NonlinearEqnRoot, compute_new_point: 2)
+      expose(NonlinearEqnRoot, compute_new_point: 3)
     end
 
     test "works" do
@@ -409,7 +419,8 @@ defmodule Integrator.NonlinearEqnRootTest do
       }
 
       zero_fn = &Math.sin/1
-      z = private(NonlinearEqnRoot.compute_new_point(z, zero_fn))
+      opts = [max_iterations: 1000]
+      z = private(NonlinearEqnRoot.compute_new_point(z, zero_fn, opts))
 
       assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
       assert_in_delta(z.fx, 3.109168853400020e-04, 1.0e-16)
@@ -417,6 +428,24 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert z.iteration_count == 2
       assert z.fn_eval_count == 4
+    end
+
+    test "raises an error if max iterations exceeded" do
+      max_iterations = 4
+
+      z = %NonlinearEqnRoot{
+        c: 3.141281736699444,
+        iteration_count: max_iterations,
+        fn_eval_count: 3,
+        fc: 7
+      }
+
+      opts = [max_iterations: max_iterations]
+      zero_fn = &Math.sin/1
+
+      assert_raise MaxIterationsExceededError, fn ->
+        private(NonlinearEqnRoot.compute_new_point(z, zero_fn, opts))
+      end
     end
   end
 
