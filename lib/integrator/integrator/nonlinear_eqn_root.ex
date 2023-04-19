@@ -37,6 +37,16 @@ defmodule Integrator.NonlinearEqnRoot do
     bracket_y: []
   ]
 
+  defmodule BracketingFailureError do
+    @moduledoc false
+    defexception message: "zero point is not bracketed", step: nil
+  end
+
+  defmodule InvalidInitialBracketError do
+    @moduledoc false
+    defexception message: "Invalid initial bracket", step: nil
+  end
+
   @default_max_fn_eval_count 1000
   @default_max_iterations 1000
   @default_type :f64
