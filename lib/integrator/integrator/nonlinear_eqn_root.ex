@@ -52,7 +52,7 @@ defmodule Integrator.NonlinearEqnRoot do
   @default_type :f64
   @default_tolerance 1.0e-12
 
-  @mu 0.5
+  @initial_mu 0.5
 
   def default_opts do
     [
@@ -92,7 +92,7 @@ defmodule Integrator.NonlinearEqnRoot do
       #
       fn_eval_count: 2,
       itype: 1,
-      mu_ba: @mu * (b - a)
+      mu_ba: @initial_mu * (b - a)
     }
 
     if sign(z.fa) * sign(z.fb) > 0.0 do
@@ -365,7 +365,7 @@ defmodule Integrator.NonlinearEqnRoot do
       end
 
     if z.itype == 2 do
-      %{z | mu_ba: @mu * (z.b - z.a)}
+      %{z | mu_ba: @initial_mu * (z.b - z.a)}
     else
       z
     end
