@@ -41,6 +41,8 @@ defmodule Integrator.NonlinearEqnRoot do
   @default_type :f64
   @default_tolerance 0.01
 
+  @mu 0.5
+
   def default_opts do
     [
       max_iterations: @default_max_iterations,
@@ -66,9 +68,6 @@ defmodule Integrator.NonlinearEqnRoot do
     # Write a test for this swap:
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
-    mu = 0.5
-    mu_ba = mu * (b - a)
-
     z = %__MODULE__{
       a: a,
       b: b,
@@ -84,7 +83,7 @@ defmodule Integrator.NonlinearEqnRoot do
       #
       fn_eval_count: 2,
       itype: 1,
-      mu_ba: mu_ba
+      mu_ba: @mu * (b - a)
     }
 
     # Write a test for this:
@@ -94,12 +93,12 @@ defmodule Integrator.NonlinearEqnRoot do
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> %{z | x: u, fx: fu}
+      :halt -> %{z | x: u, fx: fu, bracket_t: [a, b], bracket_y: [fa, fb]}
     end
   end
 
   def iterate(z, :halt, _zero_fn, _opts) do
-    %{z | x: z.u, fx: z.fu}
+    %{z | x: z.u, fx: z.fu, bracket_t: [z.a, z.b], bracket_y: [z.fa, z.fb]}
   end
 
   def iterate(z, _status, zero_fn, opts) do
@@ -359,7 +358,7 @@ defmodule Integrator.NonlinearEqnRoot do
       end
 
     if z.itype == 2 do
-      %{z | mu_ba: z.mu * (z.b - z.a)}
+      %{z | mu_ba: @mu * (z.b - z.a)}
     else
       z
     end
