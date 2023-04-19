@@ -1,7 +1,7 @@
 defmodule Integrator.NonlinearEqnRoot do
   @moduledoc false
 
-  import Integrator.Utils, only: [sign: 1, epsilon: 1, unique: 1]
+  import Integrator.Utils, only: [sign: 1, epsilon: 1]
 
   alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
   alias Integrator.Utils
@@ -50,24 +50,8 @@ defmodule Integrator.NonlinearEqnRoot do
   @default_max_fn_eval_count 1000
   @default_max_iterations 1000
   @default_type :f64
-  @default_tolerance 1.0e-12
 
   @initial_mu 0.5
-
-  def default_opts do
-    [
-      max_iterations: @default_max_iterations,
-      max_fn_eval_count: @default_max_fn_eval_count,
-      type: @default_type
-    ]
-  end
-
-  def set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
-  def set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
-
-  defp merge_default_opts(opts) do
-    default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
-  end
 
   def find_zero(zero_fn, a, b, opts \\ []) do
     opts = opts |> merge_default_opts()
@@ -113,7 +97,7 @@ defmodule Integrator.NonlinearEqnRoot do
     machine_eps = opts[:machine_eps]
     tolerance = opts[:tolerance]
 
-    {status1, z} =
+    {status_1, z} =
       z
       |> zcase()
       |> c_too_close_to_a_or_b?(machine_eps, tolerance)
@@ -128,14 +112,14 @@ defmodule Integrator.NonlinearEqnRoot do
       |> skip_bisection_if_successful_reduction()
       |> update_u()
 
-    status2 = converged?(z, machine_eps, tolerance)
+    status_2 = converged?(z, machine_eps, tolerance)
 
-    iterate(z, status(status1, status2), zero_fn, opts)
+    iterate(z, halt?(status_1, status_2), zero_fn, opts)
   end
 
-  def status(:halt, _), do: :halt
-  def status(_, :halt), do: :halt
-  def status(_, _), do: :continue
+  defp halt?(:halt, _), do: :halt
+  defp halt?(_, :halt), do: :halt
+  defp halt?(_, _), do: :continue
 
   def zcase(%{itype: 1} = z) do
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
@@ -284,7 +268,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | fc: fc, x: z.c, fx: fc, fn_eval_count: z.fn_eval_count + 1, iteration_count: z.iteration_count + 1}
   end
 
-  # Modification 2: skip inverse cubic interpolation nonmonotonicity is detected.
+  @doc " Modification 2: skip inverse cubic interpolation nonmonotonicity is detected."
   def check_for_non_monotonicity(z) do
     if sign(z.fc - z.fa) * sign(z.fc - z.fb) >= 0 do
       # The new point broke monotonicity.
@@ -369,5 +353,23 @@ defmodule Integrator.NonlinearEqnRoot do
     else
       z
     end
+  end
+
+  # ---------------------------------------
+  # Option handling
+
+  def default_opts do
+    [
+      max_iterations: @default_max_iterations,
+      max_fn_eval_count: @default_max_fn_eval_count,
+      type: @default_type
+    ]
+  end
+
+  def set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
+  def set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
+
+  defp merge_default_opts(opts) do
+    default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
   end
 end
