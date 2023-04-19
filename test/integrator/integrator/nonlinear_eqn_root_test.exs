@@ -4,11 +4,11 @@ defmodule Integrator.NonlinearEqnRootTest do
   import Nx, only: :sigils
 
   alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
-  alias Integrator.NonlinearEqnRoot
+  alias Integrator.{NonlinearEqnRoot, Utils}
 
   describe "fzero" do
     @tag :skip
-    test "works" do
+    test "an actual usage taken from OdeEventHandler" do
       t_old = 2.155396117711071
       t_new = 2.742956500140625
 
@@ -21,22 +21,27 @@ defmodule Integrator.NonlinearEqnRootTest do
       ]f64
 
       y_vals = Nx.stack([y_old, y_new]) |> Nx.transpose()
-      t_vals = Nx.tensor(t_old, t_new)
+      # t_vals = Nx.tensor(t_old, t_new)
 
       # tnew = fzero(@(t2) evtfcn_val (evtfcn, t2, ...
       # runge_kutta_interpolate (order, tvals, yvals, ...
       # t2, k_vals), idx2), tvals, optimset ("TolX", 0));
 
-      zero_fn = fn ->
-        nil
+      refine = 4
+
+      zero_fn = fn t ->
+        # hermite_quartic_interpolation(t, x, der, t_out)
+        x_out = Utils.hermite_quartic_interpolation(t, y_old, k_vals, t_new)
+        x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
+
+        IO.inspect(x_out_as_cols)
+        # Nx.to_number(x_out_as_cols[0][0])
       end
 
       t_zero = NonlinearEqnRoot.find_zero(zero_fn, t_old, t_new)
 
       expected_t_zero = 2.161317515510217
       assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
-
-      #  call some function here
 
       t_zero = 2.161317515510217
       y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
