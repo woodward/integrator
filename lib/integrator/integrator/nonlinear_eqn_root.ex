@@ -132,14 +132,12 @@ defmodule Integrator.NonlinearEqnRoot do
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> %{z | x: u, fx: fu, bracket_x: [a, b], bracket_fx: [fa, fb]}
+      :halt -> set_results(z)
     end
   end
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
-  defp iterate(z, :halt, _zero_fn, _opts) do
-    %{z | x: z.u, fx: z.fu, bracket_x: [z.a, z.b], bracket_fx: [z.fa, z.fb]}
-  end
+  defp iterate(z, :halt, _zero_fn, _opts), do: z
 
   defp iterate(z, _status, zero_fn, opts) do
     machine_eps = opts[:machine_eps]
@@ -363,20 +361,23 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @spec bracket(t()) :: {convergence_status(), t()}
   defp bracket(z) do
-    if sign(z.fa) * sign(z.fc) < 0 do
-      {:continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
-    else
-      if sign(z.fb) * sign(z.fc) < 0 do
-        {:continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
+    {status, z} =
+      if sign(z.fa) * sign(z.fc) < 0 do
+        {:continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
       else
-        if z.fc == 0.0 do
-          {:halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
+        if sign(z.fb) * sign(z.fc) < 0 do
+          {:continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
         else
-          # Should never reach here
-          raise BracketingFailureError, step: z
+          if z.fc == 0.0 do
+            {:halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
+          else
+            # Should never reach here
+            raise BracketingFailureError, step: z
+          end
         end
       end
-    end
+
+    {status, set_results(z)}
   end
 
   @spec call_output_fn({convergence_status(), t()}, fun()) :: {convergence_status(), t()}
@@ -435,6 +436,11 @@ defmodule Integrator.NonlinearEqnRoot do
     else
       z
     end
+  end
+
+  @spec set_results(t()) :: t()
+  defp set_results(z) do
+    %{z | x: z.u, fx: z.fu, bracket_x: [z.a, z.b], bracket_fx: [z.fa, z.fb]}
   end
 
   # ---------------------------------------

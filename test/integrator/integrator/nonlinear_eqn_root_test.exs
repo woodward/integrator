@@ -187,6 +187,16 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert converged.iteration_count == 6
       assert converged.fn_eval_count == 8
       assert_in_delta(converged.x, result.x, 1.0e-14)
+
+      first = x_data |> hd()
+      expected_bracket_x = [3.0, 3.157162792479947]
+      assert_lists_equal(first.bracket_x, expected_bracket_x, 1.0e-15)
+
+      expected_bracket_fx = [0.1411200080598672, -0.015569509788328599]
+      assert_lists_equal(first.bracket_fx, expected_bracket_fx, 1.0e-15)
+
+      assert_in_delta(first.x, 3.0, 1.0e-15)
+      assert_in_delta(first.fx, 0.1411200080598672, 1.0e-15)
     end
   end
 
@@ -521,6 +531,30 @@ defmodule Integrator.NonlinearEqnRootTest do
       z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
+    end
+  end
+
+  describe "set_results/1" do
+    setup do
+      expose(NonlinearEqnRoot, set_results: 1)
+    end
+
+    test "sets the appropriate values on x, fx, bracket_x, and bracket_fx" do
+      z = %NonlinearEqnRoot{
+        a: 2,
+        b: 4,
+        u: 3,
+        fa: 1,
+        fb: 2,
+        fu: 1.5
+      }
+
+      z = private(NonlinearEqnRoot.set_results(z))
+
+      assert z.x == 3
+      assert z.fx == 1.5
+      assert z.bracket_x == [2, 4]
+      assert z.bracket_fx == [1, 2]
     end
   end
 
