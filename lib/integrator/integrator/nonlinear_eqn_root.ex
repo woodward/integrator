@@ -1,10 +1,50 @@
 defmodule Integrator.NonlinearEqnRoot do
-  @moduledoc false
+  @moduledoc """
+  Finds the roots (zeros) of a non-linear equation.
+  """
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1]
-
-  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError}
   alias Integrator.Utils
+
+  @type interpolation_type ::
+          :bisect
+          | :double_secant
+          | :inverse_cubic_interpolation
+          | :quadratic_interpolation_plus_newton
+          | :secant
+
+  @type convergence_status :: :halt | :continue
+
+  @type t :: %__MODULE__{
+          a: float() | nil,
+          b: float() | nil,
+          c: float() | nil,
+          d: float() | nil,
+          e: float() | nil,
+          u: float() | nil,
+          #
+          # Function evaluations; e.g., fb is fn(b):
+          fa: float() | nil,
+          fb: float() | nil,
+          fc: float() | nil,
+          fd: float() | nil,
+          fe: float() | nil,
+          fu: float() | nil,
+          #
+          # x (and fx) are the actual found values (i.e., fx should be very close to zero):
+          x: float() | nil,
+          fx: float() | nil,
+          #
+          mu_ba: float() | nil,
+          #
+          fn_eval_count: integer(),
+          iteration_count: integer(),
+          # Change itype to a more descriptive atom later:
+          itype: integer(),
+          #
+          bracket_t: [float()],
+          bracket_y: [float()]
+        }
 
   defstruct [
     :a,
@@ -53,6 +93,7 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @initial_mu 0.5
 
+  @spec find_zero(fun(), float(), float(), Keyword.t()) :: t()
   def find_zero(zero_fn, a, b, opts \\ []) do
     opts = opts |> merge_default_opts()
 
@@ -89,6 +130,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
   defp iterate(z, :halt, _zero_fn, _opts) do
     %{z | x: z.u, fx: z.fu, bracket_t: [z.a, z.b], bracket_y: [z.fa, z.fb]}
   end
@@ -117,10 +159,12 @@ defmodule Integrator.NonlinearEqnRoot do
     iterate(z, halt?(status_1, status_2), zero_fn, opts)
   end
 
+  @spec halt?(atom(), atom()) :: atom()
   defp halt?(:halt, _), do: :halt
   defp halt?(_, :halt), do: :halt
   defp halt?(_, _), do: :continue
 
+  @spec zcase(t()) :: t()
   defp zcase(%{itype: 1} = z) do
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
     #   # Secant step.
@@ -182,6 +226,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: 2, c: c}
   end
 
+  @spec zcase_two_and_three(t()) :: t()
   defp zcase_two_and_three(z) do
     length = length(Utils.unique([z.fa, z.fb, z.fd, z.fe]))
 
@@ -202,6 +247,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | itype: z.itype + 1, c: c}
   end
 
+  @spec interpolate(t(), interpolation_type()) :: float()
   defp interpolate(z, :quadratic_interpolation_plus_newton) do
     a0 = z.fa
     a1 = (z.fb - z.fa) / (z.b - z.a)
@@ -257,10 +303,12 @@ defmodule Integrator.NonlinearEqnRoot do
     z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
   end
 
+  @spec too_far?(float(), t()) :: boolean()
   defp too_far?(c, z) do
     abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
+  @spec compute_new_point(t(), fun()) :: t()
   defp compute_new_point(z, zero_fn) do
     fc = zero_fn.(z.c)
     #  fval = fc    What is this used for?
@@ -269,6 +317,7 @@ defmodule Integrator.NonlinearEqnRoot do
   end
 
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
+  @spec check_for_non_monotonicity(t()) :: t()
   defp check_for_non_monotonicity(z) do
     if sign(z.fc - z.fa) * sign(z.fc - z.fb) >= 0 do
       # The new point broke monotonicity.
@@ -279,6 +328,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  @spec c_too_close_to_a_or_b?(t(), float(), float()) :: t()
   defp c_too_close_to_a_or_b?(z, machine_eps, tolerance) do
     delta = 2 * 0.7 * (2 * abs(z.u) * machine_eps + tolerance)
 
@@ -292,6 +342,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{z | c: c}
   end
 
+  @spec bracket(t()) :: {convergence_status(), t()}
   defp bracket(z) do
     if sign(z.fa) * sign(z.fc) < 0 do
       {:continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
@@ -309,6 +360,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  @spec update_u(t()) :: t()
   defp update_u(z) do
     # Octave:
     #   if (abs (fa) < abs (fb))
@@ -324,6 +376,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  @spec converged?(t(), float(), float()) :: convergence_status()
   defp converged?(z, machine_eps, tolerance) do
     if z.b - z.a <= 2 * (2 * abs(z.u) * machine_eps + tolerance) do
       :halt
@@ -332,6 +385,7 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
+  @spec skip_bisection_if_successful_reduction(t()) :: t()
   defp skip_bisection_if_successful_reduction(z) do
     # Octave:
     #   if (itype == 5 && (b - a) <= mba)
@@ -358,6 +412,7 @@ defmodule Integrator.NonlinearEqnRoot do
   # ---------------------------------------
   # Option handling
 
+  @spec default_opts() :: Keyword.t()
   defp default_opts do
     [
       max_iterations: @default_max_iterations,
@@ -366,9 +421,13 @@ defmodule Integrator.NonlinearEqnRoot do
     ]
   end
 
+  @spec set_tolerance(Keyword.t()) :: Keyword.t()
   defp set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
+
+  @spec set_machine_eps(Keyword.t()) :: Keyword.t()
   defp set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
 
+  @spec merge_default_opts(Keyword.t()) :: Keyword.t()
   defp merge_default_opts(opts) do
     default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
   end
