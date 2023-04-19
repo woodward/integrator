@@ -42,7 +42,6 @@ defmodule Integrator.NonlinearEqnRootTest do
       y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
     end
 
-    @tag :skip
     test "sine function" do
       # Octave:
       # fun = @sin; % function
@@ -69,10 +68,10 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 3.0
       x1 = 4.0
 
-      x = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
 
       expected_x = 3.141592653589795
-      assert_in_delta(x, expected_x, 1.0e-02)
+      assert_in_delta(result.c, expected_x, 1.0e-02)
     end
   end
 
@@ -269,6 +268,9 @@ defmodule Integrator.NonlinearEqnRootTest do
       z = NonlinearEqnRoot.compute_new_point(z, zero_fn)
 
       assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
+      assert_in_delta(z.fx, 3.109168853400020e-04, 1.0e-16)
+      assert_in_delta(z.x, 3.141281736699444, 1.0e-16)
+
       assert z.iteration_count == 2
       assert z.fn_eval_count == 4
     end
@@ -308,7 +310,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "bracketing" do
+  describe "bracket" do
     test "first case - move b down to c" do
       z = %NonlinearEqnRoot{
         a: nil,
@@ -320,7 +322,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: -3.902112221087341e-08
       }
 
-      {z, :continue} = NonlinearEqnRoot.bracketing(z)
+      {:continue, z} = NonlinearEqnRoot.bracket(z)
 
       assert z.d == 3.157162792479947
       assert z.fd == -1.556950978832860e-02
@@ -340,7 +342,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: 3.901796897832363e-08
       }
 
-      {z, :continue} = NonlinearEqnRoot.bracketing(z)
+      {:continue, z} = NonlinearEqnRoot.bracket(z)
 
       assert z.d == 3.141281736699444
       assert z.fd == 3.109168853400020e-04
@@ -360,7 +362,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: 0.0
       }
 
-      {z, :halt} = NonlinearEqnRoot.bracketing(z)
+      {:halt, z} = NonlinearEqnRoot.bracket(z)
 
       assert z.a == 1.0
       assert z.fa == 0.0
@@ -369,7 +371,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert z.fb == 0.0
     end
 
-    test "fourth case - bracketing didn't work (note that this is an artificial, non-real-life case)" do
+    test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
       z = %NonlinearEqnRoot{
         a: nil,
         b: nil,
@@ -381,7 +383,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       }
 
       assert_raise BracketingFailureError, fn ->
-        {z, :halt} = NonlinearEqnRoot.bracketing(z)
+        NonlinearEqnRoot.bracket(z)
       end
     end
   end
