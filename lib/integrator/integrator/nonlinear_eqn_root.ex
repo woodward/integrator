@@ -64,8 +64,6 @@ defmodule Integrator.NonlinearEqnRoot do
     fa = zero_fn.(a)
     fb = zero_fn.(b)
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
-
-    # Write a test for this swap:
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
     z = %__MODULE__{

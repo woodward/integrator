@@ -89,6 +89,32 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
+
+    test "sine function - works if initial values are swapped" do
+      x0 = 4.0
+      x1 = 3.0
+
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, x1)
+
+      # Expected value is from Octave:
+      expected_x = 3.141592653589795
+      assert_in_delta(result.c, expected_x, 1.0e-14)
+      assert_in_delta(result.fx, 0.0, 1.0e-15)
+
+      assert result.fn_eval_count == 8
+      assert result.iteration_count == 6
+      assert result.itype == 4
+
+      [x_low, x_high] = result.bracket_t
+      # Expected values are from Octave:
+      assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
+      assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
+
+      [y1, y2] = result.bracket_y
+      # Expected values are from Octave:
+      assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
+      assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
+    end
   end
 
   describe "converged?" do
