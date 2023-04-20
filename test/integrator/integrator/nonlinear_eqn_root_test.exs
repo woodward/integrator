@@ -298,6 +298,23 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(result.x, -1.0, 1.0e-22)
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
+
+    test "polynomial" do
+      # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
+      # Roots are 1 and 3
+
+      zero_fn = &(&1 * &1 - 4 * &1 + 3)
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, [0.5, 1.5])
+
+      assert_in_delta(result.x, 1.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-15)
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, [3.5, 1.5])
+
+      assert_in_delta(result.x, 3.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-15)
+    end
   end
 
   # ===========================================================================
