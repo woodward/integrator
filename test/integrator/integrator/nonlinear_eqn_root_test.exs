@@ -4,7 +4,13 @@ defmodule Integrator.NonlinearEqnRootTest do
   use Patch
   import Nx, only: :sigils
 
-  alias Integrator.NonlinearEqnRoot.{BracketingFailureError, InvalidInitialBracketError, MaxIterationsExceededError}
+  alias Integrator.NonlinearEqnRoot.{
+    BracketingFailureError,
+    InvalidInitialBracketError,
+    MaxFnEvalsExceededError,
+    MaxIterationsExceededError
+  }
+
   alias Integrator.{DummyOutput, NonlinearEqnRoot, Utils}
 
   describe "find_zero" do
@@ -148,6 +154,16 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [max_iterations: 2]
 
       assert_raise MaxIterationsExceededError, fn ->
+        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
+      end
+    end
+
+    test "sine function - raises an error if max function evaluations exceeded" do
+      x0 = 3.0
+      x1 = 4.0
+      opts = [max_fn_eval_count: 2]
+
+      assert_raise MaxFnEvalsExceededError, fn ->
         NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
       end
     end

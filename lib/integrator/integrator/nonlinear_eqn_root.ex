@@ -1,6 +1,12 @@
 defmodule Integrator.NonlinearEqnRoot do
   @moduledoc """
-  Finds the roots (zeros) of a non-linear equation.
+  Finds the roots (i.e., zeros) of a non-linear equation.
+
+  This is essentially the ACM algorithm 748: Enclosing Zeros of Continuous Functions
+  due to Alefeld, Potra and Shi, ACM Transactions on Mathematical Software, Vol. 21,
+  No. 3, September 1995. Although the workflow is the same, the structure of
+  the algorithm has been transformed non-trivially; also, the algorithm has also been
+  slightly modified.
   """
 
   import Integrator.Utils, only: [sign: 1, epsilon: 1]
@@ -91,6 +97,11 @@ defmodule Integrator.NonlinearEqnRoot do
   defmodule MaxIterationsExceededError do
     @moduledoc false
     defexception message: "Too many iterations; aborting", step: nil, iteration_count: nil
+  end
+
+  defmodule MaxFnEvalsExceededError do
+    @moduledoc false
+    defexception message: "Too many function evaluations; aborting", step: nil, fn_eval_count: nil
   end
 
   @default_max_fn_eval_count 1000
@@ -357,9 +368,14 @@ defmodule Integrator.NonlinearEqnRoot do
     #  fval = fc    What is this used for?
     # Perhaps move the incrementing of the iteration count elsewhere?
     iteration_count = z.iteration_count + 1
+    fn_eval_count = z.fn_eval_count + 1
 
     if iteration_count > opts[:max_iterations] do
       raise MaxIterationsExceededError, step: z, iteration_count: iteration_count
+    end
+
+    if fn_eval_count > opts[:max_fn_eval_count] do
+      raise MaxFnEvalsExceededError, step: z, fn_eval_count: fn_eval_count
     end
 
     %{
@@ -367,7 +383,7 @@ defmodule Integrator.NonlinearEqnRoot do
       | x: z.c,
         fc: fc,
         fx: fc,
-        fn_eval_count: z.fn_eval_count + 1,
+        fn_eval_count: fn_eval_count,
         iteration_count: iteration_count
     }
   end
