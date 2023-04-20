@@ -63,8 +63,9 @@ defmodule Integrator.MixProject do
       source_url: @source_url,
       extras: [
         "README.md",
-        "guides/intro-to-integrator.livemd",
-        "guides/examples-of-usage.livemd"
+        "guides/intro_to_integrator.livemd",
+        "guides/examples_of_usage.livemd",
+        "guides/nonlinear_eqn_root.livemd"
       ],
       before_closing_head_tag: &before_closing_head_tag/1,
       javascript_config_path: nil

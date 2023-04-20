@@ -20,6 +20,7 @@ defmodule Integrator.NonlinearEqnRoot do
           | :secant
 
   @type convergence_status :: :halt | :continue
+
   @type iter_type :: 1 | 2 | 3 | 4 | 5
 
   @type t :: %__MODULE__{
@@ -98,6 +99,25 @@ defmodule Integrator.NonlinearEqnRoot do
   @spec find_zero(fun(), [float()] | float(), Keyword.t()) :: t()
   def find_zero(zero_fn, initial_values, opts \\ [])
 
+  @doc """
+  Finds a zero for a function in an interval `[a, b]` (if the 2nd argument is a list) or
+  in the vicinity of `a` (if the 2nd argument is a float).
+
+  ## Options
+
+    * `:max_fn_eval_count` - the maximum allowed number of function evaluations. Defaults to 1000
+
+    * `:max_iterations` - the maximum allowed number of iterations. Defaults to 1000
+
+    * `:type` - `:f32` or `:f64`. Defaults to `:f64`
+
+    * `:machine_eps` - The machine epsilon. Defaults to `Itegrator.Utils.epsilon/1`
+
+    * `:tolerance` - The tolerance for the convergence.  Defaults to `Itegrator.Utils.epsilon/1`
+
+    * `:nonlinear_eqn_root_output_fn` - An output function to call so intermediate results can be retrieved
+
+  """
   def find_zero(zero_fn, [a, b], opts) do
     opts = opts |> merge_default_opts()
 
