@@ -198,6 +198,32 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(first.x, 3.0, 1.0e-15)
       assert_in_delta(first.fx, 0.1411200080598672, 1.0e-15)
     end
+
+    test "sine function with single initial value (instead of 2)" do
+      x0 = 3.0
+      opts = [foo: :bar]
+
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, opts)
+
+      # Expected value is from Octave:
+      expected_x = 3.141592653589795
+      assert_in_delta(result.c, expected_x, 1.0e-14)
+      assert_in_delta(result.fx, 0.0, 1.0e-15)
+
+      assert result.fn_eval_count == 8
+      assert result.iteration_count == 6
+      assert result.itype == 4
+
+      [x_low, x_high] = result.bracket_x
+      # Expected values are from Octave:
+      assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
+      assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
+
+      [y1, y2] = result.bracket_fx
+      # Expected values are from Octave:
+      assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
+      assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
+    end
   end
 
   describe "merge_default_opts/1" do
@@ -531,6 +557,34 @@ defmodule Integrator.NonlinearEqnRootTest do
       z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
+    end
+  end
+
+  describe "find_2nd_starting_value" do
+    setup do
+      expose(NonlinearEqnRoot, find_2nd_starting_value: 2)
+    end
+
+    test "finds a value in the vicinity" do
+      x0 = 3.0
+
+      result = private(NonlinearEqnRoot.find_2nd_starting_value(&Math.sin/1, x0))
+
+      assert_in_delta(result.b, 3.3, 1.0e-15)
+      assert_in_delta(result.fb, -0.1577456941432482, 1.0e-12)
+      assert_in_delta(result.fa, 0.1411200080598672, 1.0e-12)
+      assert result.fn_eval_count == 5
+    end
+
+    test "works if x0 is very close to zero" do
+      x0 = -0.0005
+
+      result = private(NonlinearEqnRoot.find_2nd_starting_value(&Math.sin/1, x0))
+
+      assert_in_delta(result.b, 0.0, 1.0e-15)
+      assert_in_delta(result.fb, 0.0, 1.0e-12)
+      assert_in_delta(result.fa, -0.09983341664682815, 1.0e-12)
+      assert result.fn_eval_count == 8
     end
   end
 

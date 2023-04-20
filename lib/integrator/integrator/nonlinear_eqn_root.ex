@@ -99,8 +99,10 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @initial_mu 0.5
 
-  @spec find_zero(fun(), [float()], Keyword.t()) :: t()
-  def find_zero(zero_fn, [a, b], opts \\ []) do
+  @spec find_zero(fun(), [float()] | float(), Keyword.t()) :: t()
+  def find_zero(zero_fn, initial_values, opts \\ [])
+
+  def find_zero(zero_fn, [a, b], opts) do
     opts = opts |> merge_default_opts()
 
     fa = zero_fn.(a)
@@ -134,6 +136,13 @@ defmodule Integrator.NonlinearEqnRoot do
       :continue -> iterate(z, :continue, zero_fn, opts)
       :halt -> set_results(z)
     end
+  end
+
+  def find_zero(zero_fn, a, opts) do
+    IO.puts("Do I get here????????????")
+    IO.inspect(a)
+    IO.inspect(opts)
+    find_2nd_starting_value(zero_fn, a)
   end
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
@@ -249,6 +258,37 @@ defmodule Integrator.NonlinearEqnRoot do
       end
 
     %{z | itype: z.itype + 1, c: c}
+  end
+
+  @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
+
+  @spec find_2nd_starting_value(fun(), float()) :: map()
+  defp find_2nd_starting_value(zero_fn, a) do
+    # For very small values, switch to absolute rather than relative search:
+    a =
+      if abs(a) < 0.001 do
+        if a == 0, do: 0.1, else: sign(a) * 0.1
+      else
+        a
+      end
+
+    fa = zero_fn.(a)
+    x = %{a: a, fa: fa, b: nil, fb: nil, fn_eval_count: 1}
+
+    # Search in an ever-widening range around the initial point:
+    searching_for_point(:continue, zero_fn, x, @search_values)
+  end
+
+  @spec searching_for_point(atom(), fun(), map(), [float()]) :: map()
+  defp searching_for_point(:found, _zero_fn, x, _search_values), do: x
+
+  defp searching_for_point(:continue, zero_fn, x, search_values) do
+    [search | rest_of_search_values] = search_values
+    b = x.a + x.a * search
+    fb = zero_fn.(b)
+    x = %{x | b: b, fb: fb, fn_eval_count: x.fn_eval_count + 1}
+    status = if sign(x.fa) * sign(fb) <= 0, do: :found, else: :continue
+    searching_for_point(status, zero_fn, x, rest_of_search_values)
   end
 
   @spec interpolate(t(), interpolation_type()) :: float()
