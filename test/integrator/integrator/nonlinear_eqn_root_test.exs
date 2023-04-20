@@ -217,9 +217,8 @@ defmodule Integrator.NonlinearEqnRootTest do
 
     test "sine function with single initial value (instead of 2)" do
       x0 = 3.0
-      opts = [foo: :bar]
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0, opts)
+      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0)
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -240,6 +239,20 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
+
+    test "returns pi/2 for cos between 0 & 3" do
+      x0 = 0.0
+      x1 = 3.0
+
+      result = NonlinearEqnRoot.find_zero(&Math.cos/1, [x0, x1])
+
+      expected_x = Math.pi() / 2.0
+      assert_in_delta(result.c, expected_x, 1.0e-15)
+    end
+
+    # %!assert (fzero (@(x) x^(1/3) - 1e-8, [0,1], opt0), 1e-24, 1e-22*eps)
+    # %!assert <*54445> (fzero (@ (x) x, 0), 0)
+    # %!assert <*54445> (fzero (@ (x) x + 1, 0), -1)
   end
 
   describe "merge_default_opts/1" do
