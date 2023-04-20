@@ -107,23 +107,27 @@ defmodule Integrator.NonlinearEqnRoot do
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
-    z = %__MODULE__{
-      a: a,
-      b: b,
-      d: u,
-      e: u,
-      u: u,
-      #
-      fa: fa,
-      fb: fb,
-      fd: fu,
-      fe: fu,
-      fu: fu,
-      #
-      fn_eval_count: fn_eval_count,
-      iter_type: 1,
-      mu_ba: @initial_mu * (b - a)
-    }
+    z =
+      %__MODULE__{
+        a: a,
+        b: b,
+        d: u,
+        e: u,
+        u: u,
+        #
+        fa: fa,
+        fb: fb,
+        fd: fu,
+        fe: fu,
+        fu: fu,
+        #
+        fn_eval_count: fn_eval_count,
+        iter_type: 1,
+        mu_ba: @initial_mu * (b - a)
+      }
+      # Broadcast the initial point:
+      |> set_x_results()
+      |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
 
     if sign(z.fa) * sign(z.fb) > 0.0 do
       raise InvalidInitialBracketError, step: z
@@ -131,7 +135,7 @@ defmodule Integrator.NonlinearEqnRoot do
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> set_x_results(z)
+      :halt -> z
     end
   end
 
@@ -144,7 +148,7 @@ defmodule Integrator.NonlinearEqnRoot do
   # Private functions below here:
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
-  defp iterate(z, :halt, _zero_fn, _opts), do: set_x_results(z)
+  defp iterate(z, :halt, _zero_fn, _opts), do: z
 
   defp iterate(z, _status, zero_fn, opts) do
     machine_eps = opts[:machine_eps]
@@ -161,9 +165,9 @@ defmodule Integrator.NonlinearEqnRoot do
     z =
       z
       |> skip_bisection_if_successful_reduction()
+      |> update_u()
       |> set_x_results()
       |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
-      |> update_u()
 
     status_2 = converged?(z, machine_eps, tolerance)
 

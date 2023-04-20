@@ -184,8 +184,10 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)
-      assert length(x_data) == 6
-      assert length(t_data) == 6
+      assert length(x_data) == 7
+      assert length(t_data) == 7
+
+      # IO.inspect(t_data)
 
       converging_t_data = [
         3.0,
@@ -193,8 +195,10 @@ defmodule Integrator.NonlinearEqnRootTest do
         3.157162792479945,
         3.141596389566289,
         3.141596389566289,
-        # Repeated value should be this; figure out why it's repeated:
+        # Above value is repeated and should be this (below); figure out why it's repeated:
         # 3.1415888925885564,
+        3.1415926535897936,
+        # Why does the last point show up twice?
         3.1415926535897936
       ]
 
@@ -209,10 +213,10 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(converged.x, result.x, 1.0e-14)
 
       first = x_data |> hd()
-      expected_bracket_x = [3.0, 3.157162792479947]
+      expected_bracket_x = [3.0, 4.0]
       assert_lists_equal(first.bracket_x, expected_bracket_x, 1.0e-15)
 
-      expected_bracket_fx = [0.1411200080598672, -0.015569509788328599]
+      expected_bracket_fx = [0.1411200080598672, -0.7568024953079282]
       assert_lists_equal(first.bracket_fx, expected_bracket_fx, 1.0e-15)
 
       assert_in_delta(first.x, 3.0, 1.0e-15)
