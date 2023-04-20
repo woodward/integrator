@@ -629,15 +629,15 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "find_2nd_starting_value" do
+  describe "find_2nd_starting_point" do
     setup do
-      expose(NonlinearEqnRoot, find_2nd_starting_value: 2)
+      expose(NonlinearEqnRoot, find_2nd_starting_point: 2)
     end
 
     test "finds a value in the vicinity" do
       x0 = 3.0
 
-      result = private(NonlinearEqnRoot.find_2nd_starting_value(&Math.sin/1, x0))
+      result = private(NonlinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
 
       assert_in_delta(result.b, 3.3, 1.0e-15)
       assert_in_delta(result.fb, -0.1577456941432482, 1.0e-12)
@@ -648,7 +648,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "works if x0 is very close to zero" do
       x0 = -0.0005
 
-      result = private(NonlinearEqnRoot.find_2nd_starting_value(&Math.sin/1, x0))
+      result = private(NonlinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
 
       assert_in_delta(result.b, 0.0, 1.0e-15)
       assert_in_delta(result.fb, 0.0, 1.0e-12)

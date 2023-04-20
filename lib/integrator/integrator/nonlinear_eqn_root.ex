@@ -136,8 +136,8 @@ defmodule Integrator.NonlinearEqnRoot do
   end
 
   def find_zero(zero_fn, a, opts) do
-    result = find_2nd_starting_value(zero_fn, a)
-    find_zero(zero_fn, [a, result.b], Keyword.merge(opts, fn_eval_count: result.fn_eval_count))
+    second_point = find_2nd_starting_point(zero_fn, a)
+    find_zero(zero_fn, [a, second_point.b], Keyword.merge(opts, fn_eval_count: second_point.fn_eval_count))
   end
 
   # ===========================================================================
@@ -260,8 +260,8 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
 
-  @spec find_2nd_starting_value(fun(), float()) :: map()
-  defp find_2nd_starting_value(zero_fn, a) do
+  @spec find_2nd_starting_point(fun(), float()) :: map()
+  defp find_2nd_starting_point(zero_fn, a) do
     # For very small values, switch to absolute rather than relative search:
     a =
       if abs(a) < 0.001 do
