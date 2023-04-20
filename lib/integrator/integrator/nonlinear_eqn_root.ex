@@ -155,8 +155,11 @@ defmodule Integrator.NonlinearEqnRoot do
     find_zero(zero_fn, [a, result.b], Keyword.merge(opts, fn_eval_count: result.fn_eval_count))
   end
 
+  # ===========================================================================
+  # Private functions below here:
+
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
-  defp iterate(z, :halt, _zero_fn, _opts), do: z
+  defp iterate(z, :halt, _zero_fn, _opts), do: set_results(z)
 
   defp iterate(z, _status, zero_fn, opts) do
     machine_eps = opts[:machine_eps]
@@ -432,6 +435,7 @@ defmodule Integrator.NonlinearEqnRoot do
         end
       end
 
+    # The call to set_results() here is necessary for the call to the output_fn to work
     {status, set_results(z)}
   end
 

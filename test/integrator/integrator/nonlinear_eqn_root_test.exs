@@ -240,7 +240,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
-    test "returns pi/2 for cos between 0 & 3" do
+    test "returns pi/2 for cos between 0 & 3 - test from Octave" do
       x0 = 0.0
       x1 = 3.0
 
@@ -250,10 +250,50 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(result.c, expected_x, 1.0e-15)
     end
 
-    # %!assert (fzero (@(x) x^(1/3) - 1e-8, [0,1], opt0), 1e-24, 1e-22*eps)
-    # %!assert <*54445> (fzero (@ (x) x, 0), 0)
-    # %!assert <*54445> (fzero (@ (x) x + 1, 0), -1)
+    test "equation - test from Octave" do
+      x0 = 0.0
+      x1 = 1.0
+      zero_fn = &(Math.pow(&1, 1 / 3) - 1.0e-8)
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, [x0, x1])
+
+      assert_in_delta(result.x, 1.0e-24, 1.0e-22)
+      assert_in_delta(result.fx, -1.0e-08, 1.0e-22)
+    end
+
+    test "staight line through zero - test from Octave" do
+      x0 = 0.0
+      zero_fn = & &1
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, 0.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
+
+    test "staight line through zero offset by one - test from Octave" do
+      x0 = 0.0
+      zero_fn = &(&1 + 1)
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, -1.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
+
+    test "staight line through zero offset by one - test from Octave - works" do
+      x0 = 0.0
+      zero_fn = &(&1 + 1)
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, -1.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
   end
+
+  # ===========================================================================
+  # Tests of private functions below here:
 
   describe "merge_default_opts/1" do
     setup do
