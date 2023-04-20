@@ -84,25 +84,10 @@ defmodule Integrator.NonlinearEqnRoot do
     bracket_fx: []
   ]
 
-  defmodule BracketingFailureError do
-    @moduledoc false
-    defexception message: "zero point is not bracketed", step: nil
-  end
-
-  defmodule InvalidInitialBracketError do
-    @moduledoc false
-    defexception message: "Invalid initial bracket", step: nil
-  end
-
-  defmodule MaxIterationsExceededError do
-    @moduledoc false
-    defexception message: "Too many iterations; aborting", step: nil, iteration_count: nil
-  end
-
-  defmodule MaxFnEvalsExceededError do
-    @moduledoc false
-    defexception message: "Too many function evaluations; aborting", step: nil, fn_eval_count: nil
-  end
+  defmodule BracketingFailureError, do: defexception(message: "Zero point is not bracketed", step: nil)
+  defmodule InvalidInitialBracketError, do: defexception(message: "Invalid initial bracket", step: nil)
+  defmodule MaxIterationsExceededError, do: defexception(message: "Too many iterations", step: nil, iteration_count: nil)
+  defmodule MaxFnEvalsExceededError, do: defexception(message: "Too many function evaluations", step: nil, fn_eval_count: nil)
 
   @default_max_fn_eval_count 1000
   @default_max_iterations 1000
