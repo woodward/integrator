@@ -89,7 +89,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert result.fn_eval_count == 8
       assert result.iteration_count == 6
-      assert result.itype == 4
+      assert result.iter_type == 4
 
       [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
@@ -115,7 +115,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert result.fn_eval_count == 8
       assert result.iteration_count == 6
-      assert result.itype == 4
+      assert result.iter_type == 4
 
       [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
@@ -227,7 +227,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert result.fn_eval_count == 13
       assert result.iteration_count == 6
-      assert result.itype == 4
+      assert result.iter_type == 4
 
       [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
@@ -419,7 +419,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fb: -1.556950978832860e-02,
         fd: -0.756802495307928,
         fe: 0.141120008059867,
-        itype: 2
+        iter_type: 2
       }
 
       c = private(NonlinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))

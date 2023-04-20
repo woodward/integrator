@@ -20,7 +20,7 @@ defmodule Integrator.NonlinearEqnRoot do
           | :secant
 
   @type convergence_status :: :halt | :continue
-  @type compute_iteration_id :: 1 | 2 | 3 | 4 | 5
+  @type iter_type :: 1 | 2 | 3 | 4 | 5
 
   @type t :: %__MODULE__{
           a: float() | nil,
@@ -46,8 +46,8 @@ defmodule Integrator.NonlinearEqnRoot do
           #
           fn_eval_count: integer(),
           iteration_count: integer(),
-          # Change itype to a more descriptive atom later:
-          itype: compute_iteration_id(),
+          # Change iter_type to a more descriptive atom later:
+          iter_type: iter_type(),
           #
           bracket_x: [float()],
           bracket_fx: [float()]
@@ -77,8 +77,8 @@ defmodule Integrator.NonlinearEqnRoot do
     #
     fn_eval_count: 0,
     iteration_count: 0,
-    # Change itype to a more descriptive atom later (possibly):
-    itype: 1,
+    # Change iter_type to a more descriptive atom later (possibly):
+    iter_type: 1,
     #
     bracket_x: [],
     bracket_fx: []
@@ -136,7 +136,7 @@ defmodule Integrator.NonlinearEqnRoot do
       fu: fu,
       #
       fn_eval_count: fn_eval_count,
-      itype: 1,
+      iter_type: 1,
       mu_ba: @initial_mu * (b - a)
     }
 
@@ -187,7 +187,7 @@ defmodule Integrator.NonlinearEqnRoot do
   defp halt?(_, _), do: :continue
 
   @spec compute_iteration(t()) :: t()
-  defp compute_iteration(%{itype: 1} = z) do
+  defp compute_iteration(%{iter_type: 1} = z) do
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
     #   # Secant step.
     #   c = u - (a - b) / (fa - fb) * fu;
@@ -196,7 +196,7 @@ defmodule Integrator.NonlinearEqnRoot do
     #   c = 0.5*(a + b);
     # endif
     # d = u; fd = fu;
-    # itype = 5;
+    # iter_type = 5;
 
     # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
     c =
@@ -206,18 +206,18 @@ defmodule Integrator.NonlinearEqnRoot do
         interpolate(z, :bisect)
       end
 
-    %{z | c: c, d: z.u, fd: z.fu, itype: 5}
+    %{z | c: c, d: z.u, fd: z.fu, iter_type: 5}
   end
 
-  defp compute_iteration(%{itype: 2} = z) do
+  defp compute_iteration(%{iter_type: 2} = z) do
     compute_iteration_two_or_three(z)
   end
 
-  defp compute_iteration(%{itype: 3} = z) do
+  defp compute_iteration(%{iter_type: 3} = z) do
     compute_iteration_two_or_three(z)
   end
 
-  defp compute_iteration(%{itype: 4} = z) do
+  defp compute_iteration(%{iter_type: 4} = z) do
     # Octave:
     #   # Double secant step.
     #   c = u - 2*(b - a)/(fb - fa)*fu;
@@ -225,7 +225,7 @@ defmodule Integrator.NonlinearEqnRoot do
     #   if (abs (c - u) > 0.5*(b - a))
     #     c = 0.5 * (b + a);
     #   endif
-    #   itype = 5;
+    #   iter_type = 5;
 
     c = interpolate(z, :double_secant)
 
@@ -237,16 +237,16 @@ defmodule Integrator.NonlinearEqnRoot do
         c
       end
 
-    %{z | itype: 5, c: c}
+    %{z | iter_type: 5, c: c}
   end
 
-  defp compute_iteration(%{itype: 5} = z) do
+  defp compute_iteration(%{iter_type: 5} = z) do
     # Octave:
     #   # Bisection step.
     #   c = 0.5 * (b + a);
-    #   itype = 2;
+    #   iter_type = 2;
     c = interpolate(z, :bisect)
-    %{z | itype: 2, c: c}
+    %{z | iter_type: 2, c: c}
   end
 
   @spec compute_iteration_two_or_three(t()) :: t()
@@ -267,7 +267,7 @@ defmodule Integrator.NonlinearEqnRoot do
           end
       end
 
-    %{z | itype: z.itype + 1, c: c}
+    %{z | iter_type: z.iter_type + 1, c: c}
   end
 
   @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
@@ -311,7 +311,7 @@ defmodule Integrator.NonlinearEqnRoot do
     c = z.a - a0 / a1
 
     if a2 != 0 do
-      1..z.itype
+      1..z.iter_type
       |> Enum.reduce(c, fn _i, c ->
         pc = a0 + (a1 + a2 * (c - z.b)) * (c - z.a)
         pdc = a1 + a2 * (2 * c - z.a - z.b)
@@ -471,21 +471,21 @@ defmodule Integrator.NonlinearEqnRoot do
   @spec skip_bisection_if_successful_reduction(t()) :: t()
   defp skip_bisection_if_successful_reduction(z) do
     # Octave:
-    #   if (itype == 5 && (b - a) <= mba)
-    #     itype = 2;
+    #   if (iter_type == 5 && (b - a) <= mba)
+    #     iter_type = 2;
     #   endif
-    #   if (itype == 2)
+    #   if (iter_type == 2)
     #     mba = mu * (b - a);
     #   endif
 
     z =
-      if z.itype == 5 && z.b - z.a <= z.mu_ba do
-        %{z | itype: 2}
+      if z.iter_type == 5 && z.b - z.a <= z.mu_ba do
+        %{z | iter_type: 2}
       else
         z
       end
 
-    if z.itype == 2 do
+    if z.iter_type == 2 do
       # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd...
       %{z | mu_ba: @initial_mu * (z.b - z.a)}
     else
