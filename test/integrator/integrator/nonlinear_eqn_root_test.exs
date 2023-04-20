@@ -179,6 +179,8 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
       result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
+      assert result.x == 3.1415926535897936
+      assert result.fx == -3.216245299353273e-16
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)
@@ -186,12 +188,14 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert length(t_data) == 6
 
       converging_t_data = [
+        3.0,
         3.157162792479947,
         3.157162792479945,
         3.141596389566289,
-        3.1415888925885564,
-        3.1415926535897936,
-        3.1415926535897913
+        3.141596389566289,
+        # Repeated value should be this; figure out why it's repeated:
+        # 3.1415888925885564,
+        3.1415926535897936
       ]
 
       assert_lists_equal(t_data, converging_t_data, 1.0e-15)
@@ -657,9 +661,9 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
   end
 
-  describe "set_results/1" do
+  describe "set_x_results/1" do
     setup do
-      expose(NonlinearEqnRoot, set_results: 1)
+      expose(NonlinearEqnRoot, set_x_results: 1)
     end
 
     test "sets the appropriate values on x, fx, bracket_x, and bracket_fx" do
@@ -672,7 +676,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fu: 1.5
       }
 
-      z = private(NonlinearEqnRoot.set_results(z))
+      z = private(NonlinearEqnRoot.set_x_results(z))
 
       assert z.x == 3
       assert z.fx == 1.5

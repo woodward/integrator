@@ -131,7 +131,7 @@ defmodule Integrator.NonlinearEqnRoot do
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> set_results(z)
+      :halt -> set_x_results(z)
     end
   end
 
@@ -144,7 +144,7 @@ defmodule Integrator.NonlinearEqnRoot do
   # Private functions below here:
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
-  defp iterate(z, :halt, _zero_fn, _opts), do: set_results(z)
+  defp iterate(z, :halt, _zero_fn, _opts), do: set_x_results(z)
 
   defp iterate(z, _status, zero_fn, opts) do
     machine_eps = opts[:machine_eps]
@@ -157,11 +157,12 @@ defmodule Integrator.NonlinearEqnRoot do
       |> fn_eval_new_point(zero_fn, opts)
       |> check_for_non_monotonicity()
       |> bracket()
-      |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
 
     z =
       z
       |> skip_bisection_if_successful_reduction()
+      |> set_x_results()
+      |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
       |> update_u()
 
     status_2 = converged?(z, machine_eps, tolerance)
@@ -420,16 +421,15 @@ defmodule Integrator.NonlinearEqnRoot do
         end
       end
 
-    # The call to set_results() here is necessary for the call to the output_fn to work
-    {status, set_results(z)}
+    {status, z}
   end
 
-  @spec call_output_fn({convergence_status(), t()}, fun()) :: {convergence_status(), t()}
-  defp call_output_fn(result, nil = _output_fn), do: result
+  @spec call_output_fn(t(), fun()) :: t()
+  defp call_output_fn(z, nil = _output_fn), do: z
 
-  defp call_output_fn({status, z}, output_fn) do
-    output_fn.(z.c, z)
-    {status, z}
+  defp call_output_fn(z, output_fn) do
+    output_fn.(z.x, z)
+    z
   end
 
   @spec update_u(t()) :: t()
@@ -482,8 +482,8 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  @spec set_results(t()) :: t()
-  defp set_results(z) do
+  @spec set_x_results(t()) :: t()
+  defp set_x_results(z) do
     %{z | x: z.u, fx: z.fu, bracket_x: [z.a, z.b], bracket_fx: [z.fa, z.fb]}
   end
 
