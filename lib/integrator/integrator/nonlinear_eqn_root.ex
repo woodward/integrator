@@ -47,7 +47,7 @@ defmodule Integrator.NonlinearEqnRoot do
           #
           fn_eval_count: integer(),
           iteration_count: integer(),
-          # Change iter_type to a more descriptive atom later:
+          # Change iter_type to a more descriptive atom later (possibly?):
           iter_type: iter_type(),
           #
           bracket_x: [float()],
@@ -78,7 +78,7 @@ defmodule Integrator.NonlinearEqnRoot do
     #
     fn_eval_count: 0,
     iteration_count: 0,
-    # Change iter_type to a more descriptive atom later (possibly):
+    # Change iter_type to a more descriptive atom later (possibly?):
     iter_type: 1,
     #
     bracket_x: [],
@@ -149,9 +149,7 @@ defmodule Integrator.NonlinearEqnRoot do
       |> set_x_results()
       |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
 
-    if sign(z.fa) * sign(z.fb) > 0.0 do
-      raise InvalidInitialBracketError, step: z
-    end
+    if sign(z.fa) * sign(z.fb) > 0.0, do: raise(InvalidInitialBracketError, step: z)
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
@@ -159,9 +157,9 @@ defmodule Integrator.NonlinearEqnRoot do
     end
   end
 
-  def find_zero(zero_fn, a, opts) do
-    second_point = find_2nd_starting_point(zero_fn, a)
-    find_zero(zero_fn, [a, second_point.b], Keyword.merge(opts, fn_eval_count: second_point.fn_eval_count))
+  def find_zero(zero_fn, solo_point, opts) do
+    second_point = find_2nd_starting_point(zero_fn, solo_point)
+    find_zero(zero_fn, [solo_point, second_point.b], Keyword.merge(opts, fn_eval_count: second_point.fn_eval_count))
   end
 
   # ===========================================================================
@@ -264,10 +262,8 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @spec compute_iteration_two_or_three(t()) :: t()
   defp compute_iteration_two_or_three(z) do
-    length = length(Utils.unique([z.fa, z.fb, z.fd, z.fe]))
-
     c =
-      case length do
+      case length(Utils.unique([z.fa, z.fb, z.fd, z.fe])) do
         4 ->
           interpolate(z, :inverse_cubic_interpolation)
 
@@ -275,7 +271,7 @@ defmodule Integrator.NonlinearEqnRoot do
           if sign(z.c - z.a) * sign(z.c - z.b) > 0 do
             interpolate(z, :quadratic_interpolation_plus_newton)
           else
-            # what do we do here?  it's not handled in fzero.m
+            # what do we do here?  it's not handled in fzero.m...
             z.c
           end
       end
@@ -378,7 +374,7 @@ defmodule Integrator.NonlinearEqnRoot do
   @spec fn_eval_new_point(t(), fun(), Keyword.t()) :: t()
   defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
-    #  fval = fc    What is this used for?
+    #  fval = fc    What is this used for in Octave?
     # Perhaps move the incrementing of the iteration count elsewhere?
     iteration_count = z.iteration_count + 1
     fn_eval_count = z.fn_eval_count + 1
@@ -508,7 +504,13 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @spec set_x_results(t()) :: t()
   defp set_x_results(z) do
-    %{z | x: z.u, fx: z.fu, bracket_x: [z.a, z.b], bracket_fx: [z.fa, z.fb]}
+    %{
+      z
+      | x: z.u,
+        fx: z.fu,
+        bracket_x: [z.a, z.b],
+        bracket_fx: [z.fa, z.fb]
+    }
   end
 
   # ---------------------------------------
