@@ -107,6 +107,7 @@ defmodule Integrator.NonlinearEqnRoot do
 
     fa = zero_fn.(a)
     fb = zero_fn.(b)
+    fn_eval_count = 2 + Keyword.get(opts, :fn_eval_count, 0)
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
@@ -123,7 +124,7 @@ defmodule Integrator.NonlinearEqnRoot do
       fe: fu,
       fu: fu,
       #
-      fn_eval_count: 2,
+      fn_eval_count: fn_eval_count,
       itype: 1,
       mu_ba: @initial_mu * (b - a)
     }
@@ -139,10 +140,8 @@ defmodule Integrator.NonlinearEqnRoot do
   end
 
   def find_zero(zero_fn, a, opts) do
-    IO.puts("Do I get here????????????")
-    IO.inspect(a)
-    IO.inspect(opts)
-    find_2nd_starting_value(zero_fn, a)
+    result = find_2nd_starting_value(zero_fn, a)
+    find_zero(zero_fn, [a, result.b], Keyword.merge(opts, fn_eval_count: result.fn_eval_count))
   end
 
   @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()

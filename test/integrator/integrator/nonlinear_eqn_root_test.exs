@@ -210,7 +210,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(result.c, expected_x, 1.0e-14)
       assert_in_delta(result.fx, 0.0, 1.0e-15)
 
-      assert result.fn_eval_count == 8
+      assert result.fn_eval_count == 13
       assert result.iteration_count == 6
       assert result.itype == 4
 
