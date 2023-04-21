@@ -2,7 +2,6 @@ defmodule Integrator.NonlinearEqnRootTest do
   @moduledoc false
   use Integrator.DemoCase
   use Patch
-  import Nx, only: :sigils
 
   alias Integrator.NonlinearEqnRoot.{
     BracketingFailureError,
@@ -11,49 +10,9 @@ defmodule Integrator.NonlinearEqnRootTest do
     MaxIterationsExceededError
   }
 
-  alias Integrator.{DummyOutput, NonlinearEqnRoot, Utils}
+  alias Integrator.{DummyOutput, NonlinearEqnRoot}
 
   describe "find_zero" do
-    @tag :skip
-    test "an actual usage taken from OdeEventHandler" do
-      t_old = 2.155396117711071
-      t_new = 2.742956500140625
-
-      y_old = ~V[ 1.283429405203074e-02 -2.160506093425276e+00 ]f64
-      y_new = ~V[ -1.452959132853812 -2.187778875125423 ]f64
-
-      k_vals = ~M[
-        -2.160506093425276  -2.415858015466959  -2.525217131637079  -2.530906930089893  -2.373278736970216  -2.143782883869835  -2.187778875125423
-        -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
-      ]f64
-
-      _y_vals = Nx.stack([y_old, y_new]) |> Nx.transpose()
-      # t_vals = Nx.tensor(t_old, t_new)
-
-      # tnew = fzero(@(t2) evtfcn_val (evtfcn, t2, ...
-      # runge_kutta_interpolate (order, tvals, yvals, ...
-      # t2, k_vals), idx2), tvals, optimset ("TolX", 0));
-
-      refine = 4
-
-      zero_fn = fn t ->
-        # hermite_quartic_interpolation(t, x, der, t_out)
-        x_out = Utils.hermite_quartic_interpolation(t, y_old, k_vals, t_new)
-        x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
-
-        IO.inspect(x_out_as_cols)
-        # Nx.to_number(x_out_as_cols[0][0])
-      end
-
-      t_zero = NonlinearEqnRoot.find_zero(zero_fn, [t_old, t_new])
-
-      expected_t_zero = 2.161317515510217
-      assert_in_delta(t_zero, expected_t_zero, 1.0e-02)
-
-      _t_zero = 2.161317515510217
-      _y_zero = ~V[ 2.473525941362742e-15  -2.173424479824061e+00 ]f64
-    end
-
     test "sine function" do
       # Octave:
       # fun = @sin; % function
