@@ -124,7 +124,7 @@ defmodule Integrator.AdaptiveStepsize do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
-        |> call_event_fn(opts[:event_fn], order, opts)
+        |> call_event_fn(opts[:event_fn], interpolate_fn, opts)
         |> interpolate(interpolate_fn, opts[:refine])
         |> store_resuts(opts[:store_resuts?])
         |> call_output_fn(opts[:output_fn])
@@ -288,17 +288,20 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | terminal_output: result}
   end
 
-  def call_event_fn(step, event_fn, _order, _opts) when is_nil(event_fn) do
+  def call_event_fn(step, event_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
   end
 
-  def call_event_fn(step, event_fn, order, opts) do
-    result = OdeEventHandler.call_event_fn(event_fn, step.t_new, step.x_new, step.k_vals, order, opts)
-    status = result.status
+  def call_event_fn(step, event_fn, interpolate_fn, opts) do
+    result = OdeEventHandler.call_event_fn(event_fn, step, interpolate_fn, opts)
 
-    case status do
-      :continue -> step
-      :halt -> %{step | terminal_event: :halt}
+    case result do
+      :continue ->
+        step
+
+      {:halt, new_intermediate_step} ->
+        %{step | terminal_event: :halt}
+        |> merge_new_step(new_intermediate_step)
     end
   end
 

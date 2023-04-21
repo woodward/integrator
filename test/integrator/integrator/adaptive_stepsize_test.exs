@@ -177,7 +177,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       event_fn = fn _t, x ->
         answer = Nx.less_equal(x[0], Nx.tensor(0.0)) == nx_true
         answer = if answer, do: :halt, else: :continue
-        %{status: answer}
+        %{status: answer, value: x}
       end
 
       stepper_fn = &DormandPrince45.integrate/5
