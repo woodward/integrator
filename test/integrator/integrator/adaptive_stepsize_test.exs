@@ -367,7 +367,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # Set the max_number_of_errors to 1 so that an exception should be thrown:
       opts = [abs_tol: 1.0e-2, rel_tol: 1.0e-2, max_number_of_errors: 1]
 
-      assert_raise Integrator.MaxErrorsExceededError, "Too many errors", fn ->
+      assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
         AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
       end
     end

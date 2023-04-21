@@ -54,6 +54,13 @@ defmodule Integrator.AdaptiveStepsize do
     x_new_chunk: []
   ]
 
+  defmodule MaxErrorsExceededError do
+    defexception message: "Too many errors",
+                 error_count: 0,
+                 max_number_of_errors: 0,
+                 step: nil
+  end
+
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
 
