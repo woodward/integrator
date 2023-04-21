@@ -1,6 +1,6 @@
 defmodule IntegratorTest do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
 
   describe "test setup" do
     test "van_der_pol_fn" do

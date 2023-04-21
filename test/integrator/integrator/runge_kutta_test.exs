@@ -1,4 +1,4 @@
 defmodule Integrator.RungeKuttaTest do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
 end

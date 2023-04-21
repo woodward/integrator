@@ -1,4 +1,4 @@
-defmodule Integrator.DemoCase do
+defmodule Integrator.TestCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate

@@ -1,6 +1,6 @@
 defmodule Integrator.NxTest do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
   import Nx.Defn
 
   describe "getting a column" do

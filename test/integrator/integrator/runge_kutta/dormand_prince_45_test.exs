@@ -1,6 +1,6 @@
 defmodule Integrator.RungeKutta.DormandPrince45Test do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
 
   import Nx, only: :sigils
   alias Integrator.RungeKutta.DormandPrince45

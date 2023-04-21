@@ -1,6 +1,6 @@
 defmodule Integrator.NonlinearEqnRootTest do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
   use Patch
 
   alias Integrator.NonlinearEqnRoot.{

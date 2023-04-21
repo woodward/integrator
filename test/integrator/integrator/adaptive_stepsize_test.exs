@@ -1,6 +1,6 @@
 defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
-  use Integrator.DemoCase
+  use Integrator.TestCase
   import Nx, only: :sigils
 
   alias Integrator.{AdaptiveStepsize, Demo, DummyOutput}
