@@ -1,7 +1,7 @@
 defmodule Integrator.AdaptiveStepsize do
   @moduledoc false
   import Nx.Defn
-  alias Integrator.{MaxErrorsExceededError, OdeEventHandler, Utils}
+  alias Integrator.{MaxErrorsExceededError, NonlinearEqnRoot, Utils}
 
   defmodule ComputedStep do
     @moduledoc false
@@ -279,6 +279,16 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | x_new_chunk: x_out_as_cols, t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
   end
 
+  def interpolate_one_point(t_new, step, interpolate_fn) do
+    tadd = Nx.tensor(t_new)
+
+    t = Nx.stack([step.t_old, step.t_new])
+    x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
+
+    x_out = interpolate_fn.(t, x, step.k_vals, tadd)
+    x_out |> Utils.columns_as_list(0, 0) |> Enum.reverse() |> List.first()
+  end
+
   def call_output_fn(step, output_fn) when is_nil(output_fn) do
     step
   end
@@ -293,7 +303,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def call_event_fn(step, event_fn, interpolate_fn, opts) do
-    result = OdeEventHandler.call_event_fn(event_fn, step, interpolate_fn, opts)
+    result = call_event_fn_collapse(event_fn, step, interpolate_fn, opts)
 
     case result do
       :continue ->
@@ -303,6 +313,26 @@ defmodule Integrator.AdaptiveStepsize do
         %{step | terminal_event: :halt}
         |> merge_new_step(new_intermediate_step)
     end
+  end
+
+  def call_event_fn_collapse(event_fn, step, interpolate_fn, opts \\ []) do
+    result = event_fn.(step.t_new, step.x_new)
+
+    case result.status do
+      :continue -> :continue
+      :halt -> {:halt, compute_new_event_fn_step(event_fn, step, interpolate_fn, opts)}
+    end
+  end
+
+  def compute_new_event_fn_step(event_fn, step, interpolate_fn, opts) do
+    zero_fn = fn t ->
+      x = interpolate_one_point(t, step, interpolate_fn)
+      event_fn.(t, x) |> Map.get(:value) |> Nx.to_number()
+    end
+
+    root = NonlinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
+    x_new = interpolate_one_point(root.x, step, interpolate_fn)
+    %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
 
   @doc """
