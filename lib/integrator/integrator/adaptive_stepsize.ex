@@ -20,6 +20,9 @@ defmodule Integrator.AdaptiveStepsize do
     :t_new,
     :x_new,
     #
+    :t_new_rk_interpolate,
+    :x_new_rk_interpolate,
+    #
     :dt,
     :k_vals,
     #
@@ -216,6 +219,8 @@ defmodule Integrator.AdaptiveStepsize do
         t_old: step.t_new,
         x_new: computed_step.x_new,
         t_new: computed_step.t_new,
+        x_new_rk_interpolate: computed_step.x_new,
+        t_new_rk_interpolate: computed_step.t_new,
         k_vals: computed_step.k_vals,
         options_comp: computed_step.options_comp
     }
@@ -270,8 +275,8 @@ defmodule Integrator.AdaptiveStepsize do
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
 
-    t = Nx.stack([step.t_old, step.t_new])
-    x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
+    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
 
     x_out = interpolate_fn.(t, x, step.k_vals, tadd)
     x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
