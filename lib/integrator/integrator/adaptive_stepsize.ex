@@ -288,8 +288,8 @@ defmodule Integrator.AdaptiveStepsize do
   def interpolate_one_point(t_new, step, interpolate_fn) do
     tadd = Nx.tensor(t_new)
 
-    t = Nx.stack([step.t_old, step.t_new])
-    x = Nx.stack([step.x_old, step.x_new]) |> Nx.transpose()
+    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
 
     x_out = interpolate_fn.(t, x, step.k_vals, tadd)
     x_out |> Utils.columns_as_list(0, 0) |> Enum.reverse() |> List.first()

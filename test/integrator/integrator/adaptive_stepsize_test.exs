@@ -408,7 +408,17 @@ defmodule Integrator.AdaptiveStepsizeTest do
         ]f64
 
       opts = []
-      step = %AdaptiveStepsize{t_new: t_new, x_new: x_new, t_old: t_old, x_old: x_old, k_vals: k_vals}
+
+      step = %AdaptiveStepsize{
+        t_new: t_new,
+        x_new: x_new,
+        t_old: t_old,
+        x_old: x_old,
+        t_new_rk_interpolate: t_new,
+        x_new_rk_interpolate: x_new,
+        k_vals: k_vals
+      }
+
       interpolate_fn = &DormandPrince45.interpolate/4
 
       new_step = AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts)
@@ -440,7 +450,16 @@ defmodule Integrator.AdaptiveStepsizeTest do
           ]f64
 
       interpolate_fn = &DormandPrince45.interpolate/4
-      step = %AdaptiveStepsize{t_new: t_new, x_new: x_new, t_old: t_old, x_old: x_old, k_vals: k_vals}
+
+      step = %AdaptiveStepsize{
+        t_new: t_new,
+        x_new: x_new,
+        t_old: t_old,
+        x_old: x_old,
+        t_new_rk_interpolate: t_new,
+        x_new_rk_interpolate: x_new,
+        k_vals: k_vals
+      }
 
       t = 2.161317515510217
       x_interpolated = AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn)
