@@ -373,7 +373,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
   end
 
-  describe "ode_event_handler" do
+  describe "call_event_fn" do
     setup do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
@@ -391,9 +391,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new}
       interpolate_fn_does_not_matter = & &1
 
-      result = AdaptiveStepsize.call_event_fn_collapse(event_fn, step, interpolate_fn_does_not_matter, opts)
+      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn_does_not_matter, opts)
 
-      assert result == :continue
+      assert new_step.terminal_event == :continue
     end
 
     test ":halt event for Demo.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
@@ -411,14 +411,19 @@ defmodule Integrator.AdaptiveStepsizeTest do
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new, t_old: t_old, x_old: x_old, k_vals: k_vals}
       interpolate_fn = &DormandPrince45.interpolate/4
 
-      {:halt, new_intermediate_step} = AdaptiveStepsize.call_event_fn_collapse(event_fn, step, interpolate_fn, opts)
+      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts)
+      assert new_step.terminal_event == :halt
 
-      assert_in_delta(new_intermediate_step.t_new, 2.161317515510217, 1.0e-06)
-      assert_in_delta(Nx.to_number(new_intermediate_step.x_new[0]), 2.473525941362742e-15, 1.0e-07)
-      assert_in_delta(Nx.to_number(new_intermediate_step.x_new[1]), -2.173424479824061, 1.0e-07)
+      assert_in_delta(new_step.t_new, 2.161317515510217, 1.0e-06)
+      assert_in_delta(Nx.to_number(new_step.x_new[0]), 2.473525941362742e-15, 1.0e-07)
+      assert_in_delta(Nx.to_number(new_step.x_new[1]), -2.173424479824061, 1.0e-07)
 
-      assert_in_delta(Nx.to_number(new_intermediate_step.k_vals[0][0]), -2.160506093425276, 1.0e-12)
-      assert new_intermediate_step.options_comp != nil
+      assert_in_delta(new_step.t_old, 2.155396117711071, 1.0e-06)
+      assert_in_delta(Nx.to_number(new_step.x_old[0]), 1.283429405203074e-02, 1.0e-07)
+      assert_in_delta(Nx.to_number(new_step.x_old[1]), -2.160506093425276, 1.0e-07)
+
+      assert_in_delta(Nx.to_number(new_step.k_vals[0][0]), -2.160506093425276, 1.0e-12)
+      assert new_step.options_comp != nil
     end
   end
 

@@ -279,6 +279,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | x_new_chunk: x_out_as_cols, t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
   end
 
+  # Colapse this into the above function?
   def interpolate_one_point(t_new, step, interpolate_fn) do
     tadd = Nx.tensor(t_new)
 
@@ -303,24 +304,22 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   def call_event_fn(step, event_fn, interpolate_fn, opts) do
-    result = call_event_fn_collapse(event_fn, step, interpolate_fn, opts)
-
-    case result do
-      :continue ->
-        step
-
-      {:halt, new_intermediate_step} ->
-        %{step | terminal_event: :halt}
-        |> merge_new_step(new_intermediate_step)
-    end
-  end
-
-  def call_event_fn_collapse(event_fn, step, interpolate_fn, opts \\ []) do
+    # Pass opts to event_fn?
     result = event_fn.(step.t_new, step.x_new)
 
     case result.status do
-      :continue -> :continue
-      :halt -> {:halt, compute_new_event_fn_step(event_fn, step, interpolate_fn, opts)}
+      :continue ->
+        step
+
+      :halt ->
+        new_step = compute_new_event_fn_step(event_fn, step, interpolate_fn, opts)
+
+        %{
+          step
+          | terminal_event: :halt,
+            x_new: new_step.x_new,
+            t_new: new_step.t_new
+        }
     end
   end
 
