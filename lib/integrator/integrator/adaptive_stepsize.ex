@@ -275,24 +275,27 @@ defmodule Integrator.AdaptiveStepsize do
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
 
-    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
-    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    x_out_as_cols = do_interpolation(step, interpolate_fn, tadd)
 
-    x_out = interpolate_fn.(t, x, step.k_vals, tadd)
-    x_out_as_cols = Utils.columns_as_list(x_out, 0, refine - 1) |> Enum.reverse()
-
-    %{step | x_new_chunk: x_out_as_cols, t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
+    %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
   end
 
-  # Colapse this into the above function?
   def interpolate_one_point(t_new, step, interpolate_fn) do
-    tadd = Nx.tensor(t_new)
+    do_interpolation(step, interpolate_fn, Nx.tensor(t_new)) |> List.first()
+  end
+
+  def do_interpolation(step, interpolate_fn, tadd) do
+    tadd_length =
+      case Nx.shape(tadd) do
+        {} -> 1
+        {length} -> length
+      end
 
     t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
     x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
 
     x_out = interpolate_fn.(t, x, step.k_vals, tadd)
-    x_out |> Utils.columns_as_list(0, 0) |> Enum.reverse() |> List.first()
+    x_out |> Utils.columns_as_list(0, tadd_length - 1)
   end
 
   def call_output_fn(step, output_fn) when is_nil(output_fn) do
