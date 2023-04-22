@@ -13,6 +13,46 @@ defmodule Integrator.AdaptiveStepsize do
     ]
   end
 
+  @type t :: %__MODULE__{
+          t_old: Nx.t() | nil
+          # :x_old,
+          # #
+          # :t_new,
+          # :x_new,
+          # #
+          # :t_new_rk_interpolate,
+          # :x_new_rk_interpolate,
+          # #
+          # :dt,
+          # :k_vals,
+          # #
+          # options_comp: 0.0,
+          # #
+          # count_loop__increment_step: 0,
+          # count_cycles__compute_step: 0,
+          # count_save: 2,
+          # #
+          # # ireject in Octave:
+          # error_count: 0,
+          # i_step: 0,
+          # #
+          # unhandled_termination: true,
+          # terminal_event: :continue,
+          # terminal_output: :continue,
+          # #
+          # # The output of the integration:
+          # ode_t: [],
+          # ode_x: [],
+          # #
+          # # The output of the integration, including the interpolated points:
+          # output_t: [],
+          # output_x: [],
+          # #
+          # # The last chunk of points; will include the computed point plus the interpolated points (if
+          # # interpolation is enabled) or just the computed point (if interpolation is disabled):
+          # t_new_chunk: [],
+          # x_new_chunk: []
+        }
   defstruct [
     :t_old,
     :x_old,
@@ -75,6 +115,7 @@ defmodule Integrator.AdaptiveStepsize do
   @nx_true Nx.tensor(1, type: :u8)
   # @nx_false Nx.tensor(0, type: :u8)
 
+  @spec default_opts() :: Keyword.t()
   def default_opts() do
     [
       epsilon: @epsilon,
@@ -89,6 +130,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
+  @spec integrate(fun(), fun(), fun(), Nx.t() | float, Nx.t() | float(), float, Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
