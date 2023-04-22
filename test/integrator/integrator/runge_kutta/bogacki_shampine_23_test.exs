@@ -37,6 +37,33 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
       assert_all_close(x_est, expected_x_est, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
+
+    test "works even for zero k_vals" do
+      t = Nx.tensor(0.0, type: :f64)
+      x = Nx.tensor([2.0, 0.0], type: :f64)
+      dt = Nx.tensor(1.778279410038923e-02, type: :f64)
+
+      k_vals = ~M[
+        0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0
+      ]f64
+
+      {t_next, x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
+
+      expected_t_next = Nx.tensor(1.778279410038923e-02, type: :f64)
+      expected_x_next = ~V[ 1.999689395647235 -3.463209532501924e-02 ]f64
+      expected_x_est = ~V[ 1.999690064807873 -3.463392797090165e-02 ]f64
+
+      expected_k = ~M[
+         0.0                -0.017782794100389  -0.025962678677046  -0.034632095325019
+        -2.000000000000000  -1.946651617698832  -1.921899422043582  -1.895836133849257
+      ]f64
+
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
+    end
   end
 
   describe "hermite_cubic_interpolation" do
