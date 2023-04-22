@@ -130,10 +130,12 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), [Nx.t() | float()], float, Nx.t(), integer(), Keyword.t()) :: t()
-  def integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts \\ []) do
+  @spec integrate(fun(), fun(), fun(), Nx.t() | [float()], float, Nx.t(), integer(), Keyword.t()) :: t()
+  def integrate(stepper_fn, interpolate_fn, ode_fn, t_start_and_t_end, initial_tstep, x0, order, opts \\ []) do
+    {t_start, t_end, fixed_times} = t_start_t_end(t_start_and_t_end)
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
+    opts = if fixed_times, do: Keyword.merge(opts, refine: 1), else: opts
 
     %__MODULE__{
       t_new: t_start,
@@ -181,6 +183,15 @@ defmodule Integrator.AdaptiveStepsize do
     sum = t
 
     {sum, comp}
+  end
+
+  defp t_start_t_end([t_start, t_end]), do: {t_start, t_end, nil}
+
+  defp t_start_t_end(t_start_and_t_end) do
+    t_start = t_start_and_t_end[0] |> Nx.to_number()
+    {length} = Nx.shape(t_start_and_t_end)
+    t_end = t_start_and_t_end[length - 1] |> Nx.to_number()
+    {t_start, t_end, t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))}
   end
 
   defp store_first_point(step, t_start, x0, true = _store_resuts?) do
