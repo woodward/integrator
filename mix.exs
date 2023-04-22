@@ -65,7 +65,9 @@ defmodule Integrator.MixProject do
         "README.md",
         "guides/intro_to_integrator.livemd",
         "guides/examples_of_usage.livemd",
-        "guides/nonlinear_eqn_root.livemd"
+        "guides/nonlinear_eqn_root.livemd",
+        "guides/dormand_prince_45.livemd",
+        "guides/bogacki_shampine_23.livemd"
       ],
       before_closing_head_tag: &before_closing_head_tag/1,
       javascript_config_path: nil
