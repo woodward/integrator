@@ -42,6 +42,39 @@ defmodule Integrator.Utils do
     end
   end
 
+  @doc """
+  Performs a 3rd order Hermite interpolation.
+
+  See [Wikipedia](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
+  """
+  defn hermite_cubic_interpolation(t, x, der, t_out) do
+    # Octave:
+    #   dt = (t(2) - t(1));
+    #   s = (t_out - t(1)) / dt;
+    #   x_out = ((1 + 2*s) .* (1-s).^2) .* x(:,1) + ...
+    #           (s .* (1-s).^2 * dt   ) .* der(:,1) + ...
+    #           ((3-2*s) .* s.^2      ) .* x(:,end) + ...
+    #           ((s-1) .* s.^2   * dt ) .* der(:,end);
+
+    dt = t[1] - t[0]
+    s = (t_out - t[0]) / dt
+
+    x_col1 = Nx.slice_along_axis(x, 0, 1, axis: 1)
+    der_col_1 = Nx.slice_along_axis(der, 0, 1, axis: 1)
+    x_col2 = Nx.slice_along_axis(x, 1, 1, axis: 1)
+    der_last_col = Nx.slice_along_axis(der, 3, 1, axis: 1)
+
+    s_minus_1 = 1 - s
+    s_minus_1_sq = s_minus_1 * s_minus_1
+
+    x1 = (1 + 2 * s) * s_minus_1_sq * x_col1
+    x2 = s * s_minus_1_sq * dt * der_col_1
+    x3 = (3 - 2 * s) * s * s * x_col2
+    x4 = (s - 1) * s * s * dt * der_last_col
+
+    x1 + x2 + x3 + x4
+  end
+
   @coefs_u_half Nx.tensor(
                   [
                     6_025_192_743 / 30_085_553_152,
@@ -64,29 +97,24 @@ defmodule Integrator.Utils do
   """
   defn hermite_quartic_interpolation(t, x, der, t_out) do
     # Octave code:
-    #   persistent coefs_u_half = ...
-    #   [6025192743/30085553152; 0; 51252292925/65400821598;
-    #    -2691868925/45128329728; 187940372067/1594534317056;
-    #    -1776094331/19743644256; 11237099/235043384];
+    #   dt = t(2) - t(1);
+    #   u_half = x(:,1) + (1/2) * dt * (der(:,1:7) * coefs_u_half);
 
-    # dt = t(2) - t(1);
-    # u_half = x(:,1) + (1/2) * dt * (der(:,1:7) * coefs_u_half);
+    #   ## Rescale time on [0,1]
+    #   s = (t_out - t(1)) / dt;
 
-    # ## Rescale time on [0,1]
-    # s = (t_out - t(1)) / dt;
+    #   ## Hermite basis functions
+    #   ## H0 = 1   - 11*s.^2 + 18*s.^3 -  8*s.^4;
+    #   ## H1 =   s -  4*s.^2 +  5*s.^3 -  2*s.^4;
+    #   ## H2 =       16*s.^2 - 32*s.^3 + 16*s.^4;
+    #   ## H3 =     -  5*s.^2 + 14*s.^3 -  8*s.^4;
+    #   ## H4 =          s.^2 -  3*s.^3 +  2*s.^4;
 
-    # ## Hermite basis functions
-    # ## H0 = 1   - 11*s.^2 + 18*s.^3 -  8*s.^4;
-    # ## H1 =   s -  4*s.^2 +  5*s.^3 -  2*s.^4;
-    # ## H2 =       16*s.^2 - 32*s.^3 + 16*s.^4;
-    # ## H3 =     -  5*s.^2 + 14*s.^3 -  8*s.^4;
-    # ## H4 =          s.^2 -  3*s.^3 +  2*s.^4;
-
-    # x_out = (1   - 11*s.^2 + 18*s.^3 -  8*s.^4) .* x(:,1) + ...
-    #         (  s -  4*s.^2 +  5*s.^3 -  2*s.^4) .* (dt * der(:,1)) + ...
-    #         (      16*s.^2 - 32*s.^3 + 16*s.^4) .* u_half + ...
-    #         (    -  5*s.^2 + 14*s.^3 -  8*s.^4) .* x(:,2) + ...
-    #         (         s.^2 -  3*s.^3 +  2*s.^4) .* (dt * der(:,end));
+    #   x_out = (1   - 11*s.^2 + 18*s.^3 -  8*s.^4) .* x(:,1) + ...
+    #           (  s -  4*s.^2 +  5*s.^3 -  2*s.^4) .* (dt * der(:,1)) + ...
+    #           (      16*s.^2 - 32*s.^3 + 16*s.^4) .* u_half + ...
+    #           (    -  5*s.^2 + 14*s.^3 -  8*s.^4) .* x(:,2) + ...
+    #           (         s.^2 -  3*s.^3 +  2*s.^4) .* (dt * der(:,end));
 
     dt = t[1] - t[0]
 

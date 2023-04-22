@@ -80,6 +80,37 @@ defmodule Integrator.UtilsTest do
     end
   end
 
+  describe "hermite_cubic_interpolation" do
+    setup do
+      # These test values were obtained from Octave:
+
+      t = ~V[ 19.93160917528972   19.98632183505794 ]f64
+
+      x = ~M[ 2.006095079498698e+00   2.008123006213831e+00
+              9.651712593193962e-02  -1.946454118495647e-02
+          ]f64
+
+      der = ~M[
+        9.651712593193962e-02   3.365219338140671e-02   9.898623457268760e-03  -1.946454118495647e-02
+       -2.298003161127339e+00  -2.110870447939130e+00  -2.037468411516576e+00  -1.949095655969686e+00
+      ]f64
+
+      t_out = ~V[ 19.94528734023178   19.95896550517383   19.97264367011589   19.98632183505794 ]f64
+
+      expected_x_out = ~M[
+        2.007204462555976e+00   2.007902251042804e+00   2.008203435436362e+00   2.008123006213831e+00
+        6.571298789074770e-02   3.614008517096150e-02   7.760286052434550e-03  -1.946454118495647e-02
+      ]f64
+
+      [t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out]
+    end
+
+    test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
+      x_out = Utils.hermite_cubic_interpolation(t, x, der, t_out)
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-13, rtol: 1.0e-13)
+    end
+  end
+
   describe "zero_vector" do
     test "creates a zero vector with the length and type of x" do
       x = Nx.tensor([1.0, 2.0, 3.0], type: :f64)

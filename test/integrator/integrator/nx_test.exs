@@ -5,15 +5,17 @@ defmodule Integrator.NxTest do
 
   describe "getting a column" do
     test "can get a column from a matrix" do
-      full_matrix = Nx.iota({3, 4})
+      # full_matrix = Nx.iota({3, 4})
       # IO.inspect(full_matrix, label: "full_matrix")
-      first_column = Nx.slice_along_axis(full_matrix, 0, 1, axis: 1)
+      # first_column = Nx.slice_along_axis(full_matrix, 0, 1, axis: 1)
       # IO.inspect(first_column, label: "first_column")
-      _column_reshaped = Nx.flatten(first_column)
+      # column_reshaped = Nx.flatten(first_column)
       # IO.inspect(column_reshaped, label: "column_reshaped")
 
-      _second_column = Nx.slice_along_axis(full_matrix, 1, 1, axis: 1)
+      # second_column = Nx.slice_along_axis(full_matrix, 1, 1, axis: 1)
       # IO.inspect(second_column, label: "second_column")
+      # second_column_reshaped = Nx.flatten(second_column)
+      # IO.inspect(second_column_reshaped, label: "second_column_reshaped")
     end
   end
 

@@ -3,22 +3,27 @@
 This code is NOT USED in any way in the Elixir Integrator library; it is just included 
 here purely as a reference, and is also used to generate the Octave test data (see test/fixtures/octave_results).
 
-The requisite files to run ode45 were copied from:
+The requisite files to run ode45 and ode23 were copied from:
 https://github.com/gnu-octave/octave/tree/default/scripts/ode
 
 and were flattened into this directory.
 
-Octave ode45 documentation:
+Octave ode45 & ode23 documentation:
 https://octave.sourceforge.io/octave/function/ode45.html
+https://octave.sourceforge.io/octave/function/ode23.html
 
-Matlab ode45 documentation:
+Matlab ode45 & ode23 documentation:
 https://www.mathworks.com/help/matlab/ref/ode45.html
+https://www.mathworks.com/help/matlab/ref/ode23.html
 
 
 ## Example: Solve the Van der Pol equation
 
 fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
 [t,y] = ode45 (fvdp, [0, 20], [2, 0]);
+OR
+[t,y] = ode23 (fvdp, [0, 20], [2, 0]);
+[t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset ("Refine", 4));
 
 To simulate with more precision:  
 opts = odeset("AbsTol", 1.0e-10, "RelTol", 1.0e-10)

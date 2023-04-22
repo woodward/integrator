@@ -1,5 +1,7 @@
 defmodule Integrator.RungeKutta do
-  @moduledoc false
+  @moduledoc """
+  See the [list of Runge-Kutta methods](https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods)
+  """
 
   # @callback integrate(fn(), t, x, dt, k_vals) :: {}
   @callback integrate(any(), any(), any(), any(), any()) :: {any(), any(), any(), any()}
