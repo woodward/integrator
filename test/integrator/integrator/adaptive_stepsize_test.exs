@@ -1,6 +1,8 @@
 defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
   use Integrator.TestCase
+  use Patch
+
   import Nx, only: :sigils
 
   alias Integrator.{AdaptiveStepsize, Demo, DummyOutput}
@@ -375,6 +377,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
   describe "call_event_fn" do
     setup do
+      expose(AdaptiveStepsize, call_event_fn: 4)
+
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
         answer = if value <= 0.0, do: :halt, else: :continue
@@ -391,7 +395,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new}
       interpolate_fn_does_not_matter = & &1
 
-      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn_does_not_matter, opts)
+      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn_does_not_matter, opts))
 
       assert new_step.terminal_event == :continue
     end
@@ -421,7 +425,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       interpolate_fn = &DormandPrince45.interpolate/4
 
-      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts)
+      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts))
       assert new_step.terminal_event == :halt
 
       assert_in_delta(new_step.t_new, 2.161317515510217, 1.0e-06)
@@ -438,6 +442,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "interpolate_one_point" do
+    setup do
+      expose(AdaptiveStepsize, interpolate_one_point: 3)
+    end
+
     test "works" do
       t_old = 2.155396117711071
       t_new = 2.742956500140625
@@ -462,7 +470,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       }
 
       t = 2.161317515510217
-      x_interpolated = AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn)
+      x_interpolated = private(AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn))
 
       # From Octave:
       expected_x_interpolated = ~V[ 2.473525941362742e-15 -2.173424479824061  ]f64
@@ -489,6 +497,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "compute_next_timestep" do
+    setup do
+      expose(AdaptiveStepsize, compute_next_timestep: 6)
+    end
+
     test "basic case" do
       dt = 0.068129
       error = 0.0015164936598390992
@@ -496,7 +508,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 0.0
       t_end = 2.0
 
-      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16)
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16))
 
       expected_dt = 0.1022
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
@@ -509,7 +521,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 0.0
       t_end = 2.0
 
-      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, epsilon: 2.2204e-16)
+      new_dt =
+        private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, epsilon: 2.2204e-16))
 
       expected_dt = 0.05
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
@@ -522,7 +535,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 19.711
       t_end = 20.0
 
-      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16)
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16))
 
       expected_dt = 0.289
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
@@ -530,10 +543,14 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "initial_empty_k_vals" do
+    setup do
+      expose(AdaptiveStepsize, initial_empty_k_vals: 2)
+    end
+
     test "returns a tensor with zeros that's the correct size" do
       order = 5
       x = ~V[ 1.0 2.0 3.0 ]f64
-      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
+      k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
 
       expected_k_vals = ~M[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
