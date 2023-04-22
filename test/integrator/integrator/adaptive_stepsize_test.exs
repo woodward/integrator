@@ -6,7 +6,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   import Nx, only: :sigils
 
   alias Integrator.{AdaptiveStepsize, Demo, DummyOutput}
-  alias Integrator.RungeKutta.DormandPrince45
+  alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
   describe "integrate" do
     test "works" do
@@ -372,6 +372,47 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
         AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
       end
+    end
+
+    test "works - uses Bogacki-Shampine23" do
+      stepper_fn = &BogackiShampine23.integrate/5
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 20.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [refine: 4]
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 1.778279410038923e-02
+
+      #  Octave:
+      #    fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
+      #    [t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset( "Refine", 4));
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 189
+      assert result.count_loop__increment_step == 171
+      assert result.count_save == 2
+      assert result.unhandled_termination == true
+      assert length(result.ode_t) == 172
+      assert length(result.ode_x) == 172
+      assert length(result.output_t) == 685
+      assert length(result.output_x) == 685
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_in_delta(last_time, 20.0, 1.0e-10)
+
+      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
+
+      assert_lists_equal(result.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
   end
 
