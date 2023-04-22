@@ -62,6 +62,7 @@ defmodule Integrator.Utils do
     x_col1 = Nx.slice_along_axis(x, 0, 1, axis: 1)
     der_col_1 = Nx.slice_along_axis(der, 0, 1, axis: 1)
     x_col2 = Nx.slice_along_axis(x, 1, 1, axis: 1)
+    # Note that we are assuming "der" has 4 columns:
     der_last_col = Nx.slice_along_axis(der, 3, 1, axis: 1)
 
     s_minus_1 = 1 - s
@@ -137,6 +138,7 @@ defmodule Integrator.Utils do
     x_col2 = Nx.slice_along_axis(x, 1, 1, axis: 1)
     x4 = (-5.0 * s2 + 14.0 * s3 - 8.0 * s4) * x_col2
 
+    # Note that we are assuming that "der" has 7 columns:
     der_last_col = Nx.slice_along_axis(der, 6, 1, axis: 1)
     x5 = (s2 - 3.0 * s3 + 2.0 * s4) * (dt * der_last_col)
 
