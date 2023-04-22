@@ -26,7 +26,7 @@ defmodule Integrator do
     opts = merged_opts |> Keyword.merge(integrator_mod.default_opts()) |> Keyword.merge(opts)
 
     initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
-    AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, Nx.to_number(initial_tstep), x0, order, opts)
+    AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], Nx.to_number(initial_tstep), x0, order, opts)
   end
 
   def default_opts() do

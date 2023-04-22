@@ -24,7 +24,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
@@ -61,7 +61,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.007418363820761442
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 1037
       assert result.count_loop__increment_step == 1027
@@ -99,7 +99,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
@@ -142,7 +142,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
@@ -193,7 +193,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 9
       assert result.count_loop__increment_step == 8
@@ -242,7 +242,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
@@ -292,7 +292,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 1
       assert result.count_loop__increment_step == 1
@@ -339,7 +339,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
@@ -370,7 +370,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       opts = [abs_tol: 1.0e-2, rel_tol: 1.0e-2, max_number_of_errors: 1]
 
       assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
-        AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+        AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
       end
     end
 
@@ -393,7 +393,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #    fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
       #    [t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset( "Refine", 4));
 
-      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts)
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts)
 
       assert result.count_cycles__compute_step == 189
       assert result.count_loop__increment_step == 171

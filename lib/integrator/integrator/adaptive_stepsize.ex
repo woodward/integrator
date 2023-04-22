@@ -130,8 +130,8 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), Nx.t() | float, Nx.t() | float(), float, Nx.t(), integer(), Keyword.t()) :: t()
-  def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
+  @spec integrate(fun(), fun(), fun(), [Nx.t() | float()], float, Nx.t(), integer(), Keyword.t()) :: t()
+  def integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
 
