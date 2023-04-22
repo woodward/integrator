@@ -9,7 +9,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
     assert DormandPrince45.order() == 5
   end
 
-  describe "dormand_prince" do
+  describe "integrate/5" do
     test "gives the correct result" do
       t = Nx.tensor(19.711, type: :f64)
       x = Nx.tensor([1.9265, 0.7353], type: :f64)
