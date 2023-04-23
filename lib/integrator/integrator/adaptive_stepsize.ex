@@ -1,9 +1,20 @@
 defmodule Integrator.AdaptiveStepsize do
-  @moduledoc false
+  @moduledoc """
+  Integrates a set of ODEs with an adaptive timestep
+  """
+
   alias Integrator.{MaxErrorsExceededError, NonlinearEqnRoot, Utils}
 
   defmodule ComputedStep do
     @moduledoc false
+
+    @type t :: %__MODULE__{
+            t_new: Nx.t(),
+            x_new: Nx.t(),
+            k_vals: Nx.t(),
+            options_comp: Nx.t()
+          }
+
     defstruct [
       :t_new,
       :x_new,
@@ -13,45 +24,45 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @type t :: %__MODULE__{
-          t_old: Nx.t() | nil
-          # :x_old,
-          # #
-          # :t_new,
-          # :x_new,
-          # #
-          # :t_new_rk_interpolate,
-          # :x_new_rk_interpolate,
-          # #
-          # :dt,
-          # :k_vals,
-          # #
-          # options_comp: 0.0,
-          # fixed_times: nil,
-          # #
-          # count_loop__increment_step: 0,
-          # count_cycles__compute_step: 0,
-          # count_save: 2,
-          # #
-          # # ireject in Octave:
-          # error_count: 0,
-          # i_step: 0,
-          # #
-          # unhandled_termination: true,
-          # terminal_event: :continue,
-          # terminal_output: :continue,
-          # #
-          # # The output of the integration:
-          # ode_t: [],
-          # ode_x: [],
-          # #
-          # # The output of the integration, including the interpolated points:
-          # output_t: [],
-          # output_x: [],
-          # #
-          # # The last chunk of points; will include the computed point plus the interpolated points (if
-          # # interpolation is enabled) or just the computed point (if interpolation is disabled):
-          # t_new_chunk: [],
-          # x_new_chunk: []
+          t_old: Nx.t() | nil,
+          x_old: Nx.t() | nil,
+          #
+          t_new: Nx.t() | nil,
+          x_new: Nx.t() | nil,
+          #
+          t_new_rk_interpolate: Nx.t() | nil,
+          x_new_rk_interpolate: Nx.t() | nil,
+          #
+          dt: float(),
+          k_vals: Nx.t() | nil,
+          #
+          options_comp: Nx.t() | float() | nil,
+          fixed_times: [float()] | nil,
+          #
+          count_loop__increment_step: integer(),
+          count_cycles__compute_step: integer(),
+          count_save: integer(),
+          #
+          # ireject in Octave:
+          error_count: integer(),
+          i_step: integer(),
+          #
+          unhandled_termination: boolean(),
+          terminal_event: integration_status(),
+          terminal_output: integration_status(),
+          #
+          # The output of the integration:
+          ode_t: [float()],
+          ode_x: [Nx.t()],
+          #
+          # The output of the integration, including the interpolated points:
+          output_t: [float()],
+          output_x: [Nx.t()],
+          #
+          # The last chunk of points; will include the computed point plus the interpolated points (if
+          # interpolation is enabled) or just the computed point (if interpolation is disabled):
+          t_new_chunk: [float()],
+          x_new_chunk: [Nx.t()]
         }
   defstruct [
     :t_old,
@@ -103,6 +114,9 @@ defmodule Integrator.AdaptiveStepsize do
                  step: nil
   end
 
+  @type integration_status :: :halt | :continue
+  @type refine_strategy :: integer() | :fixed_times
+
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
 
@@ -117,21 +131,21 @@ defmodule Integrator.AdaptiveStepsize do
   @epsilon 2.2204e-16
 
   @nx_true Nx.tensor(1, type: :u8)
-  # @nx_false Nx.tensor(0, type: :u8)
 
   @doc """
+  Integrates a set of ODEs.
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
   @spec integrate(fun(), fun(), fun(), Nx.t() | [float()], float, Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start_and_t_end, initial_tstep, x0, order, opts \\ []) do
-    {t_start, t_end, fixed_times} = parse_t_start_t_end(t_start_and_t_end)
+    {t_start, t_end, fixed_times} = parse_start_end(t_start_and_t_end)
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
 
-    # Broadcast starting conditions as the first output point (if there is an output function):
+    # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
 
-    # If there are fixed output times, then refine can no longer be an integer value:
+    # If there are fixed output times, then refine can no longer be an integer value (such as 1 or 4):
     opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
 
     %__MODULE__{
@@ -149,9 +163,10 @@ defmodule Integrator.AdaptiveStepsize do
   # ===========================================================================
   # Private functions below here:
 
-  defp parse_t_start_t_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
+  @spec parse_start_end([float() | Nx.t()] | Nx.t()) :: {float(), float(), [float()] | nil}
+  defp parse_start_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
 
-  defp parse_t_start_t_end(t_start_and_t_end) do
+  defp parse_start_end(t_start_and_t_end) do
     t_start = t_start_and_t_end[0] |> Nx.to_number()
     {length} = Nx.shape(t_start_and_t_end)
 
@@ -163,12 +178,14 @@ defmodule Integrator.AdaptiveStepsize do
     {t_start, t_end, remaining_fixed_times}
   end
 
+  @spec store_first_point(t(), float(), Nx.t(), boolean()) :: t()
   defp store_first_point(step, t_start, x0, true = _store_resuts?) do
     %{step | output_t: [t_start], output_x: [x0], ode_t: [t_start], ode_x: [x0]}
   end
 
   defp store_first_point(step, _t_start, _x0, _store_resuts?), do: step
 
+  @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
   defp initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
     k_length = order + 2
@@ -177,6 +194,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(0.0, {length_x, k_length})
   end
 
+  @spec step_forward(t(), float(), float(), integration_status(), fun(), fun(), fun(), integer(), Keyword.t()) :: t()
   defp step_forward(step, t_old, t_end, _status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
        when abs(t_old - t_end) < @zero_tolerance or t_old > t_end do
     step
@@ -211,12 +229,15 @@ defmodule Integrator.AdaptiveStepsize do
     |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
+  @spec less_than_one?(Nx.t()) :: boolean()
   defp less_than_one?(error_est), do: Nx.less(error_est, 1.0) == @nx_true
 
+  @spec halt?(t()) :: integration_status()
   defp halt?(%{terminal_event: :halt} = _step), do: :halt
   defp halt?(%{terminal_output: :halt} = _step), do: :halt
   defp halt?(_step), do: :continue
 
+  @spec bump_error_count(t(), Keyword.t()) :: t()
   defp bump_error_count(step, opts) do
     step = %{step | error_count: step.error_count + 1}
 
@@ -231,6 +252,7 @@ defmodule Integrator.AdaptiveStepsize do
     step
   end
 
+  @spec t_next(t(), float()) :: float()
   defp t_next(%{error_count: error_count} = step, dt) when error_count > 0 do
     # Update this into step somehow???
     Nx.to_number(step.t_old) + dt
@@ -240,6 +262,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.to_number(step.t_new)
   end
 
+  @spec reverse_results(t()) :: t()
   defp reverse_results(step) do
     %{
       step
@@ -252,6 +275,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Formula taken from Hairer
+  @spec compute_next_timestep(float(), float(), integer(), float(), float(), Keyword.t()) :: float()
   defp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     # Avoid divisions by zero:
     error = error + opts[:epsilon]
@@ -268,6 +292,7 @@ defmodule Integrator.AdaptiveStepsize do
     min(abs(dt), abs(t_end - t_old))
   end
 
+  @spec increment_and_reset_counters(t()) :: t()
   defp increment_and_reset_counters(step) do
     %{
       step
@@ -279,20 +304,25 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
+  @spec merge_new_step(t(), ComputedStep.t()) :: t()
   defp merge_new_step(step, computed_step) do
     %{
       step
       | x_old: step.x_new,
         t_old: step.t_new,
+        #
         x_new: computed_step.x_new,
         t_new: computed_step.t_new,
+        #
         x_new_rk_interpolate: computed_step.x_new,
         t_new_rk_interpolate: computed_step.t_new,
+        #
         k_vals: computed_step.k_vals,
         options_comp: computed_step.options_comp
     }
   end
 
+  @spec store_resuts(t(), boolean()) :: t()
   defp store_resuts(step, false = _store_resuts?) do
     step
   end
@@ -307,10 +337,12 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
+  @spec increment_compute_counter(t()) :: t()
   defp increment_compute_counter(step) do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
+  @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -333,12 +365,13 @@ defmodule Integrator.AdaptiveStepsize do
      }, error}
   end
 
-  def add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
+  @spec add_fixed_point(t(), [float()], [Nx.t()], fun()) :: {t(), [float()], [Nx.t()]}
+  defp add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
     step = %{step | t_new_chunk: [Nx.to_number(step.t_new)], x_new_chunk: [step.x_new]}
     {step, new_t_chunk, new_x_chunk}
   end
 
-  def add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
+  defp add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
     [new_time | remaining_times] = fixed_times
     t_new = Nx.to_number(step.t_new)
 
@@ -351,6 +384,7 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
+  @spec interpolate(t(), fun(), refine_strategy()) :: t()
   defp interpolate(step, interpolate_fn, refine) when refine == :fixed_times do
     {step, new_t_chunk, new_x_chunk} = add_fixed_point(step, [], [], interpolate_fn)
     %{step | t_new_chunk: new_t_chunk, x_new_chunk: new_x_chunk}
@@ -370,10 +404,12 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
   end
 
+  @spec interpolate_one_point(float(), t(), fun()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
     do_interpolation(step, interpolate_fn, Nx.tensor(t_new)) |> List.first()
   end
 
+  @spec do_interpolation(t(), fun(), Nx.t()) :: [Nx.t()]
   defp do_interpolation(step, interpolate_fn, tadd) do
     tadd_length =
       case Nx.shape(tadd) do
@@ -388,6 +424,7 @@ defmodule Integrator.AdaptiveStepsize do
     x_out |> Utils.columns_as_list(0, tadd_length - 1)
   end
 
+  @spec call_output_fn(t(), fun()) :: t()
   defp call_output_fn(step, output_fn) when is_nil(output_fn) do
     step
   end
@@ -397,6 +434,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | terminal_output: result}
   end
 
+  @spec call_event_fn(t(), fun(), fun(), Keyword.t()) :: t()
   defp call_event_fn(step, event_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
   end
@@ -410,7 +448,7 @@ defmodule Integrator.AdaptiveStepsize do
         step
 
       :halt ->
-        new_step = compute_new_event_fn_step(event_fn, step, interpolate_fn, opts)
+        new_step = step |> compute_new_event_fn_step(event_fn, interpolate_fn, opts)
 
         %{
           step
@@ -421,7 +459,8 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
-  defp compute_new_event_fn_step(event_fn, step, interpolate_fn, opts) do
+  @spec compute_new_event_fn_step(t(), fun(), fun(), Keyword.t()) :: ComputedStep.t()
+  defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       x = interpolate_one_point(t, step, interpolate_fn)
       event_fn.(t, x) |> Map.get(:value) |> Nx.to_number()
