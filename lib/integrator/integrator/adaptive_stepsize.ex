@@ -27,6 +27,7 @@ defmodule Integrator.AdaptiveStepsize do
           # :k_vals,
           # #
           # options_comp: 0.0,
+          # fixed_times: nil,
           # #
           # count_loop__increment_step: 0,
           # count_cycles__compute_step: 0,
@@ -67,6 +68,8 @@ defmodule Integrator.AdaptiveStepsize do
     :k_vals,
     #
     options_comp: 0.0,
+    #
+    fixed_times: nil,
     #
     count_loop__increment_step: 0,
     count_cycles__compute_step: 0,
@@ -135,13 +138,14 @@ defmodule Integrator.AdaptiveStepsize do
     {t_start, t_end, fixed_times} = t_start_t_end(t_start_and_t_end)
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
-    opts = if fixed_times, do: Keyword.merge(opts, refine: 1), else: opts
+    opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
 
     %__MODULE__{
       t_new: t_start,
       x_new: x0,
       dt: initial_tstep,
-      k_vals: initial_empty_k_vals(order, x0)
+      k_vals: initial_empty_k_vals(order, x0),
+      fixed_times: fixed_times
     }
     |> store_first_point(t_start, x0, opts[:store_resuts?])
     |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
@@ -185,13 +189,15 @@ defmodule Integrator.AdaptiveStepsize do
     {sum, comp}
   end
 
-  defp t_start_t_end([t_start, t_end]), do: {t_start, t_end, nil}
+  defp t_start_t_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
 
   defp t_start_t_end(t_start_and_t_end) do
     t_start = t_start_and_t_end[0] |> Nx.to_number()
     {length} = Nx.shape(t_start_and_t_end)
     t_end = t_start_and_t_end[length - 1] |> Nx.to_number()
-    {t_start, t_end, t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))}
+    fixed_times = t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))
+    [_drop_first_time | remaining_fixed_times] = fixed_times
+    {t_start, t_end, remaining_fixed_times}
   end
 
   defp store_first_point(step, t_start, x0, true = _store_resuts?) do
@@ -360,6 +366,28 @@ defmodule Integrator.AdaptiveStepsize do
        k_vals: k_vals,
        options_comp: options_comp
      }, error}
+  end
+
+  def add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
+    step = %{step | t_new_chunk: [Nx.to_number(step.t_new)], x_new_chunk: [step.x_new]}
+    {step, new_t_chunk, new_x_chunk}
+  end
+
+  def add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
+    [new_time | remaining_times] = fixed_times
+
+    if new_time <= Nx.to_number(step.t_new) do
+      step = %{step | fixed_times: remaining_times}
+      x_new = interpolate_one_point(new_time, step, interpolate_fn)
+      add_fixed_point(step, [new_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)
+    else
+      {step, new_t_chunk, new_x_chunk}
+    end
+  end
+
+  defp interpolate(step, interpolate_fn, refine) when refine == :fixed_times do
+    {step, new_t_chunk, new_x_chunk} = add_fixed_point(step, [], [], interpolate_fn)
+    %{step | t_new_chunk: new_t_chunk, x_new_chunk: new_x_chunk}
   end
 
   defp interpolate(step, _interpolate_fn, refine) when refine == 1 do

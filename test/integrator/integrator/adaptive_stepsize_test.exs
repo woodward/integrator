@@ -342,14 +342,14 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_values, initial_tstep, x0, order, opts)
 
-      # assert result.count_cycles__compute_step == 78
-      # assert result.count_loop__increment_step == 50
-      # assert result.count_save == 2
-      # assert result.unhandled_termination == true
-      # assert length(result.ode_t) == 51
-      # assert length(result.ode_x) == 51
-      # assert length(result.output_t) == 201
-      # assert length(result.output_x) == 201
+      assert result.count_cycles__compute_step == 78
+      assert result.count_loop__increment_step == 50
+      assert result.count_save == 2
+      assert result.unhandled_termination == true
+      assert length(result.ode_t) == 51
+      assert length(result.ode_x) == 51
+      assert length(result.output_t) == 21
+      assert length(result.output_x) == 21
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
@@ -358,8 +358,14 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
 
-      # assert_lists_equal(result.output_t, expected_t, 1.0e-04)
-      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+      # data = result.output_t |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t_elixir.csv", data)
+
+      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x_elixir.csv", data)
+
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
     test "works - do not store results" do
