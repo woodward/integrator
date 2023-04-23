@@ -15,10 +15,20 @@ defmodule Integrator do
   alias Integrator.{AdaptiveStepsize, Utils}
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
+  @integrator_options %{
+    ode45: DormandPrince45,
+    ode23: BogackiShampine23
+  }
+
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
-    integrator_mod = integrator_mod(opts)
+
+    integrator_mod =
+      Map.get_lazy(@integrator_options, opts[:integrator], fn ->
+        raise "Currently only DormandPrince45 (ode45) and BogackiShampine23 (ode23) are supported"
+      end)
+
     order = integrator_mod.order()
     {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end)
     initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
@@ -54,14 +64,5 @@ defmodule Integrator do
   @spec default_opts() :: Keyword.t()
   defp default_opts() do
     [integrator: :ode45]
-  end
-
-  @spec integrator_mod(Keyword.t()) :: module()
-  defp integrator_mod(opts) do
-    case opts[:integrator] do
-      :ode45 -> DormandPrince45
-      :ode23 -> BogackiShampine23
-      _ -> raise "Currently only DormandPrince45 (ode45) and BogackiShampine23 (ode23) are supported"
-    end
   end
 end

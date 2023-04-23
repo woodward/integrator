@@ -65,7 +65,7 @@ defmodule IntegratorTest do
     end
 
     test "performs the integration - high fidelity", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
-      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
+      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, integrator: :ode45]
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_y, opts)
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
@@ -85,6 +85,14 @@ defmodule IntegratorTest do
 
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
+
+    test "raises an exception for an undefined integrator", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
+      opts = [integrator: :undefined_integrator!]
+
+      assert_raise RuntimeError, fn ->
+        Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_y, opts)
+      end
     end
   end
 end
