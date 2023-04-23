@@ -194,8 +194,19 @@ defmodule Integrator.AdaptiveStepsize do
   defp t_start_t_end(t_start_and_t_end) do
     t_start = t_start_and_t_end[0] |> Nx.to_number()
     {length} = Nx.shape(t_start_and_t_end)
-    t_end = t_start_and_t_end[length - 1] |> Nx.to_number()
+    # The following Nx.as_type(:f32) is a HACK as I think there's a bug in Nx.linspace():
+    t_end = t_start_and_t_end[length - 1] |> Nx.as_type(:f32) |> Nx.to_number()
     fixed_times = t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))
+
+    # -------------------
+    # More hackery to get around the number truncation issue: change the last time to t_end:
+    # Everything between these two lines can be deleted:
+    fixed_times_reversed = fixed_times |> Enum.reverse()
+    [_drop | without_last_time] = fixed_times_reversed
+    repaired = [t_end | without_last_time]
+    fixed_times = repaired |> Enum.reverse()
+    # -------------------
+
     [_drop_first_time | remaining_fixed_times] = fixed_times
     {t_start, t_end, remaining_fixed_times}
   end
