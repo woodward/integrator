@@ -137,10 +137,10 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), Nx.t() | [float()], float, Nx.t(), integer(), Keyword.t()) :: t()
-  def integrate(stepper_fn, interpolate_fn, ode_fn, t_start_and_t_end, initial_tstep, x0, order, opts \\ []) do
-    {t_start, t_end, fixed_times} = parse_start_end(t_start_and_t_end)
+  @spec integrate(fun(), fun(), fun(), float(), float(), Nx.t() | nil, float, Nx.t(), integer(), Keyword.t()) :: t()
+  def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
@@ -163,19 +163,12 @@ defmodule Integrator.AdaptiveStepsize do
   # ===========================================================================
   # Private functions below here:
 
-  @spec parse_start_end([float() | Nx.t()] | Nx.t()) :: {float(), float(), [float()] | nil}
-  defp parse_start_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
+  @spec drop_first_point([float()] | nil) :: [float()] | nil
+  defp drop_first_point(nil), do: nil
 
-  defp parse_start_end(t_start_and_t_end) do
-    t_start = t_start_and_t_end[0] |> Nx.to_number()
-    {length} = Nx.shape(t_start_and_t_end)
-
-    # The following Nx.as_type(:f32) is a HACK as I think there's a bug in Nx.linspace():
-    t_end = t_start_and_t_end[length - 1] |> Nx.as_type(:f32) |> Nx.to_number()
-
-    fixed_times = t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))
-    [_drop_first_time | remaining_fixed_times] = fixed_times
-    {t_start, t_end, remaining_fixed_times}
+  defp drop_first_point(fixed_times) do
+    [_drop_first_point | rest_of_fixed_times] = fixed_times
+    rest_of_fixed_times
   end
 
   @spec store_first_point(t(), float(), Nx.t(), boolean()) :: t()
