@@ -368,6 +368,66 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    test "works - fixed stepsize output that's smaller than the timestep" do
+      # In this test, there are many output timesteps for every integration timestep
+
+      # Octave:
+      #   format long
+      #   t_values = 0.0:0.05:3;
+      #   fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
+      #   [t,y] = ode45 (fvdp, t_values, [2, 0]);
+      #
+      #   file_id = fopen("../test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv", "w")
+      #   fdisp(file_id, t)
+      #   fclose(file_id)
+      #
+      #   file_id = fopen("../test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv", "w")
+      #   fdisp(file_id, y)
+      #   fclose(file_id)
+
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = 0.0
+      t_end = 3.0
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = []
+      t_values = Nx.linspace(t_start, t_end, n: 61, type: :f64)
+
+      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      initial_tstep = 6.812920690579614e-02
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_values, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 13
+      assert result.count_loop__increment_step == 13
+      assert result.count_save == 2
+      assert result.unhandled_termination == true
+      # assert length(result.ode_t) == 51
+      # assert length(result.ode_x) == 51
+      # assert length(result.output_t) == 21
+      # assert length(result.output_x) == 21
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_in_delta(last_time, 3.0, 1.0e-10)
+
+      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv")
+
+      # data = result.output_t |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t_elixir.csv", data)
+
+      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x_elixir.csv", data)
+
+      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+    end
+
     test "works - do not store results" do
       stepper_fn = &DormandPrince45.integrate/5
       interpolate_fn = &DormandPrince45.interpolate/4
