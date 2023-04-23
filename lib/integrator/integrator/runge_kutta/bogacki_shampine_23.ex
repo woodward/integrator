@@ -10,9 +10,6 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @impl RungeKutta
   def order, do: 3
 
-  @impl RungeKutta
-  def default_opts, do: []
-
   @a Nx.tensor(
        [
          [0, 0, 0],

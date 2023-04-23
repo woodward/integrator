@@ -41,9 +41,6 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @impl RungeKutta
   def order, do: 5
 
-  @impl RungeKutta
-  def default_opts, do: []
-
   @doc """
   Integrates a system of ODEs with
   [Dormand-Prince]](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).

@@ -11,6 +11,4 @@ defmodule Integrator.RungeKutta do
   @callback interpolate(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
 
   @callback order() :: integer()
-
-  @callback default_opts() :: Keyword.t()
 end

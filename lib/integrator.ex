@@ -17,11 +17,9 @@ defmodule Integrator do
 
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    merged_opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
-    integrator_mod = integrator_mod(merged_opts)
+    opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    integrator_mod = integrator_mod(opts)
     order = integrator_mod.order()
-
-    opts = merged_opts |> Keyword.merge(integrator_mod.default_opts()) |> Keyword.merge(opts)
     {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end)
     initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
 
