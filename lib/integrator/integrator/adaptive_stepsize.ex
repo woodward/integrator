@@ -1,6 +1,5 @@
 defmodule Integrator.AdaptiveStepsize do
   @moduledoc false
-  import Nx.Defn
   alias Integrator.{MaxErrorsExceededError, NonlinearEqnRoot, Utils}
 
   defmodule ComputedStep do
@@ -152,43 +151,6 @@ defmodule Integrator.AdaptiveStepsize do
     |> store_first_point(t_start, x0, opts[:store_resuts?])
     |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
-  end
-
-  @doc """
-  Implements the Kahan summation algorithm, also known as compensated summation.
-  Based on this [code in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/kahan.m).
-  This is really a private function, but is made public so the docs are visible.
-
-  The algorithm significantly reduces the numerical error in the total
-  obtained by adding a sequence of finite precision floating point numbers
-  compared to the straightforward approach.  For more details
-  see [this Wikipedia entry](http://en.wikipedia.org/wiki/Kahan_summation_algorithm).
-  This function is called by AdaptiveStepsize.integrate to better catch
-  equality comparisons.
-
-  The first input argument is the variable that will contain the summation.
-  This variable is also returned as the first output argument in order to
-  reuse it in subsequent calls to `Integrator.AdaptiveStepsize.kahan_sum/3` function.
-
-  The second input argument contains the compensation term and is returned
-  as the second output argument so that it can be reused in future calls of
-  the same summation.
-
-  The third input argument `term` is the variable to be added to `sum`.
-  """
-  defn kahan_sum(sum, comp, term) do
-    # Octave code:
-    # y = term - comp;
-    # t = sum + y;
-    # comp = (t - sum) - y;
-    # sum = t;
-
-    y = term - comp
-    t = sum + y
-    comp = t - sum - y
-    sum = t
-
-    {sum, comp}
   end
 
   defp t_start_t_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
@@ -360,7 +322,7 @@ defmodule Integrator.AdaptiveStepsize do
     k_vals = step.k_vals
     dt = step.dt
 
-    {_t_new, options_comp} = kahan_sum(t_old, options_comp_old, dt)
+    {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
 
     # Pass these in as options:

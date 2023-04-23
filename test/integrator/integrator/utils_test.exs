@@ -111,6 +111,22 @@ defmodule Integrator.UtilsTest do
     end
   end
 
+  describe "kahan_sum" do
+    test "sums up some items" do
+      sum = Nx.tensor(2.74295650014, type: :f64)
+      comp = Nx.tensor(1.11022302463e-16, type: :f64)
+      term = Nx.tensor(0.66059601818, type: :f64)
+
+      expected_sum = Nx.tensor(3.40355251832, type: :f64)
+      expected_comp = Nx.tensor(1.11022302463e-16, type: :f64)
+
+      {sum, comp} = Utils.kahan_sum(sum, comp, term)
+
+      assert_all_close(sum, expected_sum, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(comp, expected_comp, atol: 1.0e-14, rtol: 1.0e-14)
+    end
+  end
+
   describe "zero_vector" do
     test "creates a zero vector with the length and type of x" do
       x = Nx.tensor([1.0, 2.0, 3.0], type: :f64)
