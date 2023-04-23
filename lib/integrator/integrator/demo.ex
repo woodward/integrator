@@ -6,17 +6,17 @@ defmodule Integrator.Demo do
 
   @doc """
   From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but with
-  the translations:
+  the decrementing the indices by one
 
-  y(1) => y(0) and y(2) => y(1):
-  fvdp = @(t,y) [y(1); (1 - y(0)^2) * y(1) - y(0)];
+  x(1) => x(0) and x(2) => x(1):
+  fvdp = @(t,x) [x(1); (1 - x(0)^2) * x(1) - x(0)];
   """
-  defn van_der_pol_fn(_t, y) do
-    y0 = y[0]
-    y1 = y[1]
+  defn van_der_pol_fn(_t, x) do
+    x0 = x[0]
+    x1 = x[1]
 
-    one = Nx.tensor(1.0, type: Nx.type(y))
-    new_y1 = Nx.subtract(one, Nx.pow(y0, 2)) |> Nx.multiply(y1) |> Nx.subtract(y0)
-    Nx.stack([y1, new_y1])
+    one = Nx.tensor(1.0, type: Nx.type(x))
+    new_x1 = Nx.subtract(one, Nx.pow(x0, 2)) |> Nx.multiply(x1) |> Nx.subtract(x0)
+    Nx.stack([x1, new_x1])
   end
 end

@@ -19,30 +19,30 @@ https://www.mathworks.com/help/matlab/ref/ode23.html
 
 ## Example: Solve the Van der Pol equation
 
-fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
-[t,y] = ode45 (fvdp, [0, 20], [2, 0]);
+fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+[t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 OR
-[t,y] = ode23 (fvdp, [0, 20], [2, 0]);
-[t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset ("Refine", 4));
+[t,x] = ode23 (fvdp, [0, 20], [2, 0]);
+[t,x] = ode23 (fvdp, [0, 20], [2, 0], odeset ("Refine", 4));
 
 To simulate with more precision:  
 opts = odeset("AbsTol", 1.0e-10, "RelTol", 1.0e-10)
-[t,y] = ode45 (fvdp, [0, 20], [2, 0], opts);
+[t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
 
-plot(t,y(:,1),'-o',t,y(:,2),'-o')
+plot(t,x(:,1),'-o',t,x(:,2),'-o')
 title('Solution of van der Pol Equation (\mu = 1) with ODE45');
 xlabel('Time t');
-ylabel('Solution y');
-legend('y_1','y_2')
+ylabel('Solution x');
+legend('x_1','x_2')
 
 -------------
 
 tspan = [0 5];
-y0 = 0;
-[t,y] = ode45(@(t,y) 2*t, tspan, y0);
+x0 = 0;
+[t,x] = ode45(@(t,x) 2*t, tspan, x0);
 Plot the solution.
 
-plot(t,y,'-o')
+plot(t,x,'-o')
 
 
 Some notes on the usage of Octave's ode45:

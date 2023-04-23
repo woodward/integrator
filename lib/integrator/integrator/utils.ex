@@ -23,24 +23,24 @@ defmodule Integrator.Utils do
     for a description of norm control.
   """
   @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defn abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts \\ []) do
+  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
     opts = keyword!(opts, norm_control: @default_norm_control, abs_tol: @default_abs_tol, rel_tol: @default_rel_tol)
 
     if opts[:norm_control] do
       # Octave code
-      # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (x)), sqrt (sumsq (x_old))));
-      # retval = sqrt (sumsq ((x - y))) / sc;
+      # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
+      # retval = sqrt (sumsq ((t - x))) / sc;
 
-      max_sq_x = Nx.max(sum_sq(x), sum_sq(x_old))
-      sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_x)
-      sum_sq(x - y) / sc
+      max_sq_t = Nx.max(sum_sq(t), sum_sq(t_old))
+      sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_t)
+      sum_sq(t - x) / sc
     else
       # Octave code:
-      # sc = max (AbsTol(:), RelTol .* max (abs (x), abs (x_old)));
-      # retval = max (abs (x - y) ./ sc);
+      # sc = max (AbsTol(:), RelTol .* max (abs (t), abs (t_old)));
+      # retval = max (abs (t - x) ./ sc);
 
-      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(x), Nx.abs(x_old)))
-      (Nx.abs(x - y) / sc) |> Nx.reduce_max()
+      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
+      (Nx.abs(t - x) / sc) |> Nx.reduce_max()
     end
   end
 
@@ -224,14 +224,14 @@ defmodule Integrator.Utils do
   @spec kahan_sum(Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn kahan_sum(sum, comp, term) do
     # Octave code:
-    # y = term - comp;
-    # t = sum + y;
-    # comp = (t - sum) - y;
+    # x = term - comp;
+    # t = sum + x;
+    # comp = (t - sum) - x;
     # sum = t;
 
-    y = term - comp
-    t = sum + y
-    comp = t - sum - y
+    x = term - comp
+    t = sum + x
+    comp = t - sum - x
     sum = t
 
     {sum, comp}
