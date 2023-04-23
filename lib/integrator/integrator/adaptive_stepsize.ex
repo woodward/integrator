@@ -119,26 +119,19 @@ defmodule Integrator.AdaptiveStepsize do
   @nx_true Nx.tensor(1, type: :u8)
   # @nx_false Nx.tensor(0, type: :u8)
 
-  @spec default_opts() :: Keyword.t()
-  def default_opts() do
-    [
-      epsilon: @epsilon,
-      max_number_of_errors: @default_max_number_of_errors,
-      max_step: @default_max_step,
-      refine: @default_refine,
-      store_resuts?: @default_store_resuts
-    ]
-  end
-
   @doc """
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
   @spec integrate(fun(), fun(), fun(), Nx.t() | [float()], float, Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start_and_t_end, initial_tstep, x0, order, opts \\ []) do
-    {t_start, t_end, fixed_times} = t_start_t_end(t_start_and_t_end)
+    {t_start, t_end, fixed_times} = parse_t_start_t_end(t_start_and_t_end)
     opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+
+    # Broadcast starting conditions as the first output point (if there is an output function):
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
+
+    # If there are fixed output times, then refine can no longer be an integer value:
     opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
 
     %__MODULE__{
@@ -153,9 +146,12 @@ defmodule Integrator.AdaptiveStepsize do
     |> reverse_results()
   end
 
-  defp t_start_t_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
+  # ===========================================================================
+  # Private functions below here:
 
-  defp t_start_t_end(t_start_and_t_end) do
+  defp parse_t_start_t_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
+
+  defp parse_t_start_t_end(t_start_and_t_end) do
     t_start = t_start_and_t_end[0] |> Nx.to_number()
     {length} = Nx.shape(t_start_and_t_end)
 
@@ -434,5 +430,16 @@ defmodule Integrator.AdaptiveStepsize do
     root = NonlinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+  end
+
+  @spec default_opts() :: Keyword.t()
+  defp default_opts() do
+    [
+      epsilon: @epsilon,
+      max_number_of_errors: @default_max_number_of_errors,
+      max_step: @default_max_step,
+      refine: @default_refine,
+      store_resuts?: @default_store_resuts
+    ]
   end
 end
