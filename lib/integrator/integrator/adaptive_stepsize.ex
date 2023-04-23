@@ -112,6 +112,8 @@ defmodule Integrator.AdaptiveStepsize do
   @default_max_step 2.0
   @default_store_resuts true
 
+  @zero_tolerance 1.0e-07
+
   # Switch to using Utils.epsilon/1
   @epsilon 2.2204e-16
 
@@ -194,19 +196,11 @@ defmodule Integrator.AdaptiveStepsize do
   defp t_start_t_end(t_start_and_t_end) do
     t_start = t_start_and_t_end[0] |> Nx.to_number()
     {length} = Nx.shape(t_start_and_t_end)
+
     # The following Nx.as_type(:f32) is a HACK as I think there's a bug in Nx.linspace():
     t_end = t_start_and_t_end[length - 1] |> Nx.as_type(:f32) |> Nx.to_number()
+
     fixed_times = t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))
-
-    # -------------------
-    # More hackery to get around the number truncation issue: change the last time to t_end:
-    # Everything between these two lines can be deleted:
-    fixed_times_reversed = fixed_times |> Enum.reverse()
-    [_drop | without_last_time] = fixed_times_reversed
-    repaired = [t_end | without_last_time]
-    fixed_times = repaired |> Enum.reverse()
-    # -------------------
-
     [_drop_first_time | remaining_fixed_times] = fixed_times
     {t_start, t_end, remaining_fixed_times}
   end
@@ -225,15 +219,17 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(0.0, {length_x, k_length})
   end
 
-  defp step_forward(step, t_old, t_end, _halt?, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) when t_old >= t_end do
+  defp step_forward(step, t_old, t_end, _status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+       when abs(t_old - t_end) < @zero_tolerance or t_old > t_end do
     step
   end
 
-  defp step_forward(step, _t_old, _t_end, :halt, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts) do
+  defp step_forward(step, _t_old, _t_end, status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+       when status == :halt do
     step
   end
 
-  defp step_forward(step, _t_old, t_end, _halt?, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+  defp step_forward(step, _t_old, t_end, _status, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
     step = step |> increment_compute_counter()
 
@@ -386,8 +382,9 @@ defmodule Integrator.AdaptiveStepsize do
 
   def add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
     [new_time | remaining_times] = fixed_times
+    t_new = Nx.to_number(step.t_new)
 
-    if new_time <= Nx.to_number(step.t_new) do
+    if new_time < t_new || abs(new_time - t_new) < @zero_tolerance do
       step = %{step | fixed_times: remaining_times}
       x_new = interpolate_one_point(new_time, step, interpolate_fn)
       add_fixed_point(step, [new_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)
