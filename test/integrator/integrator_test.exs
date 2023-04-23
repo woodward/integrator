@@ -74,5 +74,17 @@ defmodule IntegratorTest do
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_y, atol: 1.0e-05, rtol: 1.0e-05)
     end
+
+    test "works - uses Bogacki-Shampine23", %{initial_y: initial_y, t_initial: t_initial, t_final: t_final} do
+      opts = [refine: 4, integrator: :ode23]
+
+      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_y, opts)
+
+      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
+
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
   end
 end

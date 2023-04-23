@@ -13,25 +13,21 @@ defmodule Integrator do
   """
 
   alias Integrator.{AdaptiveStepsize, Utils}
-  alias Integrator.RungeKutta.DormandPrince45
+  alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    merged_opts = default_opts() |> Keyword.merge(Utils.default_opts())
+    merged_opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     integrator_mod = integrator_mod(merged_opts)
-
-    stepper_fn = &integrator_mod.integrate/5
-    interpolate_fn = &integrator_mod.interpolate/4
     order = integrator_mod.order()
 
     opts = merged_opts |> Keyword.merge(integrator_mod.default_opts()) |> Keyword.merge(opts)
     {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end)
-
     initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
 
     AdaptiveStepsize.integrate(
-      stepper_fn,
-      interpolate_fn,
+      &integrator_mod.integrate/5,
+      &integrator_mod.interpolate/4,
       ode_fn,
       t_start,
       t_end,
@@ -66,7 +62,8 @@ defmodule Integrator do
   defp integrator_mod(opts) do
     case opts[:integrator] do
       :ode45 -> DormandPrince45
-      _ -> raise "Currently only DormandPrince45 (ode45) is supported"
+      :ode23 -> BogackiShampine23
+      _ -> raise "Currently only DormandPrince45 (ode45) and BogackiShampine23 (ode23) are supported"
     end
   end
 end
