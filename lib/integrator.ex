@@ -15,6 +15,7 @@ defmodule Integrator do
   alias Integrator.{AdaptiveStepsize, Utils}
   alias Integrator.RungeKutta.DormandPrince45
 
+  @spec integrate(fun(), float(), float(), Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start, t_end, x0, opts \\ []) do
     merged_opts = default_opts() |> Keyword.merge(Utils.default_opts())
     integrator_mod = integrator_mod(merged_opts)
@@ -29,11 +30,13 @@ defmodule Integrator do
     AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, [t_start, t_end], Nx.to_number(initial_tstep), x0, order, opts)
   end
 
-  def default_opts() do
+  @spec default_opts() :: Keyword.t()
+  defp default_opts() do
     [integrator: :ode45]
   end
 
-  def integrator_mod(opts) do
+  @spec integrator_mod(Keyword.t()) :: module()
+  defp integrator_mod(opts) do
     case opts[:integrator] do
       :ode45 -> DormandPrince45
       _ -> raise "Currently only DormandPrince45 (ode45) is supported"

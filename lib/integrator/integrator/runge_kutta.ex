@@ -4,11 +4,11 @@ defmodule Integrator.RungeKutta do
   """
 
   # @callback integrate(fn(), t, x, dt, k_vals) :: {}
-  @callback integrate(any(), any(), any(), any(), any()) :: {any(), any(), any(), any()}
+  @callback integrate(fun(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t(), Nx.t(), Nx.t()}
   # returns:     {t_next, x_next, x_est, k_new}
 
-  # @callback interpolate(t, x, der, t_out) :: {}
-  @callback interpolate(any(), any(), any(), any()) :: any()
+  # interpolate(t, x, der, t_out)
+  @callback interpolate(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
 
   @callback order() :: integer()
 

@@ -36,7 +36,7 @@ defmodule Integrator.AdaptiveStepsize do
           dt: float(),
           k_vals: Nx.t() | nil,
           #
-          options_comp: Nx.t() | float() | nil,
+          options_comp: Nx.t() | nil,
           fixed_times: [float()] | nil,
           #
           count_loop__increment_step: integer(),

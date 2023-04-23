@@ -6,6 +6,7 @@ defmodule Integrator.Utils do
   @default_rel_tol 1.0e-03
   @default_norm_control true
 
+  @spec default_opts() :: Keyword.t()
   def default_opts() do
     [abs_tol: @default_abs_tol, rel_tol: @default_rel_tol, norm_control: @default_norm_control]
   end
@@ -21,6 +22,7 @@ defmodule Integrator.Utils do
     See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
     for a description of norm control.
   """
+  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts \\ []) do
     opts = keyword!(opts, norm_control: @default_norm_control, abs_tol: @default_abs_tol, rel_tol: @default_rel_tol)
 
@@ -47,6 +49,7 @@ defmodule Integrator.Utils do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
   """
+  @spec hermite_cubic_interpolation(float() | Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_cubic_interpolation(t, x, der, t_out) do
     # Octave:
     #   dt = (t(2) - t(1));
@@ -96,6 +99,7 @@ defmodule Integrator.Utils do
 
   See [code in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m#L91).
   """
+  @spec hermite_quartic_interpolation(float() | Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic_interpolation(t, x, der, t_out) do
     # Octave code:
     #   dt = t(2) - t(1);
@@ -160,6 +164,7 @@ defmodule Integrator.Utils do
   "Solving Ordinary Differential Equations I: Nonstiff Problems",
   Springer.
   """
+  @spec starting_stepsize(integer(), fun(), float(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
     y_zeros = zero_vector(x0)
@@ -216,6 +221,7 @@ defmodule Integrator.Utils do
 
   The third input argument `term` is the variable to be added to `sum`.
   """
+  @spec kahan_sum(Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn kahan_sum(sum, comp, term) do
     # Octave code:
     # y = term - comp;
@@ -238,15 +244,18 @@ defmodule Integrator.Utils do
   @doc """
   Creates a zero vector that has the length of `x`
   """
+  @spec zero_vector(Nx.t()) :: Nx.t()
   defn zero_vector(x) do
     {length_of_x} = Nx.shape(x)
     Nx.broadcast(0.0, {length_of_x})
   end
 
+  @spec sign(Nx.t()) :: float()
   def sign(x) when x < 0.0, do: -1.0
   def sign(x) when x > 0.0, do: 1.0
   def sign(_x), do: 0.0
 
+  @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
   def columns_as_list(matrix, start_index, end_index \\ nil) do
     matrix_t = Nx.transpose(matrix)
 
@@ -270,12 +279,14 @@ defmodule Integrator.Utils do
   @epislon_f32 1.1920929e-07
   @epislon_f64 2.220446049250313e-16
 
+  @spec epsilon(Nx.Type.t()) :: float()
   def epsilon(:f32), do: @epislon_f32
   def epsilon({:f, 32}), do: @epislon_f32
 
   def epsilon(:f64), do: @epislon_f64
   def epsilon({:f, 64}), do: @epislon_f64
 
+  @spec unique(list()) :: list()
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
