@@ -38,7 +38,8 @@ defmodule Integrator.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:csv, "~> 3.0", only: :test},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       #
       {:ex_doc, github: "elixir-lang/ex_doc", commit: "2c581239e0989fdc91e3c83b4ce28ef4fe0adda6", only: :dev, runtime: false},
       # {:ex_doc, "~> 0.29", only: :dev, runtime: false},
