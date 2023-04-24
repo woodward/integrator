@@ -1,6 +1,9 @@
 defmodule Integrator.RungeKutta.BogackiShampine23 do
   @moduledoc """
-  Bogacki-Shampine
+  Bogacki-Shampine method of third order.  For the definition of this method see
+  [Wikipedia](http://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods)
+
+  Originally based on Octave [`runge_kutta_23.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_23.m)
   """
   alias Integrator.{RungeKutta, Utils}
   @behaviour RungeKutta
@@ -23,6 +26,13 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @c Nx.tensor([2 / 9, 1 / 3, 4 / 9], type: :f64)
   @c_prime Nx.tensor([7 / 24, 1 / 4, 1 / 3, 1 / 8], type: :f64)
 
+  @doc """
+  Solves a set of non-stiff Ordinary Differential Equations (non-stiff ODEs) with the well-known
+  explicit Bogacki-Shampine method of order 3.
+
+  See [Wikipedia here](https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Bogacki%E2%80%93Shampine)
+  and [here](https://en.wikipedia.org/wiki/Bogacki%E2%80%93Shampine_method)
+  """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
     s = t + dt * @b
@@ -55,6 +65,10 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     {t_next, x_next, x_error_est, k_new}
   end
 
+  @doc """
+  Performs a Hermite cubic interpolation when using BogackiShampine23 via
+  `Utils.hermite_cubic_interpolation/4`
+  """
   @impl RungeKutta
   defn interpolate(t, x, der, t_out) do
     Utils.hermite_cubic_interpolation(t, x, der, t_out)

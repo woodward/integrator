@@ -5,11 +5,9 @@ defmodule Integrator.Demo do
   import Nx.Defn
 
   @doc """
-  From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but
-  decrementing the indices by one
+  From [octave](https://octave.sourceforge.io/octave/function/ode45.html) b
 
-  x(1) => x(0) and x(2) => x(1):
-  fvdp = @(t,x) [x(1); (1 - x(0)^2) * x(1) - x(0)];
+  fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
   """
   @spec van_der_pol_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn van_der_pol_fn(_t, x) do
@@ -22,11 +20,16 @@ defmodule Integrator.Demo do
   end
 
   @doc """
-  The Euler equations of a rigid body without external forces.
-  A standard test problem proposed by Krogh for solvers intended for nonstiff problems [see below].
-  Based on rigidode from Matlab/Octave.
+  The Euler equations of a rigid body without external forces. This is a standard test
+  problem proposed by Krogh for solvers intended for nonstiff problems [see below].
+  Based on "rigidode.m" from Matlab/Octave.  The analytical solutions are Jacobian
+  elliptic functions.
 
-  Shampine, L. F., and M. K. Gordon, Computer Solution of Ordinary Differential Equations, W.H. Freeman & Co., 1975
+  See [`rigidode.m`](http://www.ece.northwestern.edu/local-apps/matlabhelp/techdoc/math_anal/diffeq8.html)
+  in Matlab.
+
+  Shampine, L. F., and M. K. Gordon, Computer Solution of Ordinary Differential Equations,
+  W.H. Freeman & Co., 1975
   """
   @spec euler_equations(Nx.t(), Nx.t()) :: Nx.t()
   defn euler_equations(_t, x) do

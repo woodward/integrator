@@ -44,6 +44,18 @@ Plot the solution.
 
 plot(t,x,'-o')
 
+## Example: the Euler equations for a rigid body
+
+From rigidode.m: 
+
+format long
+tspan = [0 12];
+x0 = [0; 1; 1];
+f_euler = @(t,x) [ x(2)*x(3) ; -x(1)*x(3) ; -0.51*x(1)*x(2) ];
+opt = odeset ("RelTol", 1.0e-07, "AbsTol", 1.0e-07);
+[t, x] = ode23(f_euler, tspan, x0, opt);
+
+
 
 Some notes on the usage of Octave's ode45:
 https://www.eng.auburn.edu/~tplacek/courses/3600/ode45berkley.pdf

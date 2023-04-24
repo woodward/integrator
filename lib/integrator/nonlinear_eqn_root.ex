@@ -1,6 +1,8 @@
 defmodule Integrator.NonlinearEqnRoot do
   @moduledoc """
   Finds the roots (i.e., zeros) of a non-linear equation.
+  Based on [`fzero.m`](https://github.com/gnu-octave/octave/blob/default/scripts/optimization/fzero.m)
+  from Octave.
 
   This is essentially the ACM algorithm 748: Enclosing Zeros of Continuous Functions
   due to Alefeld, Potra and Shi, ACM Transactions on Mathematical Software, Vol. 21,

@@ -4,6 +4,9 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   to `t+dt` with the Dormand-Prince method. For the definition of this method see
   [Wikipedia](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).
 
+  Originally based on [`runge_kutta_45_dorpri.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_45_dorpri.m)
+  from Octave.
+
   It uses six function evaluations to calculate fourth and fifth-order accurate solutions.
   The difference between these solutions is then taken to be the error of the (fourth-order) solution.
   This error estimate is very convenient for adaptive stepsize integration algorithms.
@@ -84,6 +87,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
       Nx.slice_along_axis(aa, row, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, row)
     end
 
+    # Make these into module variables?
     aa_1 = slice.(aa, 1)
     # Note that aa_1 is the same as aa[1][0]
     aa_2 = slice.(aa, 2)
@@ -123,7 +127,8 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   end
 
   @doc """
-  Performs a 4th order Hermite interpolation when interpolating with DormandPrince45.
+  Performs a 4th order Hermite interpolation when interpolating with DormandPrince45
+  using `Utils.hermite_quartic_interpolation/4`
   """
   @impl RungeKutta
   defn interpolate(t, x, der, t_out) do

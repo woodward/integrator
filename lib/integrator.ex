@@ -27,6 +27,9 @@ defmodule Integrator do
 
   @default_opts [integrator: :ode45]
 
+  @doc """
+  Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
+  """
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
     opts = opts |> merge_default_opts()

@@ -133,7 +133,9 @@ defmodule Integrator.AdaptiveStepsize do
   @nx_true Nx.tensor(1, type: :u8)
 
   @doc """
-  Integrates a set of ODEs.
+  Integrates a set of ODEs. Originally adapted from
+  [integrate_adaptive.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/integrate_adaptive.m)
+  in Octave.
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """

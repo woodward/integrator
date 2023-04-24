@@ -6,6 +6,9 @@ defmodule Integrator.Utils do
   @default_rel_tol 1.0e-03
   @default_norm_control true
 
+  @doc """
+  Gets the default options for the functions in `Utils`
+  """
   @spec default_opts() :: Keyword.t()
   def default_opts() do
     [abs_tol: @default_abs_tol, rel_tol: @default_rel_tol, norm_control: @default_norm_control]
@@ -45,7 +48,9 @@ defmodule Integrator.Utils do
   end
 
   @doc """
-  Performs a 3rd order Hermite interpolation.
+  Performs a 3rd order Hermite interpolation. Adapted from function `hermite_cubic_interpolation` in
+  [runge_kutta_interpolate.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m)
+
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
   """
@@ -97,7 +102,7 @@ defmodule Integrator.Utils do
   solution at the time `t_out`. As proposed by Shampine in Lawrence, Shampine,
   "Some Practical Runge-Kutta Formulas", 1986.
 
-  See [code in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m#L91).
+  See [hermite_quartic_interpolation function in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m#L91).
   """
   @spec hermite_quartic_interpolation(float() | Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic_interpolation(t, x, der, t_out) do
@@ -157,6 +162,8 @@ defmodule Integrator.Utils do
   equations, `t0` is the initial time, and `x0` is the initial
   condition.  `abs_tol` and `rel_tol` are the absolute and relative
   tolerance on the ODE integration.
+
+  Originally based on [`starting_stepsize.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/starting_stepsize.m).
 
   Reference:
 
