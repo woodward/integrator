@@ -1,6 +1,7 @@
 defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
+  use Patch
 
   describe "test setup" do
     test "van_der_pol_fn" do
@@ -189,6 +190,54 @@ defmodule IntegratorTest do
 
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
+  end
+
+  describe "merge_default_opts/1" do
+    setup do
+      expose(Integrator, merge_default_opts: 1)
+    end
+
+    test "has defaults for Integrator and Utils" do
+      opts = []
+
+      assert private(Integrator.merge_default_opts(opts)) == [
+               integrator: :ode45,
+               abs_tol: 1.0e-06,
+               rel_tol: 1.0e-03,
+               norm_control: true,
+               refine: 4
+             ]
+    end
+
+    test "the default :refine is changed to 1 if integrator: :ode23" do
+      opts = [integrator: :ode23]
+
+      assert private(Integrator.merge_default_opts(opts)) == [
+               abs_tol: 1.0e-06,
+               rel_tol: 1.0e-03,
+               norm_control: true,
+               integrator: :ode23,
+               refine: 1
+             ]
+    end
+
+    test "allows all default values to be overridden" do
+      opts = [
+        abs_tol: 1.0e-12,
+        rel_tol: 1.0e-13,
+        norm_control: false,
+        integrator: :ode23,
+        refine: 3
+      ]
+
+      assert private(Integrator.merge_default_opts(opts)) == [
+               abs_tol: 1.0e-12,
+               rel_tol: 1.0e-13,
+               norm_control: false,
+               integrator: :ode23,
+               refine: 3
+             ]
     end
   end
 end

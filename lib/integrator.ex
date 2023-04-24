@@ -20,9 +20,16 @@ defmodule Integrator do
     ode23: BogackiShampine23
   }
 
+  @default_refine_opts %{
+    ode45: 4,
+    ode23: 1
+  }
+
+  @default_opts [integrator: :ode45]
+
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    opts = opts |> merge_default_opts()
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->
@@ -61,8 +68,18 @@ defmodule Integrator do
     {t_start, t_end, fixed_times}
   end
 
-  @spec default_opts() :: Keyword.t()
-  defp default_opts() do
-    [integrator: :ode45]
+  @spec set_default_refine_opt(Keyword.t()) :: Keyword.t()
+  defp set_default_refine_opt(opts) do
+    if opts[:refine] do
+      opts
+    else
+      default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
+      opts |> Keyword.merge(refine: default_refine_for_integrator)
+    end
+  end
+
+  @spec merge_default_opts(Keyword.t()) :: Keyword.t()
+  defp merge_default_opts(user_specified_opts) do
+    @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(user_specified_opts) |> set_default_refine_opt()
   end
 end
