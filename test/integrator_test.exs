@@ -106,8 +106,8 @@ defmodule IntegratorTest do
     end
   end
 
-  describe "rigidode" do
-    test "works" do
+  describe "rigidode/euler_equations" do
+    test "works with ode45" do
       # Octave:
       #   format long
       #   tspan = [0 12];
@@ -132,18 +132,61 @@ defmodule IntegratorTest do
       assert length(solution.output_t) == 313
       assert length(solution.output_x) == 313
 
-      expected_t = read_csv("test/fixtures/octave_results/rigidode/t.csv")
-      expected_x = read_nx_list("test/fixtures/octave_results/rigidode/x.csv")
+      expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode45/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode45/x.csv")
 
       # data = solution.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/rigidode/t_elixir.csv", data)
+      # File.write!("test/fixtures/octave_results/euler_equations/ode45/t_elixir.csv", data)
 
       # data =
       #   solution.output_x
       #   |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  #{Nx.to_number(xn[2])}  " end)
       #   |> Enum.join("\n")
 
-      # File.write!("test/fixtures/octave_results/rigidode/x_elixir.csv", data)
+      # File.write!("test/fixtures/octave_results/euler_equations/ode45/x_elixir.csv", data)
+
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
+
+    test "works with ode23" do
+      # Octave:
+      #   format long
+      #   tspan = [0 12];
+      #   x0 = [0; 1; 1];
+      #   f_euler = @(t,x) [ x(2)*x(3) ; -x(1)*x(3) ; -0.51*x(1)*x(2) ];
+      #   opt = odeset ("RelTol", 1.0e-07, "AbsTol", 1.0e-07);
+      #   [t, x] = ode23(f_euler, tspan, x0, opt);
+
+      t_start = 0.0
+      t_end = 12.0
+      x0 = Nx.tensor([0.0, 1.0, 1.0], type: :f64)
+      opts = [abs_tol: 1.0e-07, rel_tol: 1.0e-07, refine: 1, integrator: :ode23]
+
+      solution = Integrator.integrate(&euler_equations/2, [t_start, t_end], x0, opts)
+
+      assert solution.count_cycles__compute_step == 847
+      assert solution.count_loop__increment_step == 846
+      assert solution.count_save == 2
+      assert solution.unhandled_termination == true
+      assert length(solution.ode_t) == 847
+      assert length(solution.ode_x) == 847
+      assert length(solution.output_t) == 847
+      assert length(solution.output_x) == 847
+
+      expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode23/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode23/x.csv")
+
+      # data = solution.output_t |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/euler_equations/ode23/t_elixir.csv", data)
+
+      # data =
+      #   solution.output_x
+      #   |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  #{Nx.to_number(xn[2])}  " end)
+      #   |> Enum.join("\n")
+
+      # File.write!("test/fixtures/octave_results/euler_equations/ode23/x_elixir.csv", data)
+
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
