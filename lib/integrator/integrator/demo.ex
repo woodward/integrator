@@ -5,12 +5,13 @@ defmodule Integrator.Demo do
   import Nx.Defn
 
   @doc """
-  From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but with
-  the decrementing the indices by one
+  From [octave](https://octave.sourceforge.io/octave/function/ode45.html) but
+  decrementing the indices by one
 
   x(1) => x(0) and x(2) => x(1):
   fvdp = @(t,x) [x(1); (1 - x(0)^2) * x(1) - x(0)];
   """
+  @spec van_der_pol_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn van_der_pol_fn(_t, x) do
     x0 = x[0]
     x1 = x[1]
@@ -18,5 +19,22 @@ defmodule Integrator.Demo do
     one = Nx.tensor(1.0, type: Nx.type(x))
     new_x1 = Nx.subtract(one, Nx.pow(x0, 2)) |> Nx.multiply(x1) |> Nx.subtract(x0)
     Nx.stack([x1, new_x1])
+  end
+
+  @doc """
+  The Euler equations of a rigid body without external forces.
+  A standard test problem proposed by Krogh for solvers intended for nonstiff problems [see below].
+  Based on rigidode from Matlab/Octave.
+
+  Shampine, L. F., and M. K. Gordon, Computer Solution of Ordinary Differential Equations, W.H. Freeman & Co., 1975
+  """
+  @spec euler_equations(Nx.t(), Nx.t()) :: Nx.t()
+  defn euler_equations(_t, x) do
+    # Octave:
+    #   dxdt = [ x(2)*x(3) ;  -x(1)*x(3) ; -0.51*x(1)*x(2) ];
+    x0 = x[1] * x[2]
+    x1 = -x[0] * x[2]
+    x2 = -0.51 * x[0] * x[1]
+    Nx.stack([x0, x1, x2])
   end
 end

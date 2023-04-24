@@ -91,8 +91,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     aa_4 = slice.(aa, 4)
     aa_5 = slice.(aa, 5)
 
-    {length_of_x} = Nx.shape(x)
-    last_k_vals_col = Nx.slice_along_axis(k_vals, 6, length_of_x - 1, axis: 1) |> Nx.flatten()
+    last_k_vals_col = Nx.slice_along_axis(k_vals, 6, 1, axis: 1) |> Nx.flatten()
     zero_tolerance = 1.0e-04
     last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
 

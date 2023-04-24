@@ -16,6 +16,11 @@ defmodule Integrator.NxTest do
       # IO.inspect(second_column, label: "second_column")
       # second_column_reshaped = Nx.flatten(second_column)
       # IO.inspect(second_column_reshaped, label: "second_column_reshaped")
+
+      # last_column = Nx.slice_along_axis(full_matrix, 3, 1, axis: 1)
+      # IO.inspect(last_column, label: "last_column")
+      # last_column_reshaped = Nx.flatten(last_column)
+      # IO.inspect(last_column_reshaped, label: "last_column_reshaped")
     end
   end
 

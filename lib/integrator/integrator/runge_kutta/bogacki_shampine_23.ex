@@ -28,12 +28,11 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     s = t + dt * @b
     cc = dt * @c
     aa = dt * @a
-    {length_of_x} = Nx.shape(x)
     # k = zeros (rows (x), 4);
     # k = Nx.broadcast(0.0, {length_of_x, 4})
 
     zero_tolerance = 1.0e-04
-    last_k_vals_col = Nx.slice_along_axis(k_vals, 3, length_of_x - 1, axis: 1) |> Nx.flatten()
+    last_k_vals_col = Nx.slice_along_axis(k_vals, 3, 1, axis: 1) |> Nx.flatten()
     last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
 
     k0 = if last_col_empty?, do: ode_fn.(t, x), else: last_k_vals_col
