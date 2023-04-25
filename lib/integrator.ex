@@ -25,7 +25,10 @@ defmodule Integrator do
     ode23: 1
   }
 
-  @default_opts [integrator: :ode45]
+  @default_opts [
+    integrator: :ode45,
+    type: :f32
+  ]
 
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method

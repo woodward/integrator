@@ -199,6 +199,7 @@ defmodule IntegratorTest do
 
       assert private(Integrator.merge_default_opts(opts)) == [
                integrator: :ode45,
+               type: :f32,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -210,6 +211,7 @@ defmodule IntegratorTest do
       opts = [integrator: :ode23]
 
       assert private(Integrator.merge_default_opts(opts)) == [
+               type: :f32,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -228,6 +230,7 @@ defmodule IntegratorTest do
       ]
 
       assert private(Integrator.merge_default_opts(opts)) == [
+               type: :f32,
                abs_tol: 1.0e-12,
                rel_tol: 1.0e-13,
                norm_control: false,
