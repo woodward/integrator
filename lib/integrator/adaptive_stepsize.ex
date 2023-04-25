@@ -46,7 +46,6 @@ defmodule Integrator.AdaptiveStepsize do
           error_count: integer(),
           i_step: integer(),
           #
-          unhandled_termination: boolean(),
           terminal_event: integration_status(),
           terminal_output: integration_status(),
           #
@@ -87,7 +86,6 @@ defmodule Integrator.AdaptiveStepsize do
     error_count: 0,
     i_step: 0,
     #
-    unhandled_termination: true,
     terminal_event: :continue,
     terminal_output: :continue,
     #

@@ -126,7 +126,6 @@ defmodule IntegratorTest do
 
       assert solution.count_cycles__compute_step == 78
       assert solution.count_loop__increment_step == 78
-      assert solution.unhandled_termination == true
       assert length(solution.ode_t) == 79
       assert length(solution.ode_x) == 79
       assert length(solution.output_t) == 313
@@ -167,7 +166,6 @@ defmodule IntegratorTest do
 
       assert solution.count_cycles__compute_step == 847
       assert solution.count_loop__increment_step == 846
-      assert solution.unhandled_termination == true
       assert length(solution.ode_t) == 847
       assert length(solution.ode_x) == 847
       assert length(solution.output_t) == 847
