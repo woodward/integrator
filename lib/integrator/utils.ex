@@ -1,21 +1,25 @@
 defmodule Integrator.Utils do
-  @moduledoc false
+  @moduledoc """
+  Various utility functions used in `Integrator`
+  """
   import Nx.Defn
 
-  @default_abs_tol 1.0e-06
-  @default_rel_tol 1.0e-03
   @default_norm_control true
 
-  @doc """
-  Gets the default options for the functions in `Utils`
-  """
-  @spec default_opts() :: Keyword.t()
-  def default_opts() do
-    [abs_tol: @default_abs_tol, rel_tol: @default_rel_tol, norm_control: @default_norm_control]
-  end
+  @default_opts [
+    abs_tol: 1.0e-06,
+    rel_tol: 1.0e-03,
+    norm_control: @default_norm_control
+  ]
 
   @doc """
-  Based on
+  Gets the default options for the functions in `Integrator.Utils`
+  """
+  @spec default_opts() :: Keyword.t()
+  def default_opts(), do: @default_opts
+
+  @doc """
+  Originally based on
   [Octave function AbsRelNorm](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/AbsRel_norm.m)
 
   ## Options
@@ -27,7 +31,7 @@ defmodule Integrator.Utils do
   """
   @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
-    opts = keyword!(opts, norm_control: @default_norm_control, abs_tol: @default_abs_tol, rel_tol: @default_rel_tol)
+    opts = keyword!(opts, norm_control: @default_norm_control)
 
     if opts[:norm_control] do
       # Octave code
