@@ -41,7 +41,6 @@ defmodule Integrator.AdaptiveStepsize do
           #
           count_loop__increment_step: integer(),
           count_cycles__compute_step: integer(),
-          count_save: integer(),
           #
           # ireject in Octave:
           error_count: integer(),
@@ -83,7 +82,6 @@ defmodule Integrator.AdaptiveStepsize do
     #
     count_loop__increment_step: 0,
     count_cycles__compute_step: 0,
-    count_save: 2,
     #
     # ireject in Octave:
     error_count: 0,

@@ -28,7 +28,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 51
       assert length(result.ode_x) == 51
@@ -65,7 +64,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 1037
       assert result.count_loop__increment_step == 1027
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 1028
       assert length(result.ode_x) == 1028
@@ -103,7 +101,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 51
       assert length(result.ode_x) == 51
@@ -146,7 +143,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 51
       assert length(result.ode_x) == 51
@@ -197,7 +193,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 9
       assert result.count_loop__increment_step == 8
-      assert result.count_save == 2
       assert result.terminal_event == :halt
       assert result.terminal_output == :continue
 
@@ -246,7 +241,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 51
       assert length(result.ode_x) == 51
@@ -296,7 +290,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 1
       assert result.count_loop__increment_step == 1
-      assert result.count_save == 2
       assert result.terminal_output == :halt
       assert result.terminal_event == :continue
       assert length(result.ode_t) == 2
@@ -345,7 +338,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 51
       assert length(result.ode_x) == 51
@@ -406,7 +398,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 10
       assert result.count_loop__increment_step == 9
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 10
       assert length(result.ode_x) == 10
@@ -449,7 +440,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 78
       assert result.count_loop__increment_step == 50
-      assert result.count_save == 2
       assert result.unhandled_termination == true
 
       assert Enum.empty?(result.output_t)
@@ -503,7 +493,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert result.count_cycles__compute_step == 189
       assert result.count_loop__increment_step == 171
-      assert result.count_save == 2
       assert result.unhandled_termination == true
       assert length(result.ode_t) == 172
       assert length(result.ode_x) == 172
