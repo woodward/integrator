@@ -92,9 +92,11 @@ defmodule Integrator.NonlinearEqnRoot do
   defmodule MaxIterationsExceededError, do: defexception(message: "Too many iterations", step: nil, iteration_count: nil)
   defmodule MaxFnEvalsExceededError, do: defexception(message: "Too many function evaluations", step: nil, fn_eval_count: nil)
 
-  @default_max_fn_eval_count 1000
-  @default_max_iterations 1000
-  @default_type :f64
+  @default_opts [
+    max_iterations: 1000,
+    max_fn_eval_count: 1000,
+    type: :f64
+  ]
 
   @initial_mu 0.5
 
@@ -518,15 +520,6 @@ defmodule Integrator.NonlinearEqnRoot do
   # ---------------------------------------
   # Option handling
 
-  @spec default_opts() :: Keyword.t()
-  defp default_opts do
-    [
-      max_iterations: @default_max_iterations,
-      max_fn_eval_count: @default_max_fn_eval_count,
-      type: @default_type
-    ]
-  end
-
   @spec set_tolerance(Keyword.t()) :: Keyword.t()
   defp set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
 
@@ -535,6 +528,6 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @spec merge_default_opts(Keyword.t()) :: Keyword.t()
   defp merge_default_opts(opts) do
-    default_opts() |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
+    @default_opts |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
   end
 end
