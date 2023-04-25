@@ -59,4 +59,26 @@ defmodule Integrator.Helpers do
       row |> Enum.map(&String.to_float(&1)) |> Nx.tensor()
     end)
   end
+
+  def write_t(result, filename) do
+    data = result.output_t |> Enum.join("\n")
+    File.write!(filename, data)
+  end
+
+  def write_x(result, filename) do
+    [first_x | _rest_of_x] = result.output_x
+    {length_of_x} = Nx.shape(first_x)
+
+    data =
+      result.output_x
+      |> Enum.map(fn x ->
+        0..(length_of_x - 1)
+        |> Enum.reduce("", fn i, acc ->
+          acc <> "#{Nx.to_number(x[i])}  "
+        end)
+      end)
+      |> Enum.join("\n")
+
+    File.write!(filename, data)
+  end
 end

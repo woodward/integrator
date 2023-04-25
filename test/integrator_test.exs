@@ -134,16 +134,6 @@ defmodule IntegratorTest do
       expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode45/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode45/x.csv")
 
-      # data = solution.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/euler_equations/ode45/t_elixir.csv", data)
-
-      # data =
-      #   solution.output_x
-      #   |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  #{Nx.to_number(xn[2])}  " end)
-      #   |> Enum.join("\n")
-
-      # File.write!("test/fixtures/octave_results/euler_equations/ode45/x_elixir.csv", data)
-
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
@@ -173,16 +163,6 @@ defmodule IntegratorTest do
 
       expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode23/x.csv")
-
-      # data = solution.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/euler_equations/ode23/t_elixir.csv", data)
-
-      # data =
-      #   solution.output_x
-      #   |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  #{Nx.to_number(xn[2])}  " end)
-      #   |> Enum.join("\n")
-
-      # File.write!("test/fixtures/octave_results/euler_equations/ode23/x_elixir.csv", data)
 
       assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)

@@ -71,11 +71,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
 
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_high_fidelity-elixir.csv", data)
-      #
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_high_fidelity-elixir.csv", data)
       assert_lists_equal(result.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
@@ -107,11 +102,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/no_interpolation/t_elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/no_interpolation/x_elixir.csv", data)
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
@@ -204,12 +194,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
 
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t_elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x_elixir.csv", data)
-
       assert_lists_equal(result.output_t, expected_t, 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
@@ -245,11 +229,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1-elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1-elixir.csv", data)
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
@@ -295,11 +274,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/output_fn_halt/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/output_fn_halt/x.csv")
 
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/time_refine_1-elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/integrator/integrator/runge_kutta_45_test/x_refine_1-elixir.csv", data)
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
@@ -344,12 +318,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
-
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t_elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x_elixir.csv", data)
 
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
@@ -403,12 +371,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv")
-
-      # data = result.output_t |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t_elixir.csv", data)
-
-      # data = result.output_x |> Enum.map(fn xn -> "#{Nx.to_number(xn[0])}  #{Nx.to_number(xn[1])}  " end) |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x_elixir.csv", data)
 
       assert_lists_equal(result.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
