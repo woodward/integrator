@@ -18,7 +18,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = []
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -53,7 +53,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -84,7 +84,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [refine: 1]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -120,7 +120,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       # t_end = 4.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [output_fn: output_fn]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -169,7 +169,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [event_fn: event_fn]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -211,7 +211,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [refine: 1, output_fn: output_fn]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -254,7 +254,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [refine: 1, output_fn: output_fn]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -295,9 +295,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = []
-      t_values = Nx.linspace(t_start, t_end, n: 21, type: :f64) |> Nx.to_list()
+      t_values = Nx.linspace(t_start, t_end, n: 21, type: :f32) |> Nx.to_list()
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 6.812920690579614e-02
@@ -348,9 +348,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 3.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = []
-      t_values = Nx.linspace(t_start, t_end, n: 61, type: :f64) |> Nx.to_list()
+      t_values = Nx.linspace(t_start, t_end, n: 61, type: :f32) |> Nx.to_list()
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 6.812920690579614e-02
@@ -385,7 +385,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [store_resuts?: false]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -411,7 +411,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.007418363820761442
@@ -433,7 +433,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f32)
       opts = [refine: 4]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
