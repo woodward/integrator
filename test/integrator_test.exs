@@ -2,6 +2,7 @@ defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
   use Patch
+  alias Integrator.Utils
 
   describe "test setup" do
     test "van_der_pol_fn" do
@@ -169,6 +170,9 @@ defmodule IntegratorTest do
     end
   end
 
+  # ===========================================================================
+  # Tests of private functions below here:
+
   describe "merge_default_opts/1" do
     setup do
       expose(Integrator, merge_default_opts: 1)
@@ -179,7 +183,6 @@ defmodule IntegratorTest do
 
       assert private(Integrator.merge_default_opts(opts)) == [
                integrator: :ode45,
-               type: :f32,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -191,7 +194,6 @@ defmodule IntegratorTest do
       opts = [integrator: :ode23]
 
       assert private(Integrator.merge_default_opts(opts)) == [
-               type: :f32,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -210,13 +212,49 @@ defmodule IntegratorTest do
       ]
 
       assert private(Integrator.merge_default_opts(opts)) == [
-               type: :f32,
                abs_tol: 1.0e-12,
                rel_tol: 1.0e-13,
                norm_control: false,
                integrator: :ode23,
                refine: 3
              ]
+    end
+  end
+
+  describe "determine_nx_type/2" do
+    setup do
+      expose(Integrator, determine_nx_type: 2)
+    end
+
+    test "sets the Nx type to be the type of x0 if no opt given when x0 is :f32" do
+      opts = [foo: :bar]
+      x0 = Nx.tensor([0.1, 0.2], type: :f32)
+
+      {merged_opts, x0_unchanged} = private(Integrator.determine_nx_type(opts, x0))
+
+      assert merged_opts == [foo: :bar, type: :f32]
+      assert x0_unchanged == x0
+    end
+
+    test "sets the Nx type to be the type of x0 if no opt given when x0 is :f64" do
+      opts = [foo: :bar]
+      x0 = Nx.tensor([0.1, 0.2], type: :f64)
+
+      {merged_opts, x0_unchanged} = private(Integrator.determine_nx_type(opts, x0))
+
+      assert merged_opts == [foo: :bar, type: :f64]
+      assert x0_unchanged == x0
+    end
+
+    test "converts the type of x0 if an Nx type is given" do
+      opts = [foo: :bar, type: :f32]
+      x0 = Nx.tensor([0.1, 0.2], type: :f64)
+
+      {opts, x0_converted_to_f32} = private(Integrator.determine_nx_type(opts, x0))
+
+      assert opts == [foo: :bar, type: :f32]
+      assert Utils.type_atom(x0_converted_to_f32) == :f32
+      assert_all_close(x0, x0_converted_to_f32, atol: 1.0e-08, rtol: 1.0e-08)
     end
   end
 end

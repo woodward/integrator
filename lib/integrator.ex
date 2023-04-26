@@ -26,8 +26,7 @@ defmodule Integrator do
   }
 
   @default_opts [
-    integrator: :ode45,
-    type: :f32
+    integrator: :ode45
   ]
 
   @doc """
@@ -36,6 +35,7 @@ defmodule Integrator do
   @spec integrate(fun(), Nx.t() | [float], Nx.t(), Keyword.t()) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
     opts = opts |> merge_default_opts()
+    {opts, x0} = determine_nx_type(opts, x0)
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->
@@ -89,6 +89,14 @@ defmodule Integrator do
     else
       default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
       opts |> Keyword.merge(refine: default_refine_for_integrator)
+    end
+  end
+
+  @spec determine_nx_type(Keyword.t(), Nx.t()) :: {Keyword.t(), Nx.t()}
+  defp determine_nx_type(opts, x0) do
+    case opts[:type] do
+      nil -> {Keyword.merge(opts, type: Utils.type_atom(x0)), x0}
+      nx_type -> {opts, Nx.as_type(x0, nx_type)}
     end
   end
 end
