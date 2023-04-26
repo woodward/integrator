@@ -116,17 +116,23 @@ defmodule Integrator.AdaptiveStepsize do
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
 
-  @default_refine 4
-  @default_max_number_of_errors 5_000
-  @default_max_step 2.0
-  @default_store_resuts true
-
+  # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
   # Switch to using Utils.epsilon/1
   @epsilon 2.2204e-16
 
   @nx_true Nx.tensor(1, type: :u8)
+
+  @default_opts [
+    # Switch away from using epsilon here:
+    epsilon: @epsilon,
+    #
+    max_number_of_errors: 5_000,
+    max_step: 2.0,
+    refine: 4,
+    store_results?: true
+  ]
 
   @doc """
   Integrates a set of ODEs. Originally adapted from
@@ -137,7 +143,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   @spec integrate(fun(), fun(), fun(), float(), float(), Nx.t() | nil, float, Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = default_opts() |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    opts = @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
@@ -153,7 +159,7 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times
     }
-    |> store_first_point(t_start, x0, opts[:store_resuts?])
+    |> store_first_point(t_start, x0, opts[:store_results?])
     |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
@@ -170,11 +176,11 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @spec store_first_point(t(), float(), Nx.t(), boolean()) :: t()
-  defp store_first_point(step, t_start, x0, true = _store_resuts?) do
+  defp store_first_point(step, t_start, x0, true = _store_results?) do
     %{step | output_t: [t_start], output_x: [x0], ode_t: [t_start], ode_x: [x0]}
   end
 
-  defp store_first_point(step, _t_start, _x0, _store_resuts?), do: step
+  defp store_first_point(step, _t_start, _x0, _store_results?), do: step
 
   @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
   defp initial_empty_k_vals(order, x) do
@@ -207,7 +213,7 @@ defmodule Integrator.AdaptiveStepsize do
         |> merge_new_step(new_step)
         |> call_event_fn(opts[:event_fn], interpolate_fn, opts)
         |> interpolate(interpolate_fn, opts[:refine])
-        |> store_resuts(opts[:store_resuts?])
+        |> store_resuts(opts[:store_results?])
         |> call_output_fn(opts[:output_fn])
       else
         bump_error_count(step, opts)
@@ -314,11 +320,11 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @spec store_resuts(t(), boolean()) :: t()
-  defp store_resuts(step, false = _store_resuts?) do
+  defp store_resuts(step, false = _store_results?) do
     step
   end
 
-  defp store_resuts(step, true = _store_resuts?) do
+  defp store_resuts(step, true = _store_results?) do
     %{
       step
       | ode_t: [step.t_new | step.ode_t],
@@ -460,16 +466,5 @@ defmodule Integrator.AdaptiveStepsize do
     root = NonlinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
-  end
-
-  @spec default_opts() :: Keyword.t()
-  defp default_opts() do
-    [
-      epsilon: @epsilon,
-      max_number_of_errors: @default_max_number_of_errors,
-      max_step: @default_max_step,
-      refine: @default_refine,
-      store_resuts?: @default_store_resuts
-    ]
   end
 end
