@@ -101,7 +101,10 @@ defmodule Integrator.Utils do
                       ],
                       type: :f64
                     )
-  @coefs_u_half %{f64: @coefs_u_half_f64, f32: Nx.as_type(@coefs_u_half_f64, :f32)}
+  @coefs_u_half %{
+    f64: @coefs_u_half_f64,
+    f32: Nx.as_type(@coefs_u_half_f64, :f32)
+  }
 
   @doc """
   Performs a 4th order Hermite interpolation. Used by an ODE solver to interpolate the

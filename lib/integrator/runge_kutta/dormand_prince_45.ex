@@ -38,16 +38,28 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
            type: :f64
          )
 
-  @a %{f64: @a_f64, f32: Nx.as_type(@a_f64, :f32)}
+  @a %{
+    f64: @a_f64,
+    f32: Nx.as_type(@a_f64, :f32)
+  }
 
   @b_f64 Nx.tensor([0, 1 / 5, 3 / 10, 4 / 5, 8 / 9, 1, 1], type: :f64)
-  @b %{f64: @b_f64, f32: Nx.as_type(@b_f64, :f32)}
+  @b %{
+    f64: @b_f64,
+    f32: Nx.as_type(@b_f64, :f32)
+  }
 
   @c_f64 Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
-  @c %{f64: @c_f64, f32: Nx.as_type(@c_f64, :f32)}
+  @c %{
+    f64: @c_f64,
+    f32: Nx.as_type(@c_f64, :f32)
+  }
 
   @c_prime_f64 Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
-  @c_prime %{f64: @c_prime_f64, f32: Nx.as_type(@c_prime_f64, :f32)}
+  @c_prime %{
+    f64: @c_prime_f64,
+    f32: Nx.as_type(@c_prime_f64, :f32)
+  }
 
   @impl RungeKutta
   def order, do: 5

@@ -22,16 +22,28 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
            ],
            type: :f64
          )
-  @a %{f64: @a_f64, f32: Nx.as_type(@a_f64, :f32)}
+  @a %{
+    f64: @a_f64,
+    f32: Nx.as_type(@a_f64, :f32)
+  }
 
   @b_f64 Nx.tensor([0, 1 / 2, 3 / 4, 1], type: :f64)
-  @b %{f64: @b_f64, f32: Nx.as_type(@b_f64, :f32)}
+  @b %{
+    f64: @b_f64,
+    f32: Nx.as_type(@b_f64, :f32)
+  }
 
   @c_f64 Nx.tensor([2 / 9, 1 / 3, 4 / 9], type: :f64)
-  @c %{f64: @c_f64, f32: Nx.as_type(@c_f64, :f32)}
+  @c %{
+    f64: @c_f64,
+    f32: Nx.as_type(@c_f64, :f32)
+  }
 
   @c_prime_f64 Nx.tensor([7 / 24, 1 / 4, 1 / 3, 1 / 8], type: :f64)
-  @c_prime %{f64: @c_prime_f64, f32: Nx.as_type(@c_prime_f64, :f32)}
+  @c_prime %{
+    f64: @c_prime_f64,
+    f32: Nx.as_type(@c_prime_f64, :f32)
+  }
 
   @doc """
   Solves a set of non-stiff Ordinary Differential Equations (non-stiff ODEs) with the well-known
