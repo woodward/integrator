@@ -119,15 +119,9 @@ defmodule Integrator.AdaptiveStepsize do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  # Switch to using Utils.epsilon/1
-  @epsilon 2.2204e-16
-
   @nx_true Nx.tensor(1, type: :u8)
 
   @default_opts [
-    # Switch away from using epsilon here:
-    epsilon: @epsilon,
-    #
     max_number_of_errors: 5_000,
     max_step: 2.0,
     refine: 4,
@@ -275,7 +269,7 @@ defmodule Integrator.AdaptiveStepsize do
   @spec compute_next_timestep(float(), float(), integer(), float(), float(), Keyword.t()) :: float()
   defp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     # Avoid divisions by zero:
-    error = error + opts[:epsilon]
+    error = error + Utils.epsilon(opts[:type])
 
     # factor should be cached somehow; perhaps passed in in the options?
     factor = Math.pow(0.38, 1.0 / (order + 1))

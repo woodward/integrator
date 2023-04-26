@@ -170,7 +170,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_start = 0.0
       t_end = 20.0
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
-      opts = [event_fn: event_fn]
+      opts = [event_fn: event_fn, type: :f64]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
@@ -254,8 +254,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f32)
-      opts = [refine: 1, output_fn: output_fn]
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [refine: 1, output_fn: output_fn, type: :f64]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
@@ -295,9 +295,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f32)
-      opts = []
-      t_values = Nx.linspace(t_start, t_end, n: 21, type: :f32) |> Nx.to_list()
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [type: :f64]
+      t_values = Nx.linspace(t_start, t_end, n: 21, type: :f64) |> Nx.to_list()
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 6.812920690579614e-02
@@ -348,9 +348,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 3.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f32)
-      opts = []
-      t_values = Nx.linspace(t_start, t_end, n: 61, type: :f32) |> Nx.to_list()
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [type: :f64]
+      t_values = Nx.linspace(t_start, t_end, n: 61, type: :f64) |> Nx.to_list()
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 6.812920690579614e-02
@@ -385,8 +385,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f32)
-      opts = [store_results?: false]
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      opts = [store_results?: false, type: :f64]
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.068129
@@ -411,13 +411,13 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       t_start = 0.0
       t_end = 20.0
-      x0 = Nx.tensor([2.0, 0.0], type: :f32)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
       initial_tstep = 0.007418363820761442
 
       # Set the max_number_of_errors to 1 so that an exception should be thrown:
-      opts = [abs_tol: 1.0e-2, rel_tol: 1.0e-2, max_number_of_errors: 1]
+      opts = [abs_tol: 1.0e-2, rel_tol: 1.0e-2, max_number_of_errors: 1, type: :f64]
 
       assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
         AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -584,7 +584,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 0.0
       t_end = 2.0
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
 
       expected_dt = 0.1022
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
@@ -597,8 +597,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 0.0
       t_end = 2.0
 
-      new_dt =
-        private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, epsilon: 2.2204e-16))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, type: :f64))
 
       expected_dt = 0.05
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
@@ -611,7 +610,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_old = 19.711
       t_end = 20.0
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, epsilon: 2.2204e-16))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
 
       expected_dt = 0.289
       assert_in_delta(new_dt, expected_dt, 1.0e-05)
