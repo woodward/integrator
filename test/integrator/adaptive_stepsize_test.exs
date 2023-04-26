@@ -464,6 +464,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
   end
 
+  # ===========================================================================
+  # Tests of private functions below here:
+
   describe "call_event_fn" do
     setup do
       expose(AdaptiveStepsize, call_event_fn: 4)
