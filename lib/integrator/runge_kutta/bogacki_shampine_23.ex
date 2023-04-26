@@ -9,6 +9,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @behaviour RungeKutta
 
   import Nx.Defn
+  import Integrator.Utils, only: [nx_type_atom: 1]
 
   @impl RungeKutta
   def order, do: 3
@@ -42,7 +43,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
     type = :f64
-    # type = type_atom(x)
+    # type = nx_type_atom(x)
 
     s = t + dt * @b[type]
     cc = dt * @c[type]
@@ -84,7 +85,4 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   defn interpolate(t, x, der, t_out) do
     Utils.hermite_cubic_interpolation(t, x, der, t_out)
   end
-
-  @spec type_atom(Nx.t()) :: atom()
-  deftransformp type_atom(tensor), do: Utils.type_atom(tensor)
 end

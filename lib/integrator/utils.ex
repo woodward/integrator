@@ -315,5 +315,5 @@ defmodule Integrator.Utils do
   end
 
   @spec nx_type_atom(Nx.t()) :: atom()
-  deftransformp nx_type_atom(tensor), do: type_atom(tensor)
+  deftransform nx_type_atom(tensor), do: type_atom(tensor)
 end

@@ -24,6 +24,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @behaviour RungeKutta
 
   import Nx.Defn
+  import Integrator.Utils, only: [nx_type_atom: 1]
 
   @a_f64 Nx.tensor(
            [
@@ -86,7 +87,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
     type = :f64
-    # type = type_atom(x)
+    # type = nx_type_atom(x)
 
     t_next = t + dt
     s = t + dt * @b[type]
@@ -143,7 +144,4 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   defn interpolate(t, x, der, t_out) do
     Utils.hermite_quartic_interpolation(t, x, der, t_out)
   end
-
-  @spec type_atom(Nx.t()) :: atom()
-  deftransformp type_atom(tensor), do: Utils.type_atom(tensor)
 end
