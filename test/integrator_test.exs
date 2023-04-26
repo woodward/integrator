@@ -257,4 +257,81 @@ defmodule IntegratorTest do
       assert_all_close(x0, x0_converted_to_f32, atol: 1.0e-08, rtol: 1.0e-08)
     end
   end
+
+  describe "parse_start_end/1" do
+    setup do
+      expose(Integrator, parse_start_end: 2)
+    end
+
+    test "converts an array of floats to tensors - type :f64" do
+      opts = [type: :f64]
+      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0], opts))
+      assert t_start.__struct__ == Nx.Tensor
+      assert t_start == Nx.tensor(0.0, type: :f64)
+      assert Nx.type(t_start) == {:f, 64}
+
+      assert t_end.__struct__ == Nx.Tensor
+      assert t_end == Nx.tensor(1.0, type: :f64)
+      assert Nx.type(t_end) == {:f, 64}
+
+      assert fixed_times == nil
+    end
+
+    test "converts an array of floats to tensors - type :f32" do
+      opts = [type: :f32]
+      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0], opts))
+      assert t_start.__struct__ == Nx.Tensor
+      assert t_start == Nx.tensor(0.0, type: :f32)
+      assert Nx.type(t_start) == {:f, 32}
+
+      assert t_end.__struct__ == Nx.Tensor
+      assert t_end == Nx.tensor(1.0, type: :f32)
+      assert Nx.type(t_end) == {:f, 32}
+
+      assert fixed_times == nil
+    end
+
+    test "raises an error if the tensors are not of the correct type" do
+      opts = [type: :f64]
+
+      assert_raise ArgumentError, fn ->
+        private(Integrator.parse_start_end([Nx.tensor(0.0, type: :f32), Nx.tensor(1.0, type: :f32)], opts))
+      end
+    end
+
+    test "creates an array of fixed_times if a single tensor is given" do
+      opts = [type: :f64]
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.5, type: :f64)
+      t_values = Nx.linspace(t_start, t_end, n: 6, type: :f64)
+
+      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end(t_values, opts))
+      assert t_start.__struct__ == Nx.Tensor
+      assert t_start == Nx.tensor(0.0, type: :f64)
+      assert Nx.type(t_start) == {:f, 64}
+
+      assert t_end.__struct__ == Nx.Tensor
+      assert t_end == Nx.tensor(0.5, type: :f64)
+      assert Nx.type(t_end) == {:f, 64}
+
+      assert length(fixed_times) == 6
+      [_first_time | [second_time | _rest]] = fixed_times
+      assert second_time.__struct__ == Nx.Tensor
+      assert second_time == Nx.tensor(0.1, type: :f64)
+      assert Nx.type(second_time) == {:f, 64}
+    end
+
+    test "creates an array of fixed_times if a single tensor is given - types don't match" do
+      opts = [type: :f64]
+
+      t_start = Nx.tensor(0.0, type: :f32)
+      t_end = Nx.tensor(0.5, type: :f32)
+      t_values = Nx.linspace(t_start, t_end, n: 6, type: :f32)
+
+      assert_raise ArgumentError, fn ->
+        private(Integrator.parse_start_end(t_values, opts))
+      end
+    end
+  end
 end

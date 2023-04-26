@@ -37,7 +37,7 @@ defmodule Integrator.AdaptiveStepsize do
           k_vals: Nx.t() | nil,
           #
           options_comp: Nx.t() | nil,
-          fixed_times: [float()] | nil,
+          fixed_times: [Nx.t()] | nil,
           #
           count_loop__increment_step: integer(),
           count_cycles__compute_step: integer(),
@@ -154,7 +154,7 @@ defmodule Integrator.AdaptiveStepsize do
       fixed_times: fixed_times
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
-    |> step_forward(t_start, t_end, :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
   end
 
@@ -368,9 +368,12 @@ defmodule Integrator.AdaptiveStepsize do
 
   defp add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
     [new_time | remaining_times] = fixed_times
+    new_time_float = Nx.to_number(new_time)
     t_new = Nx.to_number(step.t_new)
+    # clean this up!!!  get rid of the floats here
 
-    if new_time < t_new || abs(new_time - t_new) < @zero_tolerance do
+    # Do this comparison using tensors, not floats:
+    if new_time_float < t_new || abs(new_time_float - t_new) < @zero_tolerance do
       step = %{step | fixed_times: remaining_times}
       x_new = interpolate_one_point(new_time, step, interpolate_fn)
       add_fixed_point(step, [new_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)

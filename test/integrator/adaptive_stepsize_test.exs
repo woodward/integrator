@@ -16,8 +16,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [type: :f64]
 
@@ -37,9 +37,13 @@ defmodule Integrator.AdaptiveStepsizeTest do
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
       assert last_time.__struct__ == Nx.Tensor
+      [start_time | _rest] = result.output_t
+      assert start_time.__struct__ == Nx.Tensor
 
       [last_ode_time | _rest] = result.ode_t |> Enum.reverse()
       assert last_ode_time.__struct__ == Nx.Tensor
+      [start_ode_time | _rest] = result.ode_t
+      assert start_ode_time.__struct__ == Nx.Tensor
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
@@ -55,8 +59,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, type: :f64]
 
@@ -86,8 +90,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, type: :f64]
 
@@ -121,9 +125,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      # t_end = 4.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [output_fn: output_fn, type: :f64]
 
@@ -171,8 +174,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [event_fn: event_fn, type: :f64]
 
@@ -213,8 +216,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, output_fn: output_fn, type: :f64]
 
@@ -256,8 +259,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, output_fn: output_fn, type: :f64]
 
@@ -297,8 +300,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [type: :f64]
       t_values = Nx.linspace(t_start, t_end, n: 21, type: :f64) |> Nx.to_list()
@@ -350,8 +353,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 3.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(3.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [type: :f64]
       t_values = Nx.linspace(t_start, t_end, n: 61, type: :f64) |> Nx.to_list()
@@ -387,8 +390,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [store_results?: false, type: :f64]
 
@@ -413,8 +416,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
 
       # From Octave (or equivalently, from Utils.starting_stepsize/7):
@@ -435,8 +438,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       ode_fn = &Demo.van_der_pol_fn/2
 
-      t_start = 0.0
-      t_end = 20.0
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 4, type: :f64]
 

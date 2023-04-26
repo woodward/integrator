@@ -43,7 +43,7 @@ defmodule Integrator do
       end)
 
     order = integrator_mod.order()
-    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end)
+    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts)
     initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
 
     AdaptiveStepsize.integrate(
@@ -53,24 +53,37 @@ defmodule Integrator do
       t_start,
       t_end,
       fixed_times,
-      Nx.to_number(initial_tstep),
+      initial_tstep,
       x0,
       order,
       opts
     )
   end
 
-  @spec parse_start_end([float() | Nx.t()] | Nx.t()) :: {float(), float(), [float()] | nil}
-  defp parse_start_end([t_start, t_end]), do: {t_start, t_end, _fixed_times = nil}
+  @spec parse_start_end([float() | Nx.t()] | Nx.t(), Keyword.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
+  defp parse_start_end([t_start, t_end], opts) do
+    nx_type = opts[:type]
+    {Nx.tensor(t_start, type: nx_type), Nx.tensor(t_end, type: nx_type), _fixed_times = nil}
+  end
 
-  defp parse_start_end(t_start_and_t_end) do
-    t_start = t_start_and_t_end[0] |> Nx.to_number()
-    {length} = Nx.shape(t_start_and_t_end)
+  defp parse_start_end(t_range, opts) do
+    if Utils.type_atom(t_range) != opts[:type] do
+      raise ArgumentError, "The Nx type for the time range and the option[:type] do not match"
+    end
 
-    # The following Nx.as_type(:f32) is a HACK as I think there's a bug in Nx.linspace():
-    t_end = t_start_and_t_end[length - 1] |> Nx.as_type(:f32) |> Nx.to_number()
+    t_start = t_range[0]
+    {length} = Nx.shape(t_range)
 
-    fixed_times = t_start_and_t_end |> Nx.to_list() |> Enum.map(&Nx.to_number(&1))
+    t_end = t_range[length - 1]
+
+    # Figure out the correct way to do this; there's got to be a better way!
+    fixed_times =
+      0..(length - 1)
+      |> Enum.reduce([], fn i, acc ->
+        [t_range[i] | acc]
+      end)
+      |> Enum.reverse()
+
     {t_start, t_end, fixed_times}
   end
 
