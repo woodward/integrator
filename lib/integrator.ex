@@ -74,6 +74,14 @@ defmodule Integrator do
     {t_start, t_end, fixed_times}
   end
 
+  @spec merge_default_opts(Keyword.t()) :: Keyword.t()
+  defp merge_default_opts(user_specified_opts) do
+    @default_opts
+    |> Keyword.merge(Utils.default_opts())
+    |> Keyword.merge(user_specified_opts)
+    |> set_default_refine_opt()
+  end
+
   @spec set_default_refine_opt(Keyword.t()) :: Keyword.t()
   defp set_default_refine_opt(opts) do
     if opts[:refine] do
@@ -82,10 +90,5 @@ defmodule Integrator do
       default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
       opts |> Keyword.merge(refine: default_refine_for_integrator)
     end
-  end
-
-  @spec merge_default_opts(Keyword.t()) :: Keyword.t()
-  defp merge_default_opts(user_specified_opts) do
-    @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(user_specified_opts) |> set_default_refine_opt()
   end
 end
