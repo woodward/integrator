@@ -33,6 +33,7 @@ defmodule Integrator.AdaptiveStepsize do
           t_new_rk_interpolate: Nx.t() | nil,
           x_new_rk_interpolate: Nx.t() | nil,
           #
+          # Turn dt into an Nx.t()?
           dt: float(),
           k_vals: Nx.t() | nil,
           #
@@ -266,6 +267,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Formula taken from Hairer
+  #
+  # Should this become a defn (Nx) function instead?
   @spec compute_next_timestep(float(), float(), integer(), float(), float(), Keyword.t()) :: float()
   defp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     # Avoid divisions by zero:
@@ -333,6 +336,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
+  # Should this become a defn (Nx) function instead?
   @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
