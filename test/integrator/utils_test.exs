@@ -191,4 +191,18 @@ defmodule Integrator.UtilsTest do
       assert Utils.unique([3.3, 2.2, 3.3]) == [2.2, 3.3]
     end
   end
+
+  describe "type_atom" do
+    # Maybe there's a built-in Nx way of doing this (seems like there should be) but I can't find it
+
+    test "returns the Nx type as an atom for :f32 tensors" do
+      nx_f32 = Nx.tensor(0.1, type: :f32)
+      assert Utils.type_atom(nx_f32) == :f32
+    end
+
+    test "returns the Nx type as an atom for :f64 tensors" do
+      nx_f64 = Nx.tensor(0.1, type: :f64)
+      assert Utils.type_atom(nx_f64) == :f64
+    end
+  end
 end

@@ -25,21 +25,28 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
 
   import Nx.Defn
 
-  @a Nx.tensor(
-       [
-         [0, 0, 0, 0, 0, 0],
-         [1 / 5, 0, 0, 0, 0, 0],
-         [3 / 40, 9 / 40, 0, 0, 0, 0],
-         [44 / 45, -56 / 15, 32 / 9, 0, 0, 0],
-         [19_372 / 6_561, -25_360 / 2187, 64_448 / 6561, -212 / 729, 0, 0],
-         [9_017 / 3_168, -355 / 33, 46_732 / 5247, 49 / 176, -5103 / 18_656, 0]
-       ],
-       type: :f64
-     )
+  @a_f64 Nx.tensor(
+           [
+             [0, 0, 0, 0, 0, 0],
+             [1 / 5, 0, 0, 0, 0, 0],
+             [3 / 40, 9 / 40, 0, 0, 0, 0],
+             [44 / 45, -56 / 15, 32 / 9, 0, 0, 0],
+             [19_372 / 6_561, -25_360 / 2187, 64_448 / 6561, -212 / 729, 0, 0],
+             [9_017 / 3_168, -355 / 33, 46_732 / 5247, 49 / 176, -5103 / 18_656, 0]
+           ],
+           type: :f64
+         )
 
-  @b Nx.tensor([0, 1 / 5, 3 / 10, 4 / 5, 8 / 9, 1, 1], type: :f64)
-  @c Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
-  @c_prime Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
+  @a %{f64: @a_f64, f32: Nx.as_type(@a_f64, :f32)}
+
+  @b_f64 Nx.tensor([0, 1 / 5, 3 / 10, 4 / 5, 8 / 9, 1, 1], type: :f64)
+  @b %{f64: @b_f64, f32: Nx.as_type(@b_f64, :f32)}
+
+  @c_f64 Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
+  @c %{f64: @c_f64, f32: Nx.as_type(@c_f64, :f32)}
+
+  @c_prime_f64 Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
+  @c_prime %{f64: @c_prime_f64, f32: Nx.as_type(@c_prime_f64, :f32)}
 
   @impl RungeKutta
   def order, do: 5
@@ -78,16 +85,18 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
+    type = :f64
+    # type = type_atom(x)
+
     t_next = t + dt
-    s = t + dt * @b
-    cc = dt * @c
-    aa = dt * @a
+    s = t + dt * @b[type]
+    cc = dt * @c[type]
+    aa = dt * @a[type]
 
     slice = fn aa, row ->
       Nx.slice_along_axis(aa, row, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, row)
     end
 
-    # Make these into module variables?
     aa_1 = slice.(aa, 1)
     # Note that aa_1 is the same as aa[1][0]
     aa_2 = slice.(aa, 2)
@@ -120,7 +129,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
 
     k6 = ode_fn.(t_next, x_next)
     k_new = Nx.stack([k0, k1, k2, k3, k4, k5, k6]) |> Nx.transpose()
-    cc_prime = dt * @c_prime
+    cc_prime = dt * @c_prime[type]
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
     {t_next, x_next, x_error_est, k_new}
@@ -134,4 +143,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   defn interpolate(t, x, der, t_out) do
     Utils.hermite_quartic_interpolation(t, x, der, t_out)
   end
+
+  @spec type_atom(Nx.t()) :: atom()
+  deftransformp type_atom(tensor), do: Utils.type_atom(tensor)
 end

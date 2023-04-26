@@ -301,4 +301,9 @@ defmodule Integrator.Utils do
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
+
+  @spec type_atom(Nx.t()) :: atom()
+  def type_atom(tensor) do
+    tensor |> Nx.type() |> Nx.Type.to_string() |> String.to_atom()
+  end
 end
