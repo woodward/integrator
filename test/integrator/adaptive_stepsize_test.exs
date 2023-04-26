@@ -587,7 +587,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
 
       expected_dt = 0.1022
-      assert_in_delta(new_dt, expected_dt, 1.0e-05)
+      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
     end
 
     test "uses option :max_step" do
@@ -600,7 +600,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, type: :f64))
 
       expected_dt = 0.05
-      assert_in_delta(new_dt, expected_dt, 1.0e-05)
+      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
     end
 
     test "does not go past t_end" do
@@ -613,7 +613,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
 
       expected_dt = 0.289
-      assert_in_delta(new_dt, expected_dt, 1.0e-05)
+      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
     end
   end
 

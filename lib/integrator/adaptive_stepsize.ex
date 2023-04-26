@@ -33,8 +33,7 @@ defmodule Integrator.AdaptiveStepsize do
           t_new_rk_interpolate: Nx.t() | nil,
           x_new_rk_interpolate: Nx.t() | nil,
           #
-          # Turn dt into an Nx.t()?
-          dt: float(),
+          dt: Nx.t() | nil,
           k_vals: Nx.t() | nil,
           #
           options_comp: Nx.t() | nil,
@@ -150,7 +149,7 @@ defmodule Integrator.AdaptiveStepsize do
     %__MODULE__{
       t_new: t_start,
       x_new: x0,
-      dt: initial_tstep,
+      dt: Nx.tensor(initial_tstep, type: opts[:type]),
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times
     }
@@ -244,10 +243,10 @@ defmodule Integrator.AdaptiveStepsize do
     step
   end
 
-  @spec t_next(t(), float()) :: float()
+  @spec t_next(t(), Nx.t()) :: float()
   defp t_next(%{error_count: error_count} = step, dt) when error_count > 0 do
     # Update this into step somehow???
-    Nx.to_number(step.t_old) + dt
+    Nx.add(step.t_old, dt) |> Nx.to_number()
   end
 
   defp t_next(%{error_count: error_count} = step, _dt) when error_count == 0 do
@@ -269,7 +268,7 @@ defmodule Integrator.AdaptiveStepsize do
   # Formula taken from Hairer
   #
   # Should this become a defn (Nx) function instead?
-  @spec compute_next_timestep(float(), float(), integer(), float(), float(), Keyword.t()) :: float()
+  @spec compute_next_timestep(Nx.t(), float(), integer(), float(), float(), Keyword.t()) :: float()
   defp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     # Avoid divisions by zero:
     error = error + Utils.epsilon(opts[:type])
@@ -279,11 +278,12 @@ defmodule Integrator.AdaptiveStepsize do
 
     foo = factor * Math.pow(1 / error, 1 / (order + 1))
 
-    dt = dt * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
+    dt = Nx.to_number(dt) * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
     dt = min(abs(dt), opts[:max_step])
 
     # ## Make sure we don't go past t_end:
-    min(abs(dt), abs(t_end - t_old))
+    dt = min(abs(dt), abs(t_end - t_old))
+    Nx.tensor(dt, type: opts[:type])
   end
 
   @spec increment_and_reset_counters(t()) :: t()
