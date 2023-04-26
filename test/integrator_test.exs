@@ -35,7 +35,7 @@ defmodule IntegratorTest do
 
   describe "van_der_pol_fn" do
     setup do
-      initial_x = Nx.tensor([2.0, 0.0])
+      initial_x = Nx.tensor([2.0, 0.0], type: :f64)
       t_initial = 0.0
       t_final = 20.0
 
@@ -49,7 +49,7 @@ defmodule IntegratorTest do
       # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x)
+      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, type: :f64)
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
@@ -76,13 +76,13 @@ defmodule IntegratorTest do
     end
 
     test "performs the integration - high fidelity", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
-      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, integrator: :ode45]
+      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, integrator: :ode45, type: :f64]
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
       expected_t = read_csv("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 

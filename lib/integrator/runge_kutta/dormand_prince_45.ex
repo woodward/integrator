@@ -86,13 +86,12 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
-    type = :f64
-    # type = nx_type_atom(x)
+    nx_type = nx_type_atom(x)
 
     t_next = t + dt
-    s = t + dt * @b[type]
-    cc = dt * @c[type]
-    aa = dt * @a[type]
+    s = t + dt * @b[nx_type]
+    cc = dt * @c[nx_type]
+    aa = dt * @a[nx_type]
 
     slice = fn aa, row ->
       Nx.slice_along_axis(aa, row, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, row)
@@ -130,7 +129,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
 
     k6 = ode_fn.(t_next, x_next)
     k_new = Nx.stack([k0, k1, k2, k3, k4, k5, k6]) |> Nx.transpose()
-    cc_prime = dt * @c_prime[type]
+    cc_prime = dt * @c_prime[nx_type]
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
     {t_next, x_next, x_error_est, k_new}

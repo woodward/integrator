@@ -42,12 +42,11 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
-    type = :f64
-    # type = nx_type_atom(x)
+    nx_type = nx_type_atom(x)
 
-    s = t + dt * @b[type]
-    cc = dt * @c[type]
-    aa = dt * @a[type]
+    s = t + dt * @b[nx_type]
+    cc = dt * @c[nx_type]
+    aa = dt * @a[nx_type]
     # k = zeros (rows (x), 4);
     # k = Nx.broadcast(0.0, {length_of_x, 4})
 
@@ -70,7 +69,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     x_next = x + Nx.dot(k_0_2, cc)
 
     k3 = ode_fn.(t_next, x_next)
-    cc_prime = dt * @c_prime[type]
+    cc_prime = dt * @c_prime[nx_type]
     k_new = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
