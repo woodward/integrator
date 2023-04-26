@@ -135,7 +135,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), float(), float(), Nx.t() | nil, float, Nx.t(), integer(), Keyword.t()) :: t()
+  @spec integrate(fun(), fun(), fun(), Nx.t(), Nx.t(), Nx.t() | nil, Nx.t(), Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     opts = @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
@@ -149,7 +149,7 @@ defmodule Integrator.AdaptiveStepsize do
     %__MODULE__{
       t_new: t_start,
       x_new: x0,
-      dt: Nx.tensor(initial_tstep, type: opts[:type]),
+      dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times
     }
