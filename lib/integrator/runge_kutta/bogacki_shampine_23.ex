@@ -13,18 +13,24 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @impl RungeKutta
   def order, do: 3
 
-  @a Nx.tensor(
-       [
-         [0, 0, 0],
-         [1 / 2, 0, 0],
-         [0, 3 / 4, 0]
-       ],
-       type: :f64
-     )
+  @a_f64 Nx.tensor(
+           [
+             [0, 0, 0],
+             [1 / 2, 0, 0],
+             [0, 3 / 4, 0]
+           ],
+           type: :f64
+         )
+  @a %{f64: @a_f64, f32: Nx.as_type(@a_f64, :f32)}
 
-  @b Nx.tensor([0, 1 / 2, 3 / 4, 1], type: :f64)
-  @c Nx.tensor([2 / 9, 1 / 3, 4 / 9], type: :f64)
-  @c_prime Nx.tensor([7 / 24, 1 / 4, 1 / 3, 1 / 8], type: :f64)
+  @b_f64 Nx.tensor([0, 1 / 2, 3 / 4, 1], type: :f64)
+  @b %{f64: @b_f64, f32: Nx.as_type(@b_f64, :f32)}
+
+  @c_f64 Nx.tensor([2 / 9, 1 / 3, 4 / 9], type: :f64)
+  @c %{f64: @c_f64, f32: Nx.as_type(@c_f64, :f32)}
+
+  @c_prime_f64 Nx.tensor([7 / 24, 1 / 4, 1 / 3, 1 / 8], type: :f64)
+  @c_prime %{f64: @c_prime_f64, f32: Nx.as_type(@c_prime_f64, :f32)}
 
   @doc """
   Solves a set of non-stiff Ordinary Differential Equations (non-stiff ODEs) with the well-known
@@ -35,9 +41,12 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals) do
-    s = t + dt * @b
-    cc = dt * @c
-    aa = dt * @a
+    type = :f64
+    # type = type_atom(x)
+
+    s = t + dt * @b[type]
+    cc = dt * @c[type]
+    aa = dt * @a[type]
     # k = zeros (rows (x), 4);
     # k = Nx.broadcast(0.0, {length_of_x, 4})
 
@@ -58,7 +67,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     x_next = x + Nx.dot(k_0_2, cc)
 
     k3 = ode_fn.(t_next, x_next)
-    cc_prime = dt * @c_prime
+    cc_prime = dt * @c_prime[type]
     k_new = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
@@ -73,4 +82,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   defn interpolate(t, x, der, t_out) do
     Utils.hermite_cubic_interpolation(t, x, der, t_out)
   end
+
+  @spec type_atom(Nx.t()) :: atom()
+  deftransformp type_atom(tensor), do: Utils.type_atom(tensor)
 end
