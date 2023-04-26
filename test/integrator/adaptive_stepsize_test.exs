@@ -585,42 +585,45 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "basic case" do
-      dt = 0.068129
-      error = 0.0015164936598390992
+      dt = Nx.tensor(0.068129, type: :f64)
+      error = Nx.tensor(0.0015164936598390992, type: :f64)
       order = 5
-      t_old = 0.0
-      t_end = 2.0
+      t_old = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(2.0, type: :f64)
+      opts = [type: :f64, max_step: 2.0]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
 
-      expected_dt = 0.1022
-      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
+      expected_dt = Nx.tensor(0.1022, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
     test "uses option :max_step" do
-      dt = 0.068129
-      error = 0.0015164936598390992
+      dt = Nx.tensor(0.068129, type: :f64)
+      error = Nx.tensor(0.0015164936598390992, type: :f64)
       order = 5
-      t_old = 0.0
-      t_end = 2.0
+      t_old = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(2.0, type: :f64)
+      opts = [max_step: 0.05, type: :f64]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, max_step: 0.05, type: :f64))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
 
-      expected_dt = 0.05
-      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
+      expected_dt = Nx.tensor(0.05, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
     test "does not go past t_end" do
-      dt = 0.3039
-      error = 0.4414
+      dt = Nx.tensor(0.3039, type: :f64)
+      error = Nx.tensor(0.4414, type: :f64)
       order = 5
-      t_old = 19.711
-      t_end = 20.0
+      t_old = Nx.tensor(19.711, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
+      opts = [type: :f64, max_step: 2.0]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, type: :f64))
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
 
-      expected_dt = 0.289
-      assert_in_delta(Nx.to_number(new_dt), expected_dt, 1.0e-05)
+      expected_dt = Nx.tensor(0.289, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
   end
 

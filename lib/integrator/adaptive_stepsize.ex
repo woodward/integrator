@@ -2,6 +2,7 @@ defmodule Integrator.AdaptiveStepsize do
   @moduledoc """
   Integrates a set of ODEs with an adaptive timestep
   """
+  import Nx.Defn
 
   alias Integrator.{MaxErrorsExceededError, NonlinearEqnRoot, Utils}
 
@@ -213,7 +214,7 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
-    dt = compute_next_timestep(step.dt, Nx.to_number(error_est), order, Nx.to_number(step.t_new), t_end, opts)
+    dt = compute_next_timestep(step.dt, error_est, order, step.t_new, t_end, opts)
     step = %{step | dt: dt}
 
     step
@@ -266,24 +267,27 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Formula taken from Hairer
-  #
-  # Should this become a defn (Nx) function instead?
   @spec compute_next_timestep(Nx.t(), float(), integer(), float(), float(), Keyword.t()) :: float()
-  defp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
-    # Avoid divisions by zero:
-    error = error + Utils.epsilon(opts[:type])
+  defnp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
+    # # Avoid divisions by zero:
+    error = error + epsilon(opts[:type])
 
     # factor should be cached somehow; perhaps passed in in the options?
-    factor = Math.pow(0.38, 1.0 / (order + 1))
+    factor = 0.38 ** (1.0 / (order + 1))
 
-    foo = factor * Math.pow(1 / error, 1 / (order + 1))
+    foo = factor * (1 / error ** (1 / (order + 1)))
 
-    dt = Nx.to_number(dt) * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
-    dt = min(abs(dt), opts[:max_step])
+    dt = dt * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
+    dt = min(Nx.abs(dt), opts[:max_step])
 
-    # ## Make sure we don't go past t_end:
-    dt = min(abs(dt), abs(t_end - t_old))
-    Nx.tensor(dt, type: opts[:type])
+    # # ## Make sure we don't go past t_end:
+    min(Nx.abs(dt), Nx.abs(t_end - t_old))
+  end
+
+  # What should the typespec be for a deftransformp?
+  # @spec epsilon(atom()) :: Nx.t()
+  deftransformp epsilon(type) do
+    Utils.epsilon(type)
   end
 
   @spec increment_and_reset_counters(t()) :: t()
