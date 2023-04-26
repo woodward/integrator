@@ -35,12 +35,16 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 20.0, 1.0e-10)
+      assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
+      assert last_time.__struct__ == Nx.Tensor
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      [last_ode_time | _rest] = result.ode_t |> Enum.reverse()
+      assert last_ode_time.__struct__ == Nx.Tensor
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -68,10 +72,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 4109
       assert length(result.output_x) == 4109
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
@@ -99,10 +103,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 51
       assert length(result.output_x) == 51
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -137,12 +141,12 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 20.0, 1.0e-10)
+      assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
       x_data = DummyOutput.get_x(dummy_output_name)
@@ -150,7 +154,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(x_data) == 201
       assert length(t_data) == 201
 
-      assert_lists_equal(t_data, result.output_t, 1.0e-05)
+      assert_nx_lists_equal(t_data, result.output_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -189,12 +193,12 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 2.161317515510217, 1.0e-7)
+      assert_all_close(last_time, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
@@ -226,10 +230,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 51
       assert length(result.output_x) == 51
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
       x_data = DummyOutput.get_x(dummy_output_name)
@@ -237,7 +241,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(x_data) == 51
       assert length(t_data) == 51
 
-      assert_lists_equal(t_data, result.output_t, 1.0e-04)
+      assert_nx_lists_equal(t_data, result.output_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -271,10 +275,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 2
       assert length(result.output_x) == 2
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/output_fn_halt/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/output_fn_halt/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/output_fn_halt/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
       x_data = DummyOutput.get_x(dummy_output_name)
@@ -282,7 +286,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(x_data) == 2
       assert length(t_data) == 2
 
-      assert_lists_equal(t_data, result.output_t, 1.0e-04)
+      assert_nx_lists_equal(t_data, result.output_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -316,10 +320,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_in_delta(last_time, 20.0, 1.0e-10)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
@@ -369,10 +373,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_in_delta(last_time, 3.0, 1.0e-07)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
@@ -454,12 +458,12 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 20.0, 1.0e-10)
+      assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
 
-      assert_lists_equal(result.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
   end

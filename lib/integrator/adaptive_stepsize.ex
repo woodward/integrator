@@ -50,16 +50,16 @@ defmodule Integrator.AdaptiveStepsize do
           terminal_output: integration_status(),
           #
           # The output of the integration:
-          ode_t: [float()],
+          ode_t: [Nx.t()],
           ode_x: [Nx.t()],
           #
           # The output of the integration, including the interpolated points:
-          output_t: [float()],
+          output_t: [Nx.t()],
           output_x: [Nx.t()],
           #
           # The last chunk of points; will include the computed point plus the interpolated points (if
           # interpolation is enabled) or just the computed point (if interpolation is disabled):
-          t_new_chunk: [float()],
+          t_new_chunk: [Nx.t()],
           x_new_chunk: [Nx.t()]
         }
   defstruct [
@@ -362,7 +362,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec add_fixed_point(t(), [float()], [Nx.t()], fun()) :: {t(), [float()], [Nx.t()]}
   defp add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
-    step = %{step | t_new_chunk: [Nx.to_number(step.t_new)], x_new_chunk: [step.x_new]}
+    step = %{step | t_new_chunk: [step.t_new], x_new_chunk: [step.x_new]}
     {step, new_t_chunk, new_x_chunk}
   end
 
@@ -386,7 +386,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   defp interpolate(step, _interpolate_fn, refine) when refine == 1 do
-    %{step | t_new_chunk: [Nx.to_number(step.t_new)], x_new_chunk: [step.x_new]}
+    %{step | t_new_chunk: [step.t_new], x_new_chunk: [step.x_new]}
   end
 
   defp interpolate(step, interpolate_fn, refine) when refine > 1 do
@@ -396,7 +396,10 @@ defmodule Integrator.AdaptiveStepsize do
 
     x_out_as_cols = do_interpolation(step, interpolate_fn, tadd)
 
-    %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: Nx.to_list(tadd) |> Enum.reverse()}
+    # This is gross; figure out the correct way to slice up tadd into individual tensors, not floats
+    # Nx.to_list() is the wrong thing to use here; perhaps a slice?
+    t_new_chunk = Nx.to_list(tadd) |> Enum.map(&Nx.tensor(&1, type: Nx.type(step.x_old))) |> Enum.reverse()
+    %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: t_new_chunk}
   end
 
   @spec interpolate_one_point(float(), t(), fun()) :: Nx.t()

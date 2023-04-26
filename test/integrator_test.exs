@@ -52,10 +52,10 @@ defmodule IntegratorTest do
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, type: :f64)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
@@ -69,10 +69,10 @@ defmodule IntegratorTest do
       t_range = Nx.linspace(t_initial, t_final, n: 21, type: :f64)
       solution = Integrator.integrate(&van_der_pol_fn/2, t_range, initial_x)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
@@ -80,10 +80,10 @@ defmodule IntegratorTest do
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, integrator: :ode45, type: :f64]
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-04)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
@@ -92,10 +92,10 @@ defmodule IntegratorTest do
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
-      expected_t = read_csv("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
@@ -132,10 +132,10 @@ defmodule IntegratorTest do
       assert length(solution.output_t) == 313
       assert length(solution.output_x) == 313
 
-      expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode45/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/euler_equations/ode45/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode45/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
@@ -162,10 +162,10 @@ defmodule IntegratorTest do
       assert length(solution.output_t) == 847
       assert length(solution.output_x) == 847
 
-      expected_t = read_csv("test/fixtures/octave_results/euler_equations/ode23/t.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/euler_equations/ode23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/euler_equations/ode23/x.csv")
 
-      assert_lists_equal(solution.output_t, expected_t, 1.0e-05)
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
   end
