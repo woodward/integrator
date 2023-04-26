@@ -6,6 +6,7 @@ defmodule Integrator.Utils do
 
   @default_norm_control true
 
+  # Perhaps the default abs_tol and rel_tol should be based on the precision ():f32 or :f64)?
   @default_opts [
     abs_tol: 1.0e-06,
     rel_tol: 1.0e-03,
@@ -252,6 +253,7 @@ defmodule Integrator.Utils do
     {sum, comp}
   end
 
+  @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
     (x * x) |> Nx.sum() |> Nx.sqrt()
   end
@@ -291,6 +293,7 @@ defmodule Integrator.Utils do
   end
 
   # In Octave, get these via eps("single") or eps("double")
+  # Can they be obtained from the underlying machine somehow?
   @epislon_f32 1.1920929e-07
   @epislon_f64 2.220446049250313e-16
 
