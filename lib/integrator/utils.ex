@@ -182,12 +182,12 @@ defmodule Integrator.Utils do
   @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
-    y_zeros = zero_vector(x0)
-    d0 = abs_rel_norm(x0, x0, y_zeros, abs_tol, rel_tol, opts)
+    x_zeros = zero_vector(x0)
+    d0 = abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
 
-    y = ode_fn.(t0, x0)
+    x = ode_fn.(t0, x0)
 
-    d1 = abs_rel_norm(y, y, y_zeros, abs_tol, rel_tol, opts)
+    d1 = abs_rel_norm(x, x, x_zeros, abs_tol, rel_tol, opts)
 
     h0 =
       if d0 < 1.0e-5 or d1 < 1.0e-5 do
@@ -197,21 +197,22 @@ defmodule Integrator.Utils do
       end
 
     # Compute one step of Explicit-Euler
-    x1 = x0 + h0 * y
+    x1 = x0 + h0 * x
 
     # Approximate the derivative norm
-    yh = ode_fn.(t0 + h0, x1)
+    xh = ode_fn.(t0 + h0, x1)
 
-    d2 = 1.0 / h0 * abs_rel_norm(yh - y, yh - y, y_zeros, abs_tol, rel_tol, opts)
+    xh_minus_x = xh - x
+    d2 = 1.0 / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
 
     h1 =
-      if Nx.max(d1, d2) <= 1.0e-15 do
-        Nx.max(1.0e-6, h0 * 1.0e-3)
+      if max(d1, d2) <= 1.0e-15 do
+        max(1.0e-6, h0 * 1.0e-3)
       else
-        Nx.pow(1.0e-2 / Nx.max(d1, d2), 1 / (order + 1))
+        Nx.pow(1.0e-2 / max(d1, d2), 1 / (order + 1))
       end
 
-    Nx.min(100.0 * h0, h1)
+    min(100.0 * h0, h1)
   end
 
   @doc """
@@ -252,10 +253,8 @@ defmodule Integrator.Utils do
     {sum, comp}
   end
 
-  @doc """
-  Sums the squares of a vector and then takes the square root (e.g., computes
-  the norm of a vector)
-  """
+  # Sums the squares of a vector and then takes the square root (e.g., computes
+  # the norm of a vector)
   @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
     (x * x) |> Nx.sum() |> Nx.sqrt()
