@@ -136,7 +136,18 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), Nx.t(), Nx.t(), [Nx.t()] | nil, Nx.t(), Nx.t(), integer(), Keyword.t()) :: t()
+  @spec integrate(
+          stepper_fn :: fun(),
+          interpolate_fn :: fun(),
+          ode_fn :: fun(),
+          t_start :: Nx.t(),
+          t_end :: Nx.t(),
+          fixed_times :: [Nx.t()] | nil,
+          initial_tstep :: Nx.t(),
+          x0 :: Nx.t(),
+          order :: integer(),
+          opts :: Keyword.t()
+        ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     opts = @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
@@ -186,7 +197,17 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(0.0, {length_x, k_length})
   end
 
-  @spec step_forward(t(), float(), float(), integration_status(), fun(), fun(), fun(), integer(), Keyword.t()) :: t()
+  @spec step_forward(
+          step :: t(),
+          t_old :: float(),
+          t_end :: float(),
+          status :: integration_status(),
+          stepper_fn :: fun(),
+          interpolate_fn :: fun(),
+          ode_fn :: fun(),
+          order :: integer(),
+          opts :: Keyword.t()
+        ) :: t()
   defp step_forward(step, t_old, t_end, _status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
        when abs(t_old - t_end) < @zero_tolerance or t_old > t_end do
     step
