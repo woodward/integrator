@@ -55,7 +55,7 @@ defmodule Integrator.Utils do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
   """
-  @spec hermite_cubic_interpolation(float() | Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  @spec hermite_cubic_interpolation(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_cubic_interpolation(t, x, der, t_out) do
     # Octave:
     #   dt = (t(2) - t(1));
@@ -109,7 +109,7 @@ defmodule Integrator.Utils do
 
   See [hermite_quartic_interpolation function in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m#L91).
   """
-  @spec hermite_quartic_interpolation(float() | Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  @spec hermite_quartic_interpolation(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic_interpolation(t, x, der, t_out) do
     # Octave code:
     #   dt = t(2) - t(1);
@@ -179,7 +179,7 @@ defmodule Integrator.Utils do
   "Solving Ordinary Differential Equations I: Nonstiff Problems",
   Springer.
   """
-  @spec starting_stepsize(integer(), fun(), float(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
+  @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
     y_zeros = zero_vector(x0)

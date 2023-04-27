@@ -136,7 +136,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
-  @spec integrate(fun(), fun(), fun(), Nx.t(), Nx.t(), Nx.t() | nil, Nx.t(), Nx.t(), integer(), Keyword.t()) :: t()
+  @spec integrate(fun(), fun(), fun(), Nx.t(), Nx.t(), [Nx.t()] | nil, Nx.t(), Nx.t(), integer(), Keyword.t()) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     opts = @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
@@ -162,7 +162,7 @@ defmodule Integrator.AdaptiveStepsize do
   # ===========================================================================
   # Private functions below here:
 
-  @spec drop_first_point([float()] | nil) :: [float()] | nil
+  @spec drop_first_point([Nx.t()] | nil) :: [Nx.t()] | nil
   defp drop_first_point(nil), do: nil
 
   defp drop_first_point(fixed_times) do
@@ -170,7 +170,7 @@ defmodule Integrator.AdaptiveStepsize do
     rest_of_fixed_times
   end
 
-  @spec store_first_point(t(), float(), Nx.t(), boolean()) :: t()
+  @spec store_first_point(t(), Nx.t(), Nx.t(), boolean()) :: t()
   defp store_first_point(step, t_start, x0, true = _store_results?) do
     %{step | output_t: [t_start], output_x: [x0], ode_t: [t_start], ode_x: [x0]}
   end
@@ -267,7 +267,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Formula taken from Hairer
-  @spec compute_next_timestep(Nx.t(), float(), integer(), float(), float(), Keyword.t()) :: float()
+  @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
   defnp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     # # Avoid divisions by zero:
     error = error + epsilon(opts[:type])
@@ -285,7 +285,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # What should the typespec be for a deftransformp?
-  # @spec epsilon(atom()) :: Nx.t()
+  @spec epsilon(any()) :: float()
   deftransformp epsilon(type) do
     Utils.epsilon(type)
   end
@@ -368,7 +368,7 @@ defmodule Integrator.AdaptiveStepsize do
     {t_next, x_next, k_vals, options_comp, error}
   end
 
-  @spec add_fixed_point(t(), [float()], [Nx.t()], fun()) :: {t(), [float()], [Nx.t()]}
+  @spec add_fixed_point(t(), [Nx.t()], [Nx.t()], fun()) :: {t(), [Nx.t()], [Nx.t()]}
   defp add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
     step = %{step | t_new_chunk: [step.t_new], x_new_chunk: [step.x_new]}
     {step, new_t_chunk, new_x_chunk}
@@ -413,7 +413,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: t_new_chunk}
   end
 
-  @spec interpolate_one_point(float(), t(), fun()) :: Nx.t()
+  @spec interpolate_one_point(Nx.t(), t(), fun()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
     do_interpolation(step, interpolate_fn, Nx.tensor(t_new)) |> List.first()
   end
