@@ -252,6 +252,10 @@ defmodule Integrator.Utils do
     {sum, comp}
   end
 
+  @doc """
+  Sums the squares of a vector and then takes the square root (e.g., computes
+  the norm of a vector)
+  """
   @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
     (x * x) |> Nx.sum() |> Nx.sqrt()
@@ -259,6 +263,8 @@ defmodule Integrator.Utils do
 
   @doc """
   Creates a zero vector that has the length of `x`
+
+  Is there a better built-in Nx way of doing this?
   """
   @spec zero_vector(Nx.t()) :: Nx.t()
   defn zero_vector(x) do
@@ -266,11 +272,34 @@ defmodule Integrator.Utils do
     Nx.broadcast(0.0, {length_of_x})
   end
 
+  @doc """
+  Returns the sign of the tensor as -1 or 1 (or 0 for zero tensors)
+  """
   @spec sign(Nx.t()) :: float()
   def sign(x) when x < 0.0, do: -1.0
   def sign(x) when x > 0.0, do: 1.0
   def sign(_x), do: 0.0
 
+  @doc """
+  Returns the columns of a tensor as a list of vector tensors
+
+  E.g., a tensor of the form:
+
+      ~M[
+        1  2  3  4
+        5  6  7  8
+        9 10 11 12
+      ]s8
+
+  will return
+
+    [
+      ~V[ 1  5   9 ]s8,
+      ~V[ 2  6  10 ]s8,
+      ~V[ 3  7  11 ]s8,
+      ~V[ 4  8  12 ]s8
+
+  """
   @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
   def columns_as_list(matrix, start_index, end_index \\ nil) do
     matrix_t = Nx.transpose(matrix)
@@ -318,6 +347,9 @@ defmodule Integrator.Utils do
   @epislon_f32 1.1920929e-07
   @epislon_f64 2.220446049250313e-16
 
+  @doc """
+  Gets the epsilon for a particular Nx type
+  """
   @spec epsilon(Nx.Type.t()) :: float()
   def epsilon(:f32), do: @epislon_f32
   def epsilon({:f, 32}), do: @epislon_f32
@@ -325,16 +357,27 @@ defmodule Integrator.Utils do
   def epsilon(:f64), do: @epislon_f64
   def epsilon({:f, 64}), do: @epislon_f64
 
+  @doc """
+  Given a list of elements, create a new list with only the unique elements from the list
+  """
   @spec unique(list()) :: list()
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
 
+  @doc """
+  Given the Nx type tuple, return it as an atom.  E.g., {:f, 32} returns :f32
+
+  Is there a built-in Nx way of doing this?  If so, delete this function
+  """
   @spec type_atom(Nx.t()) :: atom()
   def type_atom(tensor) do
     tensor |> Nx.type() |> Nx.Type.to_string() |> String.to_atom()
   end
 
+  @doc """
+  A defn-compatible version of `type_atom/1`
+  """
   @spec nx_type_atom(Nx.t()) :: atom()
   deftransform nx_type_atom(tensor), do: type_atom(tensor)
 end
