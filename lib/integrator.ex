@@ -44,7 +44,7 @@ defmodule Integrator do
 
     order = integrator_mod.order()
     {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts)
-    initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], norm_control: false)
+    initial_tstep = Utils.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/5,

@@ -352,9 +352,7 @@ defmodule Integrator.AdaptiveStepsize do
     {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
 
-    # Pass these in as options:
-    norm_control = false
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: norm_control)
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
 
     {%ComputedStep{
        x_new: x_next,

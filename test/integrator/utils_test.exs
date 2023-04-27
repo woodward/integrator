@@ -12,10 +12,11 @@ defmodule Integrator.UtilsTest do
       t_old = Nx.tensor([1.99566026409, -0.12317664679])
       abs_tolerance = 1.0000e-06
       rel_tolerance = 1.0000e-03
+      opts = [norm_control: false]
       x = Nx.tensor([1.97537723429, -0.26653011403])
       expected_norm = Nx.tensor(0.00473516383083)
 
-      norm = Utils.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, norm_control: false)
+      norm = Utils.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
@@ -26,10 +27,11 @@ defmodule Integrator.UtilsTest do
       x_old = Nx.tensor([1.64842646336, 1.78609260054])
       abs_tolerance = 1.0000e-06
       rel_tolerance = 1.0000e-03
+      opts = [norm_control: true]
       y = Nx.tensor([1.99402286380, 0.33477644992])
       expected_norm = Nx.tensor(0.77474409123)
 
-      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, norm_control: true)
+      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end

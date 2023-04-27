@@ -4,13 +4,11 @@ defmodule Integrator.Utils do
   """
   import Nx.Defn
 
-  @default_norm_control true
-
   # Perhaps the default abs_tol and rel_tol should be based on the precision ():f32 or :f64)?
   @default_opts [
     abs_tol: 1.0e-06,
     rel_tol: 1.0e-03,
-    norm_control: @default_norm_control
+    norm_control: true
   ]
 
   @doc """
@@ -32,8 +30,6 @@ defmodule Integrator.Utils do
   """
   @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
-    opts = keyword!(opts, norm_control: @default_norm_control)
-
     if opts[:norm_control] do
       # Octave code
       # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
