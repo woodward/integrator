@@ -321,7 +321,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_in_delta(last_time, 20.0, 1.0e-10)
+      assert_in_delta(Nx.to_number(last_time), 20.0, 1.0e-10)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
@@ -372,7 +372,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.output_t) == 61
       assert length(result.output_x) == 61
 
-      # Verify the last time step is correct (bug fix!):
+      # Verify the last time step is correct (this check was the result of a bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
       assert_in_delta(last_time, 3.0, 1.0e-07)
 

@@ -61,7 +61,7 @@ defmodule Integrator.Helpers do
   end
 
   def write_t(result, filename) do
-    data = result.output_t |> Enum.join("\n")
+    data = result.output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
     File.write!(filename, data)
   end
 

@@ -403,26 +403,27 @@ defmodule Integrator.AdaptiveStepsize do
     {t_next, x_next, k_vals, options_comp, error}
   end
 
-  @spec add_fixed_point(t(), [Nx.t()], [Nx.t()], fun()) :: {t(), [Nx.t()], [Nx.t()]}
-  defp add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
-    step = %{
-      step
-      | t_new_chunk: [step.t_new],
-        x_new_chunk: [step.x_new]
-    }
-
-    {step, new_t_chunk, new_x_chunk}
+  @spec add_fixed_point(t(), fun()) :: t()
+  defp add_fixed_point(%{fixed_times: []} = step, _interpolate_fn) do
+    step
   end
 
-  defp add_fixed_point(step, new_t_chunk, new_x_chunk, interpolate_fn) do
+  defp add_fixed_point(step, interpolate_fn) do
     [fixed_time | remaining_fixed_times] = step.fixed_times
 
     if add_fixed_point?(fixed_time, step.t_new) == @nx_true do
-      step = %{step | fixed_times: remaining_fixed_times}
-      x_new = interpolate_one_point(fixed_time, step, interpolate_fn)
-      add_fixed_point(step, [fixed_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)
+      x_at_fixed_time = interpolate_one_point(fixed_time, step, interpolate_fn)
+
+      step = %{
+        step
+        | t_new_chunk: [fixed_time | step.t_new_chunk],
+          x_new_chunk: [x_at_fixed_time | step.x_new_chunk],
+          fixed_times: remaining_fixed_times
+      }
+
+      add_fixed_point(step, interpolate_fn)
     else
-      {step, new_t_chunk, new_x_chunk}
+      step
     end
   end
 
@@ -433,8 +434,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec interpolate(t(), fun(), refine_strategy()) :: t()
   defp interpolate(step, interpolate_fn, refine) when refine == :fixed_times do
-    {step, new_t_chunk, new_x_chunk} = add_fixed_point(step, [], [], interpolate_fn)
-    %{step | t_new_chunk: new_t_chunk, x_new_chunk: new_x_chunk}
+    add_fixed_point(%{step | t_new_chunk: [], x_new_chunk: []}, interpolate_fn)
   end
 
   defp interpolate(step, _interpolate_fn, refine) when refine == 1 do
