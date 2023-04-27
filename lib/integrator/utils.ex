@@ -291,6 +291,28 @@ defmodule Integrator.Utils do
     |> Enum.reverse()
   end
 
+  @doc """
+  Converts a Nx vector into a list of 1-D tensors
+
+  Is there an existing Nx way to do this?  If so, swap the usage of this function
+  and then delete this
+
+  Note that
+
+      vector |> Nx.as_list() |> Enum.map(& Nx.tensor(&1, type: Nx.type(vector)))
+
+  seems to introduce potential precision issues
+  """
+  @spec vector_as_list(Nx.t()) :: [Nx.t()]
+  def vector_as_list(vector) do
+    {length} = Nx.shape(vector)
+
+    (length - 1)..0
+    |> Enum.reduce([], fn i, acc ->
+      [vector[i] | acc]
+    end)
+  end
+
   # In Octave, get these via eps("single") or eps("double")
   # Can they be obtained from the underlying machine somehow?
   @epislon_f32 1.1920929e-07

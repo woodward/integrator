@@ -446,12 +446,9 @@ defmodule Integrator.AdaptiveStepsize do
     # Get rid of the first element (tadd[0]) via this slice:
     tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
 
-    x_out_as_cols = do_interpolation(step, interpolate_fn, tadd)
-
-    # This is gross; figure out the correct way to slice up tadd into individual tensors, not floats
-    # Nx.to_list() is the wrong thing to use here; perhaps a slice?
-    t_new_chunk = Nx.to_list(tadd) |> Enum.map(&Nx.tensor(&1, type: Nx.type(step.x_old))) |> Enum.reverse()
-    %{step | x_new_chunk: x_out_as_cols |> Enum.reverse(), t_new_chunk: t_new_chunk}
+    x_out_as_cols = do_interpolation(step, interpolate_fn, tadd) |> Enum.reverse()
+    t_new_chunk = tadd |> Utils.vector_as_list() |> Enum.reverse()
+    %{step | x_new_chunk: x_out_as_cols, t_new_chunk: t_new_chunk}
   end
 
   @spec interpolate_one_point(Nx.t(), t(), fun()) :: Nx.t()

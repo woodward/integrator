@@ -170,6 +170,19 @@ defmodule Integrator.UtilsTest do
     end
   end
 
+  describe "vector_as_list" do
+    test "works" do
+      vector = Nx.tensor([1, 2, 3])
+      vector_as_list = vector |> Utils.vector_as_list()
+
+      assert vector_as_list == [
+               Nx.tensor(1),
+               Nx.tensor(2),
+               Nx.tensor(3)
+             ]
+    end
+  end
+
   describe "sign" do
     test "is negative one for things less than one" do
       assert Utils.sign(-7.0) == -1.0
