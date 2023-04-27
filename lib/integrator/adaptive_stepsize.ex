@@ -380,11 +380,25 @@ defmodule Integrator.AdaptiveStepsize do
      }, error}
   end
 
-  # This @spec does not work for some unknown reason...  figure it out...
-  # @spec compute_step_nx(fun(), fun(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Keyword.t()) :: {Nx.t(), Nx.t(), Nx.t(), Nx.t()}
-  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals, options_comp_old, dt, opts) do
+  @spec compute_step_nx(
+          stepper_fn :: fun(),
+          ode_fn :: fun(),
+          t_old :: Nx.t(),
+          x_old :: Nx.t(),
+          k_vals_old :: Nx.t(),
+          options_comp_old :: Nx.t(),
+          dt :: Nx.t(),
+          opts :: Keyword.t()
+        ) :: {
+          t_next :: Nx.t(),
+          x_next :: Nx.t(),
+          k_vals :: Nx.t(),
+          options_comp :: Nx.t(),
+          error :: Nx.t()
+        }
+  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
     {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
-    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
+    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old)
     error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
     {t_next, x_next, k_vals, options_comp, error}
   end
