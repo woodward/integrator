@@ -600,8 +600,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works" do
-      t_old = 2.155396117711071
-      t_new = 2.742956500140625
+      t_old = ~V[ 2.155396117711071 ]f64
+      t_new = ~V[ 2.742956500140625 ]f64
       x_old = ~V[  1.283429405203074e-02  -2.160506093425276 ]f64
       x_new = ~V[ -1.452959132853812      -2.187778875125423 ]f64
 
@@ -622,7 +622,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         k_vals: k_vals
       }
 
-      t = 2.161317515510217
+      t = ~V[ 2.161317515510217 ]f64
       x_interpolated = private(AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn))
 
       # From Octave:
