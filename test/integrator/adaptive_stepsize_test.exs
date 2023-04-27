@@ -533,7 +533,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test ":continue event", %{event_fn: event_fn} do
-      t_new = 0.553549806109594
+      t_new = Nx.tensor(0.553549806109594, type: :f64)
       x_new = ~V[ 1.808299104387025  -0.563813853847242 ]f64
       opts = []
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new}
@@ -545,10 +545,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test ":halt event for Demo.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
-      t_old = 2.155396117711071
-      t_new = 2.742956500140625
-      # t_old = Nx.tensor(2.155396117711071, type: :f64)
-      # t_new = Nx.tensor(2.742956500140625, type: :f64)
+      t_old = Nx.tensor(2.155396117711071, type: :f64)
+      t_new = Nx.tensor(2.742956500140625, type: :f64)
 
       x_old = ~V[  1.283429405203074e-02  -2.160506093425276 ]f64
       x_new = ~V[ -1.452959132853812      -2.187778875125423 ]f64
@@ -575,15 +573,23 @@ defmodule Integrator.AdaptiveStepsizeTest do
       new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts))
       assert new_step.terminal_event == :halt
 
-      assert_in_delta(new_step.t_new, 2.161317515510217, 1.0e-06)
-      assert_in_delta(Nx.to_number(new_step.x_new[0]), 2.473525941362742e-15, 1.0e-07)
-      assert_in_delta(Nx.to_number(new_step.x_new[1]), -2.173424479824061, 1.0e-07)
+      assert_all_close(new_step.t_new, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)
 
-      assert_in_delta(new_step.t_old, 2.155396117711071, 1.0e-06)
-      assert_in_delta(Nx.to_number(new_step.x_old[0]), 1.283429405203074e-02, 1.0e-07)
-      assert_in_delta(Nx.to_number(new_step.x_old[1]), -2.160506093425276, 1.0e-07)
+      assert_all_close(new_step.x_new, Nx.tensor([2.473525941362742e-15, -2.173424479824061], type: :f64),
+        atol: 1.0e-06,
+        rtol: 1.0e-06
+      )
 
-      assert_in_delta(Nx.to_number(new_step.k_vals[0][0]), -2.160506093425276, 1.0e-12)
+      assert_all_close(new_step.t_old, Nx.tensor(2.155396117711071, type: :f64), atol: 1.0e-07, rtol: 1.0e-07)
+
+      assert_all_close(new_step.x_old, Nx.tensor([1.283429405203074e-02, -2.160506093425276], type: :f64),
+        atol: 1.0e-07,
+        rtol: 1.0e-07
+      )
+
+      # Spot-check one value of the k_vals matrix:
+      assert_all_close(new_step.k_vals[0][0], Nx.tensor(-2.160506093425276, type: :f64), atol: 1.0e-07, rtol: 1.0e-07)
+
       assert new_step.options_comp != nil
     end
   end
