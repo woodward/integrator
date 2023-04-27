@@ -474,6 +474,51 @@ defmodule Integrator.AdaptiveStepsizeTest do
   # ===========================================================================
   # Tests of private functions below here:
 
+  describe "compute_step" do
+    setup do
+      expose(AdaptiveStepsize, compute_step: 4)
+    end
+
+    test "works" do
+      # Expected values were obtained from Octave:
+      k_vals = ~M[
+        -0.123176646786029  -0.156456392653781  -0.170792108688503  -0.242396950166743  -0.256398564600740  -0.270123280961810  -0.266528851971234
+        -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
+      ]f64
+
+      step = %AdaptiveStepsize{
+        t_new: Nx.tensor(0.170323017264490, type: :f64),
+        x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
+        options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
+        dt: Nx.tensor(0.153290715538041, type: :f64),
+        k_vals: k_vals
+      }
+
+      stepper_fn = &DormandPrince45.integrate/5
+      ode_fn = &Demo.van_der_pol_fn/2
+      opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
+
+      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+
+      expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
+      expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
+
+      expected_k_vals = ~M[
+        -0.266528851971234  -0.303376255443000  -0.318166975994861  -0.394383609924488  -0.412602091137911  -0.426290366186482  -0.416811343851152
+        -1.201879818436319  -1.096546739499175  -1.055438526511377  -0.852388604155395  -0.804214989044028  -0.771328619755717  -0.798944990281621
+      ]f64
+
+      expected_options_comp = Nx.tensor(0.0, type: :f64)
+      expected_error = Nx.tensor(1.586715304267830e-02, type: :f64)
+
+      assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(error, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+  end
+
   describe "call_event_fn" do
     setup do
       expose(AdaptiveStepsize, call_event_fn: 4)
@@ -502,6 +547,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
     test ":halt event for Demo.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
       t_old = 2.155396117711071
       t_new = 2.742956500140625
+      # t_old = Nx.tensor(2.155396117711071, type: :f64)
+      # t_new = Nx.tensor(2.742956500140625, type: :f64)
+
       x_old = ~V[  1.283429405203074e-02  -2.160506093425276 ]f64
       x_new = ~V[ -1.452959132853812      -2.187778875125423 ]f64
 
