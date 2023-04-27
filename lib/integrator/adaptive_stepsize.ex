@@ -340,26 +340,32 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
-  # Should this become a defn (Nx) function instead?
   @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
-    k_vals = step.k_vals
+    k_vals_old = step.k_vals
     dt = step.dt
 
-    {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
-    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
-
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
+    {t_next, x_next, k_vals, options_comp, error} =
+      compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts)
 
     {%ComputedStep{
-       x_new: x_next,
        t_new: t_next,
+       x_new: x_next,
        k_vals: k_vals,
        options_comp: options_comp
      }, error}
+  end
+
+  # This @spec does not work for some unknown reason...  figure it out...
+  # @spec compute_step_nx(fun(), fun(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Keyword.t()) :: {Nx.t(), Nx.t(), Nx.t(), Nx.t()}
+  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals, options_comp_old, dt, opts) do
+    {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
+    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals)
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
+    {t_next, x_next, k_vals, options_comp, error}
   end
 
   @spec add_fixed_point(t(), [float()], [Nx.t()], fun()) :: {t(), [float()], [Nx.t()]}
