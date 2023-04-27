@@ -100,9 +100,6 @@ defmodule Integrator.NonlinearEqnRoot do
 
   @initial_mu 0.5
 
-  @spec find_zero(fun(), [float()] | float(), Keyword.t()) :: t()
-  def find_zero(zero_fn, initial_values, opts \\ [])
-
   @doc """
   Finds a zero for a function in an interval `[a, b]` (if the 2nd argument is a list) or
   in the vicinity of `a` (if the 2nd argument is a float).
@@ -122,6 +119,9 @@ defmodule Integrator.NonlinearEqnRoot do
     * `:nonlinear_eqn_root_output_fn` - An output function to call so intermediate results can be retrieved
 
   """
+  @spec find_zero(fun(), [float()] | float(), Keyword.t()) :: t()
+  def find_zero(zero_fn, initial_values, opts \\ [])
+
   def find_zero(zero_fn, [a, b], opts) do
     opts = opts |> merge_default_opts()
 
