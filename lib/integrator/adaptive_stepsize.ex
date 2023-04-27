@@ -405,24 +405,30 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec add_fixed_point(t(), [Nx.t()], [Nx.t()], fun()) :: {t(), [Nx.t()], [Nx.t()]}
   defp add_fixed_point(%{fixed_times: []} = step, new_t_chunk, new_x_chunk, _interpolate_fn) do
-    step = %{step | t_new_chunk: [step.t_new], x_new_chunk: [step.x_new]}
+    step = %{
+      step
+      | t_new_chunk: [step.t_new],
+        x_new_chunk: [step.x_new]
+    }
+
     {step, new_t_chunk, new_x_chunk}
   end
 
-  defp add_fixed_point(%{fixed_times: fixed_times} = step, new_t_chunk, new_x_chunk, interpolate_fn) do
-    [new_time | remaining_times] = fixed_times
-    new_time_float = Nx.to_number(new_time)
-    t_new = Nx.to_number(step.t_new)
-    # clean this up!!!  get rid of the floats here
+  defp add_fixed_point(step, new_t_chunk, new_x_chunk, interpolate_fn) do
+    [fixed_time | remaining_fixed_times] = step.fixed_times
 
-    # Do this comparison using tensors, not floats:
-    if new_time_float < t_new || abs(new_time_float - t_new) < @zero_tolerance do
-      step = %{step | fixed_times: remaining_times}
-      x_new = interpolate_one_point(new_time, step, interpolate_fn)
-      add_fixed_point(step, [new_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)
+    if add_fixed_point?(fixed_time, step.t_new) == @nx_true do
+      step = %{step | fixed_times: remaining_fixed_times}
+      x_new = interpolate_one_point(fixed_time, step, interpolate_fn)
+      add_fixed_point(step, [fixed_time | new_t_chunk], [x_new | new_x_chunk], interpolate_fn)
     else
       {step, new_t_chunk, new_x_chunk}
     end
+  end
+
+  # @spec add_fixed_point?(Nx.t(), Nx.t()) :: Nx.t()
+  defnp add_fixed_point?(fixed_time, t_new) do
+    fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
   end
 
   @spec interpolate(t(), fun(), refine_strategy()) :: t()
