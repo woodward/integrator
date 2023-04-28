@@ -183,6 +183,9 @@ defmodule IntegratorTest do
 
       assert private(Integrator.merge_default_opts(opts)) == [
                integrator: :ode45,
+               max_number_of_errors: 5000,
+               max_step: 2.0,
+               store_results?: true,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -194,6 +197,9 @@ defmodule IntegratorTest do
       opts = [integrator: :ode23]
 
       assert private(Integrator.merge_default_opts(opts)) == [
+               max_number_of_errors: 5000,
+               max_step: 2.0,
+               store_results?: true,
                abs_tol: 1.0e-06,
                rel_tol: 1.0e-03,
                norm_control: true,
@@ -208,7 +214,10 @@ defmodule IntegratorTest do
         rel_tol: 1.0e-13,
         norm_control: false,
         integrator: :ode23,
-        refine: 3
+        refine: 3,
+        max_number_of_errors: 10,
+        max_step: 5.0,
+        store_results?: false
       ]
 
       assert private(Integrator.merge_default_opts(opts)) == [
@@ -216,7 +225,10 @@ defmodule IntegratorTest do
                rel_tol: 1.0e-13,
                norm_control: false,
                integrator: :ode23,
-               refine: 3
+               refine: 3,
+               max_number_of_errors: 10,
+               max_step: 5.0,
+               store_results?: false
              ]
     end
   end

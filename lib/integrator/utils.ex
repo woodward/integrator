@@ -4,19 +4,6 @@ defmodule Integrator.Utils do
   """
   import Nx.Defn
 
-  # Perhaps the default abs_tol and rel_tol should be based on the precision ():f32 or :f64)?
-  @default_opts [
-    abs_tol: 1.0e-06,
-    rel_tol: 1.0e-03,
-    norm_control: true
-  ]
-
-  @doc """
-  Gets the default options for the functions in `Integrator.Utils`
-  """
-  @spec default_opts() :: Keyword.t()
-  def default_opts(), do: @default_opts
-
   @doc """
   Performs a 3rd order Hermite interpolation. Adapted from function `hermite_cubic_interpolation` in
   [runge_kutta_interpolate.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m)

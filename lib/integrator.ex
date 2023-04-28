@@ -95,14 +95,14 @@ defmodule Integrator do
   @spec merge_default_opts(Keyword.t()) :: Keyword.t()
   defp merge_default_opts(user_specified_opts) do
     @default_opts
-    |> Keyword.merge(Utils.default_opts())
+    |> Keyword.merge(AdaptiveStepsize.default_opts())
     |> Keyword.merge(user_specified_opts)
-    |> set_default_refine_opt()
+    |> set_default_refine_opt(user_specified_opts)
   end
 
-  @spec set_default_refine_opt(Keyword.t()) :: Keyword.t()
-  defp set_default_refine_opt(opts) do
-    if opts[:refine] do
+  @spec set_default_refine_opt(Keyword.t(), Keyword.t()) :: Keyword.t()
+  defp set_default_refine_opt(opts, user_specified_opts) do
+    if user_specified_opts[:refine] do
       opts
     else
       default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])

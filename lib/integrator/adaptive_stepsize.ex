@@ -126,7 +126,11 @@ defmodule Integrator.AdaptiveStepsize do
     max_number_of_errors: 5_000,
     max_step: 2.0,
     refine: 4,
-    store_results?: true
+    store_results?: true,
+    # Perhaps the default abs_tol and rel_tol should be based on the precision ():f32 or :f64)?
+    abs_tol: 1.0e-06,
+    rel_tol: 1.0e-03,
+    norm_control: true
   ]
 
   @doc """
@@ -149,7 +153,7 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = @default_opts |> Keyword.merge(Utils.default_opts()) |> Keyword.merge(opts)
+    opts = @default_opts |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
@@ -222,6 +226,9 @@ defmodule Integrator.AdaptiveStepsize do
 
     min(100.0 * h0, h1)
   end
+
+  @spec default_opts() :: Keyword.t()
+  def default_opts(), do: @default_opts
 
   # ===========================================================================
   # Private functions below here:
