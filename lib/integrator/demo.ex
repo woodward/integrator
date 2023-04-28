@@ -7,6 +7,7 @@ defmodule Integrator.Demo do
   @doc """
   From [octave](https://octave.sourceforge.io/octave/function/ode45.html) b
 
+
   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
   """
   @spec van_der_pol_fn(Nx.t(), Nx.t()) :: Nx.t()
