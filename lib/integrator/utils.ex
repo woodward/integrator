@@ -229,7 +229,7 @@ defmodule Integrator.Utils do
 
   The first input argument is the variable that will contain the summation.
   This variable is also returned as the first output argument in order to
-  reuse it in subsequent calls to `Integrator.AdaptiveStepsize.kahan_sum/3` function.
+  reuse it in subsequent calls to `kahan_sum/3` function.
 
   The second input argument contains the compensation term and is returned
   as the second output argument so that it can be reused in future calls of
