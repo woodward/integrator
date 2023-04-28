@@ -163,59 +163,6 @@ defmodule Integrator.Utils do
   end
 
   @doc """
-  Computes a good initial timestep for an ODE solver of order `order`
-  using the algorithm described in the reference below.
-
-  The input argument `ode_fn`, is the function describing the differential
-  equations, `t0` is the initial time, and `x0` is the initial
-  condition.  `abs_tol` and `rel_tol` are the absolute and relative
-  tolerance on the ODE integration.
-
-  Originally based on [`starting_stepsize.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/starting_stepsize.m).
-
-  Reference:
-
-  E. Hairer, S.P. Norsett and G. Wanner,
-  "Solving Ordinary Differential Equations I: Nonstiff Problems",
-  Springer.
-  """
-  @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
-    # Compute norm of initial conditions
-    x_zeros = zero_vector(x0)
-    d0 = abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
-
-    x = ode_fn.(t0, x0)
-
-    d1 = abs_rel_norm(x, x, x_zeros, abs_tol, rel_tol, opts)
-
-    h0 =
-      if d0 < 1.0e-5 or d1 < 1.0e-5 do
-        1.0e-6
-      else
-        0.01 * (d0 / d1)
-      end
-
-    # Compute one step of Explicit-Euler
-    x1 = x0 + h0 * x
-
-    # Approximate the derivative norm
-    xh = ode_fn.(t0 + h0, x1)
-
-    xh_minus_x = xh - x
-    d2 = 1.0 / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
-
-    h1 =
-      if max(d1, d2) <= 1.0e-15 do
-        max(1.0e-6, h0 * 1.0e-3)
-      else
-        Nx.pow(1.0e-2 / max(d1, d2), 1 / (order + 1))
-      end
-
-    min(100.0 * h0, h1)
-  end
-
-  @doc """
   Implements the Kahan summation algorithm, also known as compensated summation.
   Based on this [code in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/kahan.m).
   This is really a private function, but is made public so the docs are visible.

@@ -471,6 +471,20 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
   end
 
+  describe "starting_stepsize" do
+    test "works" do
+      order = 5
+      t0 = 0.0
+      x0 = ~V[2.0 0.0]f64
+      abs_tol = 1.0e-06
+      rel_tol = 1.0e-03
+
+      starting_stepsize = AdaptiveStepsize.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control: false)
+
+      assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
+    end
+  end
+
   # ===========================================================================
   # Tests of private functions below here:
 
