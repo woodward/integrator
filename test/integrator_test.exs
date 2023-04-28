@@ -173,62 +173,35 @@ defmodule IntegratorTest do
   # ===========================================================================
   # Tests of private functions below here:
 
-  describe "merge_default_opts/1" do
+  describe "set_default_refine_opt/1" do
     setup do
-      expose(Integrator, merge_default_opts: 1)
+      expose(Integrator, set_default_refine_opt: 1)
     end
 
-    test "has defaults for Integrator and Utils" do
-      opts = []
+    test "sets the default refine based on the integrator" do
+      opts = [integrator: :ode45]
 
-      assert private(Integrator.merge_default_opts(opts)) == [
+      assert private(Integrator.set_default_refine_opt(opts)) == [
                integrator: :ode45,
-               max_number_of_errors: 5000,
-               max_step: 2.0,
-               store_results?: true,
-               abs_tol: 1.0e-06,
-               rel_tol: 1.0e-03,
-               norm_control: true,
                refine: 4
              ]
     end
 
-    test "the default :refine is changed to 1 if integrator: :ode23" do
-      opts = [integrator: :ode23]
+    test "uses the user-specified refine value if one is provided" do
+      opts = [integrator: :ode45, refine: 3]
 
-      assert private(Integrator.merge_default_opts(opts)) == [
-               max_number_of_errors: 5000,
-               max_step: 2.0,
-               store_results?: true,
-               abs_tol: 1.0e-06,
-               rel_tol: 1.0e-03,
-               norm_control: true,
-               integrator: :ode23,
-               refine: 1
+      assert private(Integrator.set_default_refine_opt(opts)) == [
+               integrator: :ode45,
+               refine: 3
              ]
     end
 
-    test "allows all default values to be overridden" do
-      opts = [
-        abs_tol: 1.0e-12,
-        rel_tol: 1.0e-13,
-        norm_control: false,
-        integrator: :ode23,
-        refine: 3,
-        max_number_of_errors: 10,
-        max_step: 5.0,
-        store_results?: false
-      ]
+    test "uses the default :refine for :ode23" do
+      opts = [integrator: :ode23]
 
-      assert private(Integrator.merge_default_opts(opts)) == [
-               abs_tol: 1.0e-12,
-               rel_tol: 1.0e-13,
-               norm_control: false,
+      assert private(Integrator.set_default_refine_opt(opts)) == [
                integrator: :ode23,
-               refine: 3,
-               max_number_of_errors: 10,
-               max_step: 5.0,
-               store_results?: false
+               refine: 1
              ]
     end
   end

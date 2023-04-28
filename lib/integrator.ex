@@ -39,7 +39,7 @@ defmodule Integrator do
           opts :: Keyword.t()
         ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    opts = opts |> merge_default_opts()
+    opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts()) |> Keyword.merge(opts) |> set_default_refine_opt()
     {opts, x0} = determine_nx_type(opts, x0)
 
     integrator_mod =
@@ -92,17 +92,9 @@ defmodule Integrator do
     {t_start, t_end, fixed_times}
   end
 
-  @spec merge_default_opts(Keyword.t()) :: Keyword.t()
-  defp merge_default_opts(user_specified_opts) do
-    @default_opts
-    |> Keyword.merge(AdaptiveStepsize.default_opts())
-    |> Keyword.merge(user_specified_opts)
-    |> set_default_refine_opt(user_specified_opts)
-  end
-
-  @spec set_default_refine_opt(Keyword.t(), Keyword.t()) :: Keyword.t()
-  defp set_default_refine_opt(opts, user_specified_opts) do
-    if user_specified_opts[:refine] do
+  @spec set_default_refine_opt(Keyword.t()) :: Keyword.t()
+  defp set_default_refine_opt(opts) do
+    if opts[:refine] do
       opts
     else
       default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
