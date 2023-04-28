@@ -5,38 +5,6 @@ defmodule Integrator.UtilsTest do
 
   alias Integrator.Utils
 
-  describe "abs_rel_norm/6" do
-    test "when norm_control: false" do
-      # These test values were obtained from Octave:
-      t = Nx.tensor([1.97537683003, -0.26652885197])
-      t_old = Nx.tensor([1.99566026409, -0.12317664679])
-      abs_tolerance = 1.0000e-06
-      rel_tolerance = 1.0000e-03
-      opts = [norm_control: false]
-      x = Nx.tensor([1.97537723429, -0.26653011403])
-      expected_norm = Nx.tensor(0.00473516383083)
-
-      norm = Utils.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
-
-      assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
-    end
-
-    test "when norm_control: true" do
-      # These test values were obtained from Octave:
-      x = Nx.tensor([1.99465419035, 0.33300240425])
-      x_old = Nx.tensor([1.64842646336, 1.78609260054])
-      abs_tolerance = 1.0000e-06
-      rel_tolerance = 1.0000e-03
-      opts = [norm_control: true]
-      y = Nx.tensor([1.99402286380, 0.33477644992])
-      expected_norm = Nx.tensor(0.77474409123)
-
-      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
-
-      assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
-    end
-  end
-
   describe "hermite_quartic_interpolation" do
     setup do
       # These test values were obtained from Octave:

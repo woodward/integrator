@@ -18,37 +18,6 @@ defmodule Integrator.Utils do
   def default_opts(), do: @default_opts
 
   @doc """
-  Originally based on
-  [Octave function AbsRelNorm](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/AbsRel_norm.m)
-
-  ## Options
-  * `:norm_control` - Control error relative to norm; i.e., control the error `e` at each step using the norm of the
-    solution rather than its absolute value.  Defaults to true.
-
-    See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
-    for a description of norm control.
-  """
-  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
-    if opts[:norm_control] do
-      # Octave code
-      # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
-      # retval = sqrt (sumsq ((t - x))) / sc;
-
-      max_sq_t = Nx.max(sum_sq(t), sum_sq(t_old))
-      sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_t)
-      sum_sq(t - x) / sc
-    else
-      # Octave code:
-      # sc = max (AbsTol(:), RelTol .* max (abs (t), abs (t_old)));
-      # retval = max (abs (t - x) ./ sc);
-
-      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
-      (Nx.abs(t - x) / sc) |> Nx.reduce_max()
-    end
-  end
-
-  @doc """
   Performs a 3rd order Hermite interpolation. Adapted from function `hermite_cubic_interpolation` in
   [runge_kutta_interpolate.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m)
 
@@ -198,13 +167,6 @@ defmodule Integrator.Utils do
     sum = t
 
     {sum, comp}
-  end
-
-  # Sums the squares of a vector and then takes the square root (e.g., computes
-  # the norm of a vector)
-  @spec sum_sq(Nx.t()) :: Nx.t()
-  defnp sum_sq(x) do
-    (x * x) |> Nx.sum() |> Nx.sqrt()
   end
 
   @doc """

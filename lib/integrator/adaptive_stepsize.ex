@@ -191,11 +191,11 @@ defmodule Integrator.AdaptiveStepsize do
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
     x_zeros = Utils.zero_vector(x0)
-    d0 = Utils.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
+    d0 = abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
 
     x = ode_fn.(t0, x0)
 
-    d1 = Utils.abs_rel_norm(x, x, x_zeros, abs_tol, rel_tol, opts)
+    d1 = abs_rel_norm(x, x, x_zeros, abs_tol, rel_tol, opts)
 
     h0 =
       if d0 < 1.0e-5 or d1 < 1.0e-5 do
@@ -211,7 +211,7 @@ defmodule Integrator.AdaptiveStepsize do
     xh = ode_fn.(t0 + h0, x1)
 
     xh_minus_x = xh - x
-    d2 = 1.0 / h0 * Utils.abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
+    d2 = 1.0 / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
 
     h1 =
       if max(d1, d2) <= 1.0e-15 do
@@ -452,7 +452,7 @@ defmodule Integrator.AdaptiveStepsize do
   defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
     {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old)
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
+    error = abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
     {t_next, x_next, k_vals, options_comp, error}
   end
 
@@ -569,5 +569,41 @@ defmodule Integrator.AdaptiveStepsize do
     root = NonlinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+  end
+
+  # Originally based on
+  # [Octave function AbsRelNorm](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/AbsRel_norm.m)
+
+  # Options
+  # * `:norm_control` - Control error relative to norm; i.e., control the error `e` at each step using the norm of the
+  #   solution rather than its absolute value.  Defaults to true.
+
+  # See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
+  # for a description of norm control.
+  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
+  defnp abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
+    if opts[:norm_control] do
+      # Octave code
+      # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
+      # retval = sqrt (sumsq ((t - x))) / sc;
+
+      max_sq_t = Nx.max(sum_sq(t), sum_sq(t_old))
+      sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_t)
+      sum_sq(t - x) / sc
+    else
+      # Octave code:
+      # sc = max (AbsTol(:), RelTol .* max (abs (t), abs (t_old)));
+      # retval = max (abs (t - x) ./ sc);
+
+      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
+      (Nx.abs(t - x) / sc) |> Nx.reduce_max()
+    end
+  end
+
+  # Sums the squares of a vector and then takes the square root (e.g., computes
+  # the norm of a vector)
+  @spec sum_sq(Nx.t()) :: Nx.t()
+  defnp sum_sq(x) do
+    (x * x) |> Nx.sum() |> Nx.sqrt()
   end
 end
