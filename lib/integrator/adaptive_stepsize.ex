@@ -194,7 +194,7 @@ defmodule Integrator.AdaptiveStepsize do
   @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     # Compute norm of initial conditions
-    x_zeros = Utils.zero_vector(x0)
+    x_zeros = zero_vector(x0)
     d0 = abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
 
     x = ode_fn.(t0, x0)
@@ -612,5 +612,13 @@ defmodule Integrator.AdaptiveStepsize do
   @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
     (x * x) |> Nx.sum() |> Nx.sqrt()
+  end
+
+  # Creates a zero vector that has the length of `x`
+  # Is there a better built-in Nx way of doing this?
+  @spec zero_vector(Nx.t()) :: Nx.t()
+  defnp zero_vector(x) do
+    {length_of_x} = Nx.shape(x)
+    Nx.broadcast(0.0, {length_of_x})
   end
 end

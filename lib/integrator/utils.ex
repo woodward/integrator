@@ -157,17 +157,6 @@ defmodule Integrator.Utils do
   end
 
   @doc """
-  Creates a zero vector that has the length of `x`
-
-  Is there a better built-in Nx way of doing this?
-  """
-  @spec zero_vector(Nx.t()) :: Nx.t()
-  defn zero_vector(x) do
-    {length_of_x} = Nx.shape(x)
-    Nx.broadcast(0.0, {length_of_x})
-  end
-
-  @doc """
   Returns the sign of the tensor as -1 or 1 (or 0 for zero tensors)
   """
   @spec sign(Nx.t()) :: float()

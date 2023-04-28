@@ -83,15 +83,6 @@ defmodule Integrator.UtilsTest do
     end
   end
 
-  describe "zero_vector" do
-    test "creates a zero vector with the length and type of x" do
-      x = Nx.tensor([1.0, 2.0, 3.0], type: :f64)
-      y = Utils.zero_vector(x)
-      expected_y = Nx.tensor([0.0, 0.0, 0.0], type: :f64)
-      assert_all_close(y, expected_y)
-    end
-  end
-
   describe "columns_as_list" do
     test "works" do
       matrix = Nx.iota({2, 5})
