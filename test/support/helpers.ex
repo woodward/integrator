@@ -4,7 +4,7 @@ defmodule Integrator.Helpers do
 
   @doc """
   Asserts `lhs` is close to `rhs`.
-  Copied from [Nx.Helpers](https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex)
+  Copied from [Nx.Helpers.assert_all_close/3](https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex)
   (which is not included in the released version of Nx, so I cannot just invoke it).
   """
   def assert_all_close(lhs, rhs, opts \\ []) do
@@ -25,6 +25,9 @@ defmodule Integrator.Helpers do
     end
   end
 
+  @doc """
+  Asserts that two lists are equal
+  """
   def assert_lists_equal(actual_list, expected_list, delta \\ 0.001) do
     assert length(actual_list) == length(expected_list)
 
@@ -34,6 +37,9 @@ defmodule Integrator.Helpers do
     end)
   end
 
+  @doc """
+  Asserts that two lists (which contain Nx tensors) are equal
+  """
   def assert_nx_lists_equal(actual_list, expected_list, opts \\ []) do
     assert length(actual_list) == length(expected_list)
 
@@ -43,6 +49,11 @@ defmodule Integrator.Helpers do
     end)
   end
 
+  @doc """
+  Reads a CSV file which contains a single column of float values
+
+  Returns a list of float values
+  """
   def read_csv(filename) do
     File.stream!(filename)
     |> CSV.decode!(field_transform: &String.trim/1)
@@ -51,6 +62,11 @@ defmodule Integrator.Helpers do
     |> Enum.map(&String.to_float(String.trim(&1)))
   end
 
+  @doc """
+  Reads a CSV file and converts the rows into Nx tensors
+
+  Returns a list of Nx tensors
+  """
   def read_nx_list(filename) do
     File.stream!(filename)
     |> CSV.decode!(field_transform: &String.trim/1)
@@ -60,11 +76,17 @@ defmodule Integrator.Helpers do
     end)
   end
 
+  @doc """
+  Write the `output_t` values to file. Used when debugging tests
+  """
   def write_t(result, filename) do
     data = result.output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
     File.write!(filename, data)
   end
 
+  @doc """
+  Write the `output_x` values to file. Used when debugging tests
+  """
   def write_x(result, filename) do
     [first_x | _rest_of_x] = result.output_x
     {length_of_x} = Nx.shape(first_x)
