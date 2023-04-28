@@ -67,39 +67,30 @@ defmodule Integrator.Utils do
   """
   @spec hermite_quartic_interpolation(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic_interpolation(t, x, der, t_out) do
-    # Octave code:
-    #   dt = t(2) - t(1);
-    #   u_half = x(:,1) + (1/2) * dt * (der(:,1:7) * coefs_u_half);
-
-    #   ## Rescale time on [0,1]
-    #   s = (t_out - t(1)) / dt;
-
-    #   ## Hermite basis functions
-    #   ## H0 = 1   - 11*s.^2 + 18*s.^3 -  8*s.^4;
-    #   ## H1 =   s -  4*s.^2 +  5*s.^3 -  2*s.^4;
-    #   ## H2 =       16*s.^2 - 32*s.^3 + 16*s.^4;
-    #   ## H3 =     -  5*s.^2 + 14*s.^3 -  8*s.^4;
-    #   ## H4 =          s.^2 -  3*s.^3 +  2*s.^4;
-
-    #   x_out = (1   - 11*s.^2 + 18*s.^3 -  8*s.^4) .* x(:,1) + ...
-    #           (  s -  4*s.^2 +  5*s.^3 -  2*s.^4) .* (dt * der(:,1)) + ...
-    #           (      16*s.^2 - 32*s.^3 + 16*s.^4) .* u_half + ...
-    #           (    -  5*s.^2 + 14*s.^3 -  8*s.^4) .* x(:,2) + ...
-    #           (         s.^2 -  3*s.^3 +  2*s.^4) .* (dt * der(:,end));
-
     type = :f64
     # type = nx_type_atom(x)
 
     dt = t[1] - t[0]
-
     x_col1 = Nx.slice_along_axis(x, 0, 1, axis: 1)
 
+    # 4th order approximation of x in t+dt/2 as proposed by Shampine in
+    # Lawrence, Shampine, "Some Practical Runge-Kutta Formulas", 1986.
     u_half = x_col1 + 0.5 * dt * Nx.new_axis(Nx.dot(der, @coefs_u_half[type]), 1)
 
+    # Rescale time on [0,1]
     s = (t_out - t[0]) / dt
+
     s2 = s * s
     s3 = s2 * s
     s4 = s3 * s
+
+    # Hermite basis functions
+
+    # H0 = x1 = 1   - 11*s^2 + 18*s^3 -  8*s^4
+    # H1 = x2 =   s -  4*s^2 +  5*s^3 -  2*s^4
+    # H2 = x3 =       16*s^2 - 32*s^3 + 16*s^4
+    # H3 = x4 =     -  5*s^2 + 14*s^3 -  8*s^4
+    # H4 = x5 =          s^2 -  3*s^3 +  2*s^4
 
     x1 = (1.0 - 11.0 * s2 + 18.0 * s3 - 8.0 * s4) * x_col1
 
@@ -111,7 +102,7 @@ defmodule Integrator.Utils do
     x_col2 = Nx.slice_along_axis(x, 1, 1, axis: 1)
     x4 = (-5.0 * s2 + 14.0 * s3 - 8.0 * s4) * x_col2
 
-    # Note that we are assuming that "der" has 7 columns:
+    # Note that we are assuming that "der" has 7 columns here:
     der_last_col = Nx.slice_along_axis(der, 6, 1, axis: 1)
     x5 = (s2 - 3.0 * s3 + 2.0 * s4) * (dt * der_last_col)
 

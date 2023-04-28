@@ -1,7 +1,7 @@
 defmodule Integrator.RungeKutta.DormandPrince45 do
   @moduledoc """
   Integrates and interpolates a system of ODEs with a given initial condition `x` from `t`
-  to `t+dt` with the Dormand-Prince method. For the definition of this method see
+  to `t + dt` with the Dormand-Prince method. For the definition of this method see
   [Wikipedia](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).
 
   Originally based on [`runge_kutta_45_dorpri.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_45_dorpri.m)
@@ -17,7 +17,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   [Fehlberg method](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta%E2%80%93Fehlberg_method), which
   was constructed so that the fourth-order solution has a small error.
 
-  [Octave docs for ode45](https://docs.octave.org/interpreter/Matlab_002dcompatible-solvers.html#XREFode45)
+  See the [Octave docs for ode45](https://docs.octave.org/interpreter/Matlab_002dcompatible-solvers.html#XREFode45)
   """
 
   alias Integrator.{RungeKutta, Utils}
@@ -67,30 +67,6 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @doc """
   Integrates a system of ODEs with
   [Dormand-Prince]](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).
-
-  First input argument is the function describing the system of ODEs to be integrated.
-
-  Second input parameter is the first extreme of integration interval.
-
-  Third input argument is the initial condition of the system.
-
-  Fourth input argument is the timestep, that is the length of the integration interval.
-
-  Fifth input parameter is optional and describes the Runge-Kutta evaluations
-  of the previous step to use in an FSAL scheme.
-
-  IMPLEMENT THIS SIXTH INPUT PARAMETER:
-  Sixth input parameter is optional and is the time (@var{t_next}) to
-  integrate to.  The default is @code{@var{t} + @var{dt}}.
-
-  First output argument is the final integration time value.
-
-  Second output parameter is the higher order computed solution at time `t_next` (local extrapolation).
-
-  Third output parameter is a lower order solution for the estimation of the error.
-
-  Fourth output parameter is matrix containing the Runge-Kutta evaluations to use in
-  an FSAL (first-same-as-last) scheme or for dense output.
 
   Reference: Hairer, Ernst; Nørsett, Syvert Paul; Wanner, Gerhard (2008),
   Solving ordinary differential equations I: Nonstiff problems,

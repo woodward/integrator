@@ -1,6 +1,6 @@
 defmodule Integrator.AdaptiveStepsize do
   @moduledoc """
-  Integrates a set of ODEs with an adaptive timestep
+  Integrates a set of ODEs with an adaptive timestep.
   """
   import Nx.Defn
 
@@ -137,9 +137,8 @@ defmodule Integrator.AdaptiveStepsize do
   ]
 
   @doc """
-  Integrates a set of ODEs. Originally adapted from
+  Integrates a set of ODEs. Originally adapted from the Octave
   [integrate_adaptive.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/integrate_adaptive.m)
-  in Octave.
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
@@ -186,7 +185,8 @@ defmodule Integrator.AdaptiveStepsize do
   condition.  `abs_tol` and `rel_tol` are the absolute and relative
   tolerance on the ODE integration.
 
-  Originally based on [`starting_stepsize.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/starting_stepsize.m).
+  Originally based on the Octave
+  [`starting_stepsize.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/starting_stepsize.m).
 
   Reference:
 
@@ -230,6 +230,10 @@ defmodule Integrator.AdaptiveStepsize do
     min(100.0 * h0, h1)
   end
 
+  @doc """
+  Gets the default values used by the absolute-relative norm; e.g., `abs_tol`, `rel_tol`, and
+  `norm_control`
+  """
   @spec abs_rel_norm_opts() :: Keyword.t()
   def abs_rel_norm_opts(), do: @abs_rel_norm_opts
 

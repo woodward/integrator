@@ -1,5 +1,8 @@
 defmodule Integrator.RungeKutta do
   @moduledoc """
+  A behaviour that Runge-Kutta algorithms must implement. Currently, `Integrator.DormandPrince45`
+  and `Integrator.BogackiShampine23` implement this behaviour.
+
   See the [list of Runge-Kutta methods](https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods)
   """
 
