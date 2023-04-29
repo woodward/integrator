@@ -1,13 +1,51 @@
 # Introduction to Integrator
 
 ```elixir
-  Mix.install(
+Mix.install(
   [
-    {:integrator, path: "./", env: :dev}
+    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
+    {:kino_vega_lite, "~> 0.1.7"}
   ],
-  config_path: Path.join("./", "config/config.exs"),
-  lockfile: Path.join("./", "mix.lock")
-  )
+  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
+  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
+)
 ```
 
 ## Numerical Integration in Elixir
+
+Numerical integration is easy with `Integrator`.  For example, let's integrate the 
+Van der Pol equation `Integrator.Demo.van_der_pol_fn` for 20 seconds:
+
+```elixir
+alias Integrator.Demo
+
+t_initial = 0.0
+t_final = 20.0
+x_initial = Nx.tensor([0.0, 1.0])
+solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+```
+
+Now you can plot the results via Kino:
+
+```elixir
+alias VegaLite, as: Vl
+
+chart =
+  Vl.new(width: 600, height: 400)
+  |> Vl.mark(:line, point: true, tooltip: true)
+  |> Vl.encode_field(:x, "t", type: :quantitative)
+  |> Vl.encode_field(:y, "x", type: :quantitative)
+  |> Vl.encode_field(:color, "x_value", type: :nominal)
+  |> Kino.VegaLite.new()
+  |> Kino.render()
+
+zipped = Enum.zip(solution.output_t, solution.output_x)
+
+for {t, x} <- zipped do
+  point_0 = %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"}
+  Kino.VegaLite.push(chart, point_0)
+
+  point_1 = %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
+  Kino.VegaLite.push(chart, point_1)
+end
+```
