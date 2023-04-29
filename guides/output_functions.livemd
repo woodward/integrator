@@ -19,18 +19,18 @@ send the data to an animation tool.  Let's see how that works.
 First, we'll need to set up an empty chart to receive the data:
 
 ```elixir
-alias VegaLite, as: Vl
+alias VegaLite, as: VL
 
 chart =
-  Vl.new(
+  VL.new(
     width: 600,
     height: 400,
     title: "Solution of van der Pol Equation (μ = 1) with ode45"
   )
-  |> Vl.mark(:line, point: true, tooltip: true)
-  |> Vl.encode_field(:x, "t", type: :quantitative)
-  |> Vl.encode_field(:y, "x", type: :quantitative)
-  |> Vl.encode_field(:color, "x_value", type: :nominal)
+  |> VL.mark(:line, point: true, tooltip: true)
+  |> VL.encode_field(:x, "t", type: :quantitative)
+  |> VL.encode_field(:y, "x", type: :quantitative)
+  |> VL.encode_field(:color, "x_value", type: :nominal)
   |> Kino.VegaLite.new()
   |> Kino.render()
 ```
