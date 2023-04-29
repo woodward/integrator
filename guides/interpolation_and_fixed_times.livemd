@@ -1,0 +1,88 @@
+# Interpolation and Fixed Times
+
+```elixir
+Mix.install(
+  [
+    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
+    {:kino_vega_lite, "~> 0.1.7"}
+  ],
+  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
+  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
+)
+```
+
+## Interpolation
+
+By default, `refine: 4` for integrator `ode45`.  This means that four points are interpolated
+for every solution of the ODE.
+
+```elixir
+alias Integrator.Demo
+
+t_initial = 0.0
+t_final = 20.0
+x_initial = Nx.tensor([2.0, 0.0])
+solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+```
+
+Visualizing `refine: 4`:
+
+```elixir
+alias VegaLite, as: Vl
+
+defmodule VanDerPol do
+  def plot(solution) do
+    data =
+      Enum.zip(solution.output_t, solution.output_x)
+      |> Enum.map(fn {t, x} ->
+        [
+          %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"},
+          %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
+        ]
+      end)
+      |> List.flatten()
+
+    Vl.new(
+      width: 600,
+      height: 400,
+      title: "Solution of van der Pol Equation (μ = 1) with ode45"
+    )
+    |> Vl.mark(:line, point: true, tooltip: true)
+    |> Vl.encode_field(:x, "t", type: :quantitative)
+    |> Vl.encode_field(:y, "x", type: :quantitative)
+    |> Vl.encode_field(:color, "x_value", type: :nominal)
+    |> Vl.data_from_values(data)
+    |> Kino.VegaLite.new()
+    |> Kino.render()
+  end
+end
+
+VanDerPol.plot(solution)
+```
+
+You can turn off interpolation by setting `refine: 1`:
+
+```elixir
+t_initial = 0.0
+t_final = 20.0
+x_initial = Nx.tensor([2.0, 0.0])
+opts = [refine: 1]
+solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+VanDerPol.plot(solution)
+```
+
+Note how much "chunkier" the plot is without the interpolated points.  These points are solely those from the Runge-Kutta simulation.  Note that these values can also be accessed by `solution.ode_t` and `solution.ode_x`.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Finally, you can output data at fixed times. For example, let's print out data at `0.1` second intervals:
+
+```elixir
+t_initial = 0.0
+t_final = 20.0
+x_initial = Nx.tensor([2.0, 0.0])
+t_range = Nx.linspace(t_initial, t_final, n: 201)
+opts = [refine: 1]
+solution = Integrator.integrate(&Demo.van_der_pol_fn/2, t_range, x_initial, opts)
+VanDerPol.plot(solution)
+```
