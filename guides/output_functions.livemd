@@ -1,0 +1,69 @@
+# Output Functions
+
+```elixir
+Mix.install(
+  [
+    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
+    {:kino_vega_lite, "~> 0.1.7"}
+  ],
+  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
+  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
+)
+```
+
+## Usage
+
+An output function lets you plot the results of an integration or simulation while it's occurring, or 
+send the data to an animation tool.  Let's see how that works.
+
+First, we'll need to set up an empty chart to receive the data:
+
+```elixir
+alias VegaLite, as: Vl
+
+chart =
+  Vl.new(
+    width: 600,
+    height: 400,
+    title: "Solution of van der Pol Equation (μ = 1) with ode45"
+  )
+  |> Vl.mark(:line, point: true, tooltip: true)
+  |> Vl.encode_field(:x, "t", type: :quantitative)
+  |> Vl.encode_field(:y, "x", type: :quantitative)
+  |> Vl.encode_field(:color, "x_value", type: :nominal)
+  |> Kino.VegaLite.new()
+  |> Kino.render()
+```
+
+Now, let's connect an output function to the simulation, and we'll inject a `Process.sleep(50)` on purpose so that the simulation takes a while. Watch the chart above while you run the simulation below.
+
+```elixir
+alias Integrator.Demo
+
+t_initial = 0.0
+t_final = 20.0
+x_initial = Nx.tensor([2.0, 0.0])
+
+output_fn = fn t, x ->
+  # t and x are lists of Nx tensors
+
+  Enum.zip(t, x)
+  |> Enum.map(fn {t, x} ->
+    [
+      %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"},
+      %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
+    ]
+  end)
+  |> List.flatten()
+  |> Enum.map(fn point ->
+    Kino.VegaLite.push(chart, point)
+
+    # Sleep on purpose to slow down the simulation:
+    Process.sleep(50)
+  end)
+end
+
+opts = [output_fn: output_fn]
+
+solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+```

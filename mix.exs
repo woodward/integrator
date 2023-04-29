@@ -67,6 +67,7 @@ defmodule Integrator.MixProject do
         "README.md",
         "guides/intro_to_integrator.livemd",
         "guides/interpolation_and_fixed_times.livemd",
+        "guides/output_functions.livemd",
         "guides/nonlinear_eqn_root.livemd",
         "guides/dormand_prince_45.livemd",
         "guides/bogacki_shampine_23.livemd"
