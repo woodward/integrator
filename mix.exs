@@ -19,7 +19,8 @@ defmodule Integrator.MixProject do
       #
       # Docs
       name: "Integrator",
-      docs: docs()
+      docs: docs(),
+      aliases: aliases()
     ]
   end
 
@@ -65,7 +66,7 @@ defmodule Integrator.MixProject do
       extras: [
         "README.md",
         "guides/intro_to_integrator.livemd",
-        "guides/examples_of_usage.livemd",
+        "guides/interpolation_and_fixed_times.livemd",
         "guides/nonlinear_eqn_root.livemd",
         "guides/dormand_prince_45.livemd",
         "guides/bogacki_shampine_23.livemd"
@@ -73,6 +74,17 @@ defmodule Integrator.MixProject do
       before_closing_head_tag: &before_closing_head_tag/1,
       javascript_config_path: nil
     ]
+  end
+
+  defp aliases do
+    [docs: ["docs", &copy_images/1]]
+  end
+
+  defp copy_images(_) do
+    File.cp_r("images", "doc/images/")
+    # File.cp_r("images", "doc/images/", fn source, destination ->
+    #   IO.gets("Overwriting #{destination} by #{source}. Type y to confirm. ") == "y\n"
+    # end)
   end
 
   def before_closing_head_tag(:epub), do: ""

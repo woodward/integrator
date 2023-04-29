@@ -59,6 +59,8 @@ solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_
 Then, `solution.output_t` contains a list of output times, and `solution.output_x` contains a list
 of values of `x` at these corresponding times.
 
+![images/van_der_pol](images/van_der_pol.png)
+
 Options exist for:
 - outputting simulation results dynamically via an output function (for applications
 such as plotting dynamically, or for animating while the simulation is underway)
