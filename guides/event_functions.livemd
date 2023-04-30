@@ -63,7 +63,7 @@ chart =
 # |> Kino.render()
 ```
 
-The output function will send the values of $ x_0 $ to the chart while the simulation is underway:
+This output function will send the values of $ x_0 $ to the chart while the simulation is underway:
 
 ```elixir
 output_fn = fn t, x ->
@@ -78,18 +78,32 @@ output_fn = fn t, x ->
 end
 ```
 
-There's some recursive code in `Integrator.Demo.BouncingBall` that restarts the simulation when terminal events are encountered with the velocity inverted:
+We need to define a function which will determine what to do when transitions happen, which in our 
+case, are collisions between the ball and the ground. We'll reverse the direction of the ball, and
+decrease its velocity by 10% (to account for bouncing).
 
 ```elixir
-alias Integrator.Demo
+coefficient_of_restitution = -0.9
+
+transition_fn = fn _t, x ->
+  x1 = Nx.multiply(coefficient_of_restitution, x[1])
+  Nx.stack([x[0], x1])
+end
+```
+
+There's some recursive code in `Integrator.MultiIntegrator` that restarts the simulation when terminal 
+events are encountered.
+
+```elixir
+alias Integrator.MultiIntegrator
 
 t_initial = 0.0
 t_final = 30.0
 x_initial = Nx.tensor([0.0, 20.0])
-opts = [event_fn: event_fn, output_fn: output_fn]
+opts = [output_fn: output_fn]
 
-status =
-  Integrator.Demo.BouncingBall.start_simulation(ode_fn, t_initial, t_final, x_initial, opts)
+multi_integrator =
+  MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
 ```
 
 Compare this plot with the version on the [Matlab page](https://www.mathworks.com/help/matlab/math/ode-event-location.html#bu7wjcg):
