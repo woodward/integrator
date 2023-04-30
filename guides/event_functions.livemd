@@ -1,0 +1,97 @@
+# Event Functions
+
+```elixir
+Mix.install(
+  [
+    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
+    {:kino_vega_lite, "~> 0.1.7"}
+  ],
+  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
+  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
+)
+```
+
+## Usage
+
+An event function lets you terminate a simulation based on some event (such as a collision).  For this example, we're going to mimic the [Matlab `ballode.m`](https://www.mathworks.com/help/matlab/math/ode-event-location.html) bouncing ball example. See also [here](https://github.com/kuo-courses/hw00/blob/master/ballode.m).
+
+The equations of a bouncing ball are:
+
+$$ x_0 = x_1 $$
+
+$$ x_1 = - g  $$
+
+where $ g = 9.81 m/s^2 $.  Let's encode that in an Nx function:
+
+```elixir
+import Nx.Defn
+
+ode_fn = fn _t, x ->
+  x0 = x[1]
+  x1 = -9.81
+  Nx.stack([x0, x1])
+end
+```
+
+The follwing event function will detect when $ x_0 $ goes negative, and will return `:halt` in order to terminate the simulation:
+
+```elixir
+event_fn = fn _t, x ->
+  value = Nx.to_number(x[0])
+  answer = if value <= 0.0, do: :halt, else: :continue
+  %{status: answer, value: value}
+end
+```
+
+Create an empty chart to receive the data:
+
+```elixir
+alias VegaLite, as: VL
+
+chart =
+  VL.new(
+    width: 600,
+    height: 400,
+    title: "Bouncing Ball"
+  )
+  |> VL.mark(:line, point: true, tooltip: true)
+  |> VL.encode_field(:x, "t", type: :quantitative)
+  |> VL.encode_field(:y, "x", type: :quantitative)
+  |> VL.encode_field(:color, "x_value", type: :nominal)
+  |> Kino.VegaLite.new()
+
+# |> Kino.render()
+```
+
+The output function will send the values of $ x_0 $ to the chart while the simulation is underway:
+
+```elixir
+output_fn = fn t, x ->
+  Enum.zip(t, x)
+  |> Enum.map(fn {t, x} ->
+    [%{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"}]
+  end)
+  |> List.flatten()
+  |> Enum.map(fn point ->
+    Kino.VegaLite.push(chart, point)
+  end)
+end
+```
+
+There's some recursive code in `Integrator.Demo.BouncingBall` that restarts the simulation when terminal events are encountered with the velocity inverted:
+
+```elixir
+alias Integrator.Demo
+
+t_initial = 0.0
+t_final = 30.0
+x_initial = Nx.tensor([0.0, 20.0])
+opts = [event_fn: event_fn, output_fn: output_fn]
+
+status =
+  Integrator.Demo.BouncingBall.start_simulation(ode_fn, t_initial, t_final, x_initial, opts)
+```
+
+Compare this plot with the version on the [Matlab page](https://www.mathworks.com/help/matlab/math/ode-event-location.html#bu7wjcg):
+
+![bouncing_ball](https://www.mathworks.com/help/examples/matlab/win64/SimpleEventLocationABouncingBallExample_01.png)
