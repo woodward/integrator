@@ -79,20 +79,20 @@ defmodule Integrator.Helpers do
   @doc """
   Write the `output_t` values to file. Used when debugging tests
   """
-  def write_t(result, filename) do
-    data = result.output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
+  def write_t(output_t, filename) do
+    data = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
     File.write!(filename, data)
   end
 
   @doc """
   Write the `output_x` values to file. Used when debugging tests
   """
-  def write_x(result, filename) do
-    [first_x | _rest_of_x] = result.output_x
+  def write_x(output_x, filename) do
+    [first_x | _rest_of_x] = output_x
     {length_of_x} = Nx.shape(first_x)
 
     data =
-      result.output_x
+      output_x
       |> Enum.map(fn x ->
         0..(length_of_x - 1)
         |> Enum.reduce("", fn i, acc ->
