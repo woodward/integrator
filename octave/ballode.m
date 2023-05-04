@@ -17,7 +17,9 @@ refine = 4;
 % The options for solving the ordinary differential equation specify 
 % to turn on event detection, and to make a plot of the output
 options = odeset('Events',@events,'OutputSel',1,...
-   'Refine',refine);  
+   'Refine',refine);
+##    for high fidelity test:
+##    'Refine',refine,'AbsTol',1.0e-14,'RelTol',1.0e-14);
 
 % Following are to set up graphics figure for the plot
 ## fig = figure;
@@ -84,11 +86,11 @@ end
 % odeplot([],[],'done');
 
 format long 
-file_id = fopen('t.csv', 'w');
+file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/t.csv', 'w');
 fdisp(file_id, tout);
 fclose(file_id);
 
-file_id = fopen('x.csv', 'w');
+file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/x.csv', 'w');
 fdisp(file_id, yout);
 fclose(file_id);
 
