@@ -74,20 +74,21 @@ defmodule Integrator.MultiIntegrator do
     |> reverse_results()
   end
 
-  # defp integrate_next_segment(multi, :halt, _ode_fn, _transition_fn, _t_start, _t_end, _x0, _opts) do
-  #   %{multi | integration_status: :halt}
-  #   |> reverse_results()
-  # end
+  defp integrate_next_segment(multi, :halt, _ode_fn, _transition_fn, _t_start, _t_end, _x0, _opts) do
+    %{multi | integration_status: :halt}
+    |> reverse_results()
+  end
 
   defp integrate_next_segment(multi, _status, ode_fn, transition_fn, _t_start, t_end, x0, opts) do
     integration = Integrator.integrate(ode_fn, [multi.t_start, multi.t_end], x0, opts)
     new_t_start = List.last(integration.output_t)
     last_x = List.last(integration.output_x)
+    multi = %{multi | integration_status: integration.terminal_event, integrations: [integration | multi.integrations]}
 
-    new_x0 = transition_fn.(new_t_start, last_x)
+    {status, new_t_start, new_x0, opts} = transition_fn.(new_t_start, last_x, multi, opts)
 
-    multi = multi |> update(new_t_start, last_x, new_x0, integration, integration.terminal_event)
-    integrate_next_segment(multi, :continue, ode_fn, transition_fn, Nx.to_number(new_t_start), t_end, new_x0, opts)
+    multi = multi |> update(new_t_start, last_x, new_x0)
+    integrate_next_segment(multi, status, ode_fn, transition_fn, Nx.to_number(new_t_start), t_end, new_x0, opts)
   end
 
   @spec reverse_results(t()) :: t()
@@ -101,13 +102,11 @@ defmodule Integrator.MultiIntegrator do
     }
   end
 
-  @spec update(t(), Nx.t(), Nx.t(), Nx.t(), AdaptiveStepsize.t(), integration_status()) :: t()
-  defp update(multi, new_t_start, last_x, new_x0, integration, integration_event) do
+  @spec update(t(), Nx.t(), Nx.t(), Nx.t()) :: t()
+  defp update(multi, new_t_start, last_x, new_x0) do
     %{
       multi
-      | integration_status: integration_event,
-        integrations: [integration | multi.integrations],
-        event_t: [new_t_start | multi.event_t],
+      | event_t: [new_t_start | multi.event_t],
         event_x: [last_x | multi.event_x],
         transition_x: [new_x0 | multi.transition_x],
         t_start: new_t_start

@@ -49,7 +49,11 @@ defmodule Integrator do
 
     order = integrator_mod.order()
     {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts)
-    initial_tstep = AdaptiveStepsize.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
+
+    initial_tstep =
+      Keyword.get_lazy(opts, :initial_step, fn ->
+        AdaptiveStepsize.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
+      end)
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/5,
