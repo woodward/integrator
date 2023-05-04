@@ -85,9 +85,9 @@ decrease its velocity by 10% (to account for bouncing).
 ```elixir
 coefficient_of_restitution = -0.9
 
-transition_fn = fn _t, x ->
+transition_fn = fn t, x, _multi, opts ->
   x1 = Nx.multiply(coefficient_of_restitution, x[1])
-  Nx.stack([x[0], x1])
+  {:continue, t, Nx.stack([x[0], x1]), opts}
 end
 ```
 
@@ -97,9 +97,9 @@ events are encountered.
 ```elixir
 alias Integrator.MultiIntegrator
 
-t_initial = 0.0
-t_final = 30.0
-x_initial = Nx.tensor([0.0, 20.0])
+t_initial = Nx.tensor(0.0, type: :f64)
+t_final = Nx.tensor(30.0, type: :f64)
+x_initial = Nx.tensor([0.0, 20.0], type: :f64)
 opts = [output_fn: output_fn]
 
 multi_integrator =
