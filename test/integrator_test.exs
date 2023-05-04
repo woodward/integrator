@@ -59,6 +59,24 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
+    test "performs the integration - initial timestep specified", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
+      # See:
+      # https://octave.sourceforge.io/octave_results/function/ode45.html
+      #
+      # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      # opts = odeset ("InitialStep", 0.1);
+      # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opt);
+
+      opts = [type: :f64, norm_control: false, initial_step: 0.1]
+      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/initial_step_specified/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/initial_step_specified/x.csv")
+
+      assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
+    end
+
     test "performs the integration - fixed output", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       # See:
       # https://octave.sourceforge.io/octave_results/function/ode45.html

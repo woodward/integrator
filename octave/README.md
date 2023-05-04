@@ -29,6 +29,10 @@ To simulate with more precision:
 opts = odeset("AbsTol", 1.0e-10, "RelTol", 1.0e-10)
 [t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
 
+To simulate with a specified initial timestep:  
+opts = odeset("InitialStep", 0.1)
+[t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
+
 plot(t,x(:,1),'-o',t,x(:,2),'-o')
 title('Solution of van der Pol Equation (\mu = 1) with ODE45');
 xlabel('Time t');
