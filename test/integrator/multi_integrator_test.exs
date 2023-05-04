@@ -62,14 +62,14 @@ defmodule Integrator.MultiIntegratorTest do
       multi = MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
 
       amount_to_check = 120
-      expected_t = read_nx_list("test/fixtures/octave_results/ballode/t.csv") |> Enum.take(amount_to_check)
-      expected_x = read_nx_list("test/fixtures/octave_results/ballode/x.csv") |> Enum.take(amount_to_check)
+      expected_t = read_nx_list("test/fixtures/octave_results/ballode/default/t.csv") |> Enum.take(amount_to_check)
+      expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
       output_t = MultiIntegrator.all_output_data(multi, :output_t) |> Enum.take(amount_to_check)
       output_x = MultiIntegrator.all_output_data(multi, :output_x) |> Enum.take(amount_to_check)
 
-      # write_t(output_t, "test/fixtures/octave_results/ballode/t_elixir.csv")
-      # write_x(output_x, "test/fixtures/octave_results/ballode/x_elixir.csv")
+      # write_t(output_t, "test/fixtures/octave_results/ballode/default/t_elixir.csv")
+      # write_x(output_x, "test/fixtures/octave_results/ballode/default/x_elixir.csv")
 
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-02, rtol: 1.0e-02)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
@@ -104,8 +104,8 @@ defmodule Integrator.MultiIntegratorTest do
       multi = MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
 
       amount_to_check = 53
-      expected_t = read_nx_list("test/fixtures/octave_results/ballode/t.csv") |> Enum.take(amount_to_check)
-      expected_x = read_nx_list("test/fixtures/octave_results/ballode/x.csv") |> Enum.take(amount_to_check)
+      expected_t = read_nx_list("test/fixtures/octave_results/ballode/default/t.csv") |> Enum.take(amount_to_check)
+      expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
       output_t = MultiIntegrator.all_output_data(multi, :output_t)
       output_x = MultiIntegrator.all_output_data(multi, :output_x)
