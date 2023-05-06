@@ -8,23 +8,27 @@ defmodule Integrator.UtilsTest do
   describe "hermite_quartic_interpolation" do
     setup do
       # These test values were obtained from Octave:
+      # Generated using:
+      # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      # opts = odeset("AbsTol", 1.0e-14, "RelTol", 1.0e-14)
+      # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
 
-      t = ~V[ 19.4067624192  19.7106968201 ]f64
+      t = ~V[ 19.97226029930081   19.97424839002798 ]f64
 
-      x = ~M[ 1.49652504841   1.92651431954
-              2.10676183153   0.73529371547
+      x = ~M[ 2.008585111348593e+00   2.008604708104012e+00
+              1.188547490189183e-02   7.832739209072674e-03
             ]f64
 
       der = ~M[
-           2.10676183153   1.85704689071   1.69384014677   1.09328301986   1.20767740745   1.06405291882   0.73529371547
-          -4.10804009148  -4.66882299445  -4.71039008294  -4.47781878341  -4.51898062008  -4.30261858646  -3.92023192271
+        1.188547490189183e-02   1.107248473635211e-02   1.066709096215445e-02   8.641324907205110e-03   8.281808253394873e-03     7.832711009917654e-03   7.832739209072674e-03
+       -2.044650564564792e+00  -2.042188551791212e+00  -2.040960496435665e+00  -2.034823361858414e+00  -2.033733968850626e+00    -2.032373024665618e+00  -2.032373099413282e+00
       ]f64
 
-      t_out = ~V[ 19.4827460194  19.5587296196  19.6347132198  19.7106968201 ]f64
+      t_out = ~V[ 19.97275732198261   19.97325434466440   19.97375136734619   19.97424839002798 ]f64
 
       expected_x_out = ~M[
-        1.64398703647   1.76488148020   1.85862355568   1.92651431954
-        1.77097584066   1.41075566029   1.05684789008   0.73529371547
+       2.008590766279272e+00   2.008595916876415e+00   2.008600563898753e+00   2.008604708104012e+00
+       1.087000165112446e-02   9.856055965852775e-03   8.843635825513105e-03   7.832739209072674e-03
       ]f64
 
       [t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out]
@@ -32,19 +36,19 @@ defmodule Integrator.UtilsTest do
 
     test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
-      assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-13, rtol: 1.0e-13)
     end
 
     test "works for a single value of t (rather than an array of t)", %{t: t, x: x, der: der} do
-      t_out = ~V[ 19.6347132198 ]f64
+      t_out = ~V[ 19.97375136734619 ]f64
 
       expected_x_out = ~M[
-         1.85862355568
-         1.05684789008
+        2.008600563898753e+00
+        8.843635825513105e-03
       ]f64
 
       x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
-      assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 
