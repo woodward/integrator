@@ -11,30 +11,34 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
   describe "integrate/5" do
     test "gives the correct result for the van der pol function" do
-      t = Nx.tensor(19.711, type: :f64)
-      x = Nx.tensor([1.9265, 0.7353], type: :f64)
-      dt = Nx.tensor(0.2893, type: :f64)
+      # Octave:
+      # format long
+      # opts = odeset("AbsTol", 1.0e-14, "RelTol", 1.0e-14)
+      # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
+
+      t = ~V[  19.93252120192793  ]f64
+      x = ~V[  2.006431879061176e+00   9.819789615529644e-02  ]f64
+      dt = ~V[  1.988834221159869e-03  ]f64
 
       k_vals = ~M[
-         2.1068   1.8570   1.6938   1.0933   1.2077   1.0641   0.7353
-        -4.1080  -4.6688  -4.7104  -4.4778  -4.5190  -4.3026  -3.9202
+         1.027961290443385e-01   1.018737675533550e-01   1.014138104312208e-01   9.911536312201520e-02   9.870744000286301e-02    9.819786643607928e-02   9.819789615529644e-02
+        -2.317186695289708e+00  -2.314454227194995e+00  -2.313091000296263e+00  -2.306277176899946e+00  -2.305067401715800e+00   -2.303555944193641e+00  -2.303556017851066e+00
       ]f64
 
       {t_next, x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
 
-      expected_t_next = Nx.tensor(20.0, type: :f64)
-      expected_x_next = ~V[ 2.007378 -0.071766 ]f64
-      expected_x_est = ~V[ 2.007393 -0.071892 ]f64
-
+      expected_t_next = ~V[  19.93451003614909  ]f64
+      expected_x_next = ~V[  2.006622631532748e+00   9.362999867595886e-02  ]f64
+      expected_x_est = ~V[   2.006622631532748e+00   9.362999867595506e-02  ]f64
       expected_k = ~M[
-           0.735294   0.508467   0.426833   0.026514  -0.057984  -0.116136  -0.071766
-          -3.920232  -3.432015  -3.214602  -2.106530  -1.871609  -1.681243  -1.789958
+         9.819789615529644e-02   9.728161794756425e-02   9.682469517700483e-02   9.454141156537164e-02   9.413618004462349e-02    9.362996906578873e-02   9.362999867595886e-02
+        -2.303556017851066e+00  -2.300837879883639e+00  -2.299481814584659e+00  -2.292703846624898e+00  -2.291500450332214e+00   -2.289996968358019e+00  -2.289997042028566e+00
       ]f64
 
-      assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_next, expected_x_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_est, expected_x_est, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-20, rtol: 1.0e-20)
+      assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
     test "gives the correct result when there are no existing k_vals" do
