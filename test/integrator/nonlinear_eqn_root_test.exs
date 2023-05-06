@@ -2,6 +2,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   @moduledoc false
   use Integrator.TestCase
   use Patch
+  import Nx, only: :sigils
 
   alias Integrator.NonlinearEqnRoot.{
     BracketingFailureError,
@@ -10,6 +11,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     MaxIterationsExceededError
   }
 
+  alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.{DummyOutput, NonlinearEqnRoot}
 
   describe "find_zero" do
@@ -273,6 +275,66 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert_in_delta(result.x, 3.0, 1.0e-15)
       assert_in_delta(result.fx, 0.0, 1.0e-15)
+    end
+
+    test "ballode - first bounce" do
+      # Values obtained from Octave right before and after the call to fzero in ode_event_handler.m:
+      t0 = 2.898648469921000
+      t1 = 4.294180317944318
+      t = Nx.tensor([t0, t1], type: :f64)
+
+      x = ~M[
+           1.676036011799988e+01  -4.564518118928532e+00
+          -8.435741489925014e+00  -2.212590891903376e+01
+      ]f64
+
+      k_vals = ~M[
+          -8.435741489925014e+00  -1.117377497574676e+01  -1.254279171865764e+01  -1.938787543321202e+01  -2.060477920468836e+01   -2.212590891903378e+01  -2.212590891903376e+01
+          -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00   -9.810000000000000e+00  -9.810000000000000e+00
+      ]f64
+
+      zero_fn = fn t_out ->
+        x_out = DormandPrince45.interpolate(t, x, k_vals, Nx.tensor(t_out, type: :f64))
+        Nx.to_number(x_out[0][0])
+      end
+
+      result = NonlinearEqnRoot.find_zero(zero_fn, [t0, t1])
+
+      # Expected value is from Octave:
+      expected_x = 4.077471967380223
+      assert_in_delta(result.c, expected_x, 1.0e-14)
+      # This should be close to zero because we found the zero root:
+      assert_in_delta(result.fx, 0.0, 1.0e-13)
+
+      # 7 in Octave
+      # assert result.fn_eval_count == 7
+      assert result.fn_eval_count == 11
+
+      # 5 in Octave
+      # assert result.iteration_count == 5
+      assert result.iteration_count == 9
+
+      assert result.iter_type == 4
+
+      [x__low, x_high] = result.bracket_x
+      # Expected values are from Octave; note that these are the same except in the last digit:
+      assert_in_delta(x__low, 4.077471967380224, 1.0e-14)
+      assert_in_delta(x_high, 4.077471967380227, 1.0e-14)
+      # Octave:
+      # 4.077471967380223
+      # 4.077471967380223
+
+      [y_1, y2] = result.bracket_fx
+      # Expected values are from Octave; note that these are essentially zero
+      # (on the plus and negative sides of zero):
+      assert_in_delta(y_1, 1.199040866595169e-14, 1.0e-14)
+      assert_in_delta(y2, -3.907985046680551e-14, 1.0e-14)
+      # In Octave:
+      # [0, 0]
+
+      x_out = DormandPrince45.interpolate(t, x, k_vals, Nx.tensor(result.c, type: :f64))
+      assert_in_delta(Nx.to_number(x_out[0][0]), 0.0, 1.0e-13)
+      assert_in_delta(Nx.to_number(x_out[1][0]), -20.0, 1.0e-13)
     end
   end
 
