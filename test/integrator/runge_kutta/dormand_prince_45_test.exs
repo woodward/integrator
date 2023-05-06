@@ -13,6 +13,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
     test "gives the correct result for the van der pol function" do
       # Octave:
       # format long
+      # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       # opts = odeset("AbsTol", 1.0e-14, "RelTol", 1.0e-14)
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
 
@@ -43,13 +44,16 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
     test "gives the correct result when there are no existing k_vals" do
       # Used Octave function:
-      #  [t,x] = ode45 (fvdp, [0, 20], [2, 1]);
+      # format long
+      # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      # opts = odeset("AbsTol", 1.0e-14, "RelTol", 1.0e-14)
+      # [t,x] = ode45 (fvdp, [0, 20], [2, 1], opts);
       # i.e., the initial values for x have been changed from [2, 0] to [2, 1]
       # (so that both x values are non-zero)
 
-      t = Nx.tensor(0.0, type: :f64)
-      x = Nx.tensor([2.0, 1.0], type: :f64)
-      dt = Nx.tensor(0.068129, type: :f64)
+      t = ~V[  0.0  ]f64
+      x = ~V[  2.0 1.0  ]f64
+      dt = ~V[  1.463190090188842e-03  ]f64
 
       k_vals = ~M[
          0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -58,19 +62,19 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
       {t_next, x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
 
-      expected_t_next = Nx.tensor(0.068129, type: :f64)
-      expected_x_next = ~V[ 2.0571  0.6839 ]f64
-      expected_x_est = ~V[ 2.0571   0.6839 ]f64
+      expected_t_next = ~V[ 1.463190090188842e-03 ]f64
+      expected_x_next = ~V[ 2.001457843004331  0.992694771307345 ]f64
+      expected_x_est = ~V[  2.001457843004330  0.992694771307346 ]f64
 
       expected_k = ~M[
-           1.0000   0.9319   0.8999   0.7429   0.7162   0.6836   0.6839
-          -5.0000  -4.8602  -4.7894  -4.4195  -4.3536  -4.2690  -4.2670
+         1.000000000000000   0.998536809909811   0.997806178816787   0.994154098216414   0.993505399340018   0.992694767971552   0.992694771307345
+        -5.000000000000000  -4.997071992591137  -4.995607257137799  -4.988272015168613  -4.986966166273387  -4.985333062714751  -4.985333039217887
         ]f64
 
-      assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_next, expected_x_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_est, expected_x_est, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
     test "gives the correct result for the euler_equations" do
