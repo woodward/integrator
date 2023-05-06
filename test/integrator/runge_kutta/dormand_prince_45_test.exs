@@ -100,10 +100,10 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
         -1.611549867459338e-02  -2.094143130431229e-02  -2.334848697501391e-02  -3.534583814940384e-02   -3.745849936749036e-02  -4.011253394624428e-02  -4.013013136474447e-02
       ]f64
 
-      assert_all_close(t_next, expected_t_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_next, expected_x_next, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(x_est, expected_x_est, atol: 1.0e-04, rtol: 1.0e-04)
-      assert_all_close(k, expected_k, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-20, rtol: 1.0e-20)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
 
