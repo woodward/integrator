@@ -34,6 +34,18 @@ defmodule Integrator.UtilsTest do
       x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
     end
+
+    test "works for a single value of t (rather than an array of t)", %{t: t, x: x, der: der} do
+      t_out = ~V[ 19.6347132198 ]f64
+
+      expected_x_out = ~M[
+         1.85862355568
+         1.05684789008
+      ]f64
+
+      x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-9, rtol: 1.0e-9)
+    end
   end
 
   describe "hermite_cubic_interpolation" do
