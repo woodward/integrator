@@ -103,6 +103,7 @@ defmodule Integrator.MultiIntegratorTest do
 
       multi = MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
 
+      # Note that 153 is all of the data:
       amount_to_check = 153
       expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/t.csv") |> Enum.take(amount_to_check)
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/x.csv") |> Enum.take(amount_to_check)
@@ -113,8 +114,8 @@ defmodule Integrator.MultiIntegratorTest do
       # write_t(output_t, "test/fixtures/octave_results/ballode/high_fidelity/t_elixir.csv")
       # write_x(output_x, "test/fixtures/octave_results/ballode/high_fidelity/x_elixir.csv")
 
-      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-02, rtol: 1.0e-02)
-      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-06, rtol: 1.0e-06)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
