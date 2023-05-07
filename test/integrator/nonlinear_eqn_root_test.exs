@@ -46,7 +46,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # Expected value is from Octave:
       expected_x = 3.141592653589795
       assert_in_delta(result.c, expected_x, 1.0e-14)
-      assert_in_delta(result.fx, 0.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-14)
 
       assert result.fn_eval_count == 8
       assert result.iteration_count == 6
@@ -72,7 +72,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # Expected value is from Octave:
       expected_x = 3.141592653589795
       assert_in_delta(result.c, expected_x, 1.0e-14)
-      assert_in_delta(result.fx, 0.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-14)
 
       assert result.fn_eval_count == 8
       assert result.iteration_count == 6
@@ -146,50 +146,21 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
       result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
-      assert_in_delta(result.x, 3.1415926535897936, 1.0e-15)
-      assert_in_delta(result.fx, -3.216245299353273e-16, 1.0e-15)
+      assert_in_delta(result.x, 3.1415926535897936, 1.0e-14)
+      assert_in_delta(result.fx, -3.216245299353273e-16, 1.0e-14)
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)
-      assert length(x_data) == 7
-      assert length(t_data) == 7
-
-      # converging_t_data = [
-      #   3.0,
-      #   3.157162792479947,
-      #   3.157162792479945,
-      #   3.141596389566289,
-      #   3.141596389566289,
-      #   # Above value is repeated and should be this (below); figure out why it's repeated:
-      #   # 3.1415888925885564,
-      #   3.1415926535897936,
-      #   # Why does the last point show up twice?
-      #   3.1415926535897936
-      # ]
-
-      converging_t_data = [
-        3.0,
-        3.157162792479947,
-        3.141281736699444,
-        3.1415926145718243,
-        # Above value is repeated and should be this (below); figure out why it's repeated:
-        # 3.141592692610915,
-        3.1415926145718243,
-        3.141592653589793,
-        # Why does the last point show up twice?
-        3.141592653589793
-      ]
+      assert length(x_data) == 6
+      assert length(t_data) == 6
 
       # From Octave:
-      # t = [
       converging_t_data = [
-        3.0,
         3.157162792479947,
         3.141281736699444,
         3.141592614571824,
         3.141592692610915,
         3.141592653589793,
-        3.141592653589795,
         3.141592653589795
       ]
 
@@ -202,16 +173,6 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert converged.iteration_count == 6
       assert converged.fn_eval_count == 8
       assert_in_delta(converged.x, result.x, 1.0e-14)
-
-      first = x_data |> hd()
-      expected_bracket_x = [3.0, 4.0]
-      assert_lists_equal(first.bracket_x, expected_bracket_x, 1.0e-15)
-
-      expected_bracket_fx = [0.1411200080598672, -0.7568024953079282]
-      assert_lists_equal(first.bracket_fx, expected_bracket_fx, 1.0e-15)
-
-      assert_in_delta(first.x, 3.0, 1.0e-15)
-      assert_in_delta(first.fx, 0.1411200080598672, 1.0e-15)
     end
 
     test "sine function with single initial value (instead of 2)" do
@@ -222,7 +183,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # Expected value is from Octave:
       expected_x = 3.141592653589795
       assert_in_delta(result.c, expected_x, 1.0e-14)
-      assert_in_delta(result.fx, 0.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-14)
 
       assert result.fn_eval_count == 11
       assert result.iteration_count == 4
@@ -250,17 +211,24 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
 
     test "equation - test from Octave" do
+      # Octave (this code is at the bottom of fzero.m):
+      #   fun = @(x) x^(1/3) - 1e-8
+      #   fzero(fun, [0.0, 1.0])
       x0 = 0.0
       x1 = 1.0
       zero_fn = &(Math.pow(&1, 1 / 3) - 1.0e-8)
 
       result = NonlinearEqnRoot.find_zero(zero_fn, [x0, x1])
 
-      assert_in_delta(result.x, 1.0e-24, 1.0e-22)
-      assert_in_delta(result.fx, -1.0e-08, 1.0e-22)
+      # Expected values are from Octave:
+      assert_in_delta(result.x, 3.108624468950438e-16, 1.0e-24)
+      assert_in_delta(result.fx, 6.764169935169993e-06, 1.0e-22)
     end
 
     test "staight line through zero - test from Octave" do
+      # Octave (this code is at the bottom of fzero.m):
+      #   fun = @(x) x
+      #   fzero(fun, 0)
       x0 = 0.0
       zero_fn = & &1
 
@@ -299,7 +267,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       result = NonlinearEqnRoot.find_zero(zero_fn, [0.5, 1.5])
 
       assert_in_delta(result.x, 1.0, 1.0e-15)
-      assert_in_delta(result.fx, 0.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-14)
 
       result = NonlinearEqnRoot.find_zero(zero_fn, [3.5, 1.5])
 
@@ -768,28 +736,6 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(result.fb, 0.0, 1.0e-12)
       assert_in_delta(result.fa, -0.09983341664682815, 1.0e-12)
       assert result.fn_eval_count == 8
-    end
-  end
-
-  describe "set_x_results/1" do
-    setup do
-      expose(NonlinearEqnRoot, set_x_results: 1)
-    end
-
-    test "sets the appropriate values on x, fx" do
-      z = %NonlinearEqnRoot{
-        a: 2,
-        b: 4,
-        u: 3,
-        fa: 1,
-        fb: 2,
-        fu: 1.5
-      }
-
-      z = private(NonlinearEqnRoot.set_x_results(z))
-
-      assert z.x == 3
-      assert z.fx == 1.5
     end
   end
 

@@ -125,33 +125,29 @@ defmodule Integrator.NonlinearEqnRoot do
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
-    z =
-      %__MODULE__{
-        a: a,
-        b: b,
-        d: u,
-        e: u,
-        u: u,
-        #
-        fa: fa,
-        fb: fb,
-        fd: fu,
-        fe: fu,
-        fu: fu,
-        #
-        fn_eval_count: fn_eval_count,
-        iter_type: 1,
-        mu_ba: @initial_mu * (b - a)
-      }
-      # Broadcast the initial point:
-      |> set_x_results()
-      |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
+    z = %__MODULE__{
+      a: a,
+      b: b,
+      d: u,
+      e: u,
+      u: u,
+      #
+      fa: fa,
+      fb: fb,
+      fd: fu,
+      fe: fu,
+      fu: fu,
+      #
+      fn_eval_count: fn_eval_count,
+      iter_type: 1,
+      mu_ba: @initial_mu * (b - a)
+    }
 
     if sign(z.fa) * sign(z.fb) > 0.0, do: raise(InvalidInitialBracketError, step: z)
 
     case converged?(z, opts[:machine_eps], opts[:tolerance]) do
       :continue -> iterate(z, :continue, zero_fn, opts)
-      :halt -> z
+      :halt -> %{z | x: u, fx: fu}
     end
   end
 
@@ -192,7 +188,6 @@ defmodule Integrator.NonlinearEqnRoot do
       z
       |> skip_bisection_if_successful_reduction()
       |> update_u()
-      |> set_x_results()
       |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
 
     status_2 = converged?(z, machine_eps, tolerance)
@@ -382,7 +377,7 @@ defmodule Integrator.NonlinearEqnRoot do
   @spec fn_eval_new_point(t(), fun(), Keyword.t()) :: t()
   defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
-    #  fval = fc    What is this used for in Octave?
+    #  fval = fc    What is this used for in Octave? `fval` is the output function evaluation
     # Perhaps move the incrementing of the iteration count elsewhere?
     iteration_count = z.iteration_count + 1
     fn_eval_count = z.fn_eval_count + 1
@@ -397,8 +392,8 @@ defmodule Integrator.NonlinearEqnRoot do
 
     %{
       z
-      | x: z.c,
-        fc: fc,
+      | fc: fc,
+        x: z.c,
         fx: fc,
         fn_eval_count: fn_eval_count,
         iteration_count: iteration_count
@@ -508,15 +503,6 @@ defmodule Integrator.NonlinearEqnRoot do
     else
       z
     end
-  end
-
-  @spec set_x_results(t()) :: t()
-  defp set_x_results(z) do
-    %{
-      z
-      | x: z.u,
-        fx: z.fu
-    }
   end
 
   # ---------------------------------------
