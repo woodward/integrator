@@ -52,12 +52,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.iter_type == 4
 
-      [x_low, x_high] = result.bracket_x
+      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = result.bracket_fx
+      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -78,12 +78,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.iter_type == 4
 
-      [x_low, x_high] = result.bracket_x
+      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = result.bracket_fx
+      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -228,12 +228,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 4
       assert result.iter_type == 2
 
-      [x_low, x_high] = result.bracket_x
+      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = result.bracket_fx
+      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -340,7 +340,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 5
       assert result.iter_type == 3
 
-      [x__low, x_high] = result.bracket_x
+      [x__low, x_high] = NonlinearEqnRoot.bracket_x(result)
       # Expected values are from Octave; note that these are the same except in the last digit:
       assert_in_delta(x__low, 4.077471967380224, 1.0e-14)
       assert_in_delta(x_high, 4.077471967380227, 1.0e-14)
@@ -348,7 +348,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # 4.077471967380223
       # 4.077471967380223
 
-      [y_1, y2] = result.bracket_fx
+      [y_1, y2] = NonlinearEqnRoot.bracket_fx(result)
       assert_in_delta(y_1, 0.0, 1.0e-14)
       assert_in_delta(y2, 0.0, 1.0e-14)
       # In Octave:
@@ -357,6 +357,28 @@ defmodule Integrator.NonlinearEqnRootTest do
       x_out = DormandPrince45.interpolate(t, x, k_vals, Nx.tensor(result.c, type: :f64))
       assert_in_delta(Nx.to_number(x_out[0][0]), 0.0, 1.0e-15)
       assert_in_delta(Nx.to_number(x_out[1][0]), -20.0, 1.0e-14)
+    end
+  end
+
+  describe "bracket_x/1" do
+    test "returns a & b" do
+      z = %NonlinearEqnRoot{
+        a: 3.14,
+        b: 3.15
+      }
+
+      assert NonlinearEqnRoot.bracket_x(z) == [3.14, 3.15]
+    end
+  end
+
+  describe "bracket_fx/1" do
+    test "returns fa & fb" do
+      z = %NonlinearEqnRoot{
+        fa: 3.14,
+        fb: 3.15
+      }
+
+      assert NonlinearEqnRoot.bracket_fx(z) == [3.14, 3.15]
     end
   end
 
@@ -754,7 +776,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       expose(NonlinearEqnRoot, set_x_results: 1)
     end
 
-    test "sets the appropriate values on x, fx, bracket_x, and bracket_fx" do
+    test "sets the appropriate values on x, fx" do
       z = %NonlinearEqnRoot{
         a: 2,
         b: 4,
@@ -768,8 +790,6 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       assert z.x == 3
       assert z.fx == 1.5
-      assert z.bracket_x == [2, 4]
-      assert z.bracket_fx == [1, 2]
     end
   end
 

@@ -50,10 +50,7 @@ defmodule Integrator.NonlinearEqnRoot do
           fn_eval_count: integer(),
           iteration_count: integer(),
           # Change iter_type to a more descriptive atom later (possibly?):
-          iter_type: iter_type(),
-          #
-          bracket_x: [float()],
-          bracket_fx: [float()]
+          iter_type: iter_type()
         }
 
   defstruct [
@@ -81,10 +78,7 @@ defmodule Integrator.NonlinearEqnRoot do
     fn_eval_count: 0,
     iteration_count: 0,
     # Change iter_type to a more descriptive atom later (possibly?):
-    iter_type: 1,
-    #
-    bracket_x: [],
-    bracket_fx: []
+    iter_type: 1
   ]
 
   defmodule BracketingFailureError, do: defexception(message: "Zero point is not bracketed", step: nil)
@@ -164,6 +158,16 @@ defmodule Integrator.NonlinearEqnRoot do
   def find_zero(zero_fn, solo_point, opts) do
     second_point = find_2nd_starting_point(zero_fn, solo_point)
     find_zero(zero_fn, [solo_point, second_point.b], Keyword.merge(opts, fn_eval_count: second_point.fn_eval_count))
+  end
+
+  @spec bracket_x(t()) :: [float()]
+  def bracket_x(z) do
+    [z.a, z.b]
+  end
+
+  @spec bracket_fx(t()) :: [float()]
+  def bracket_fx(z) do
+    [z.fa, z.fb]
   end
 
   # ===========================================================================
@@ -511,9 +515,7 @@ defmodule Integrator.NonlinearEqnRoot do
     %{
       z
       | x: z.u,
-        fx: z.fu,
-        bracket_x: [z.a, z.b],
-        bracket_fx: [z.fa, z.fb]
+        fx: z.fu
     }
   end
 
