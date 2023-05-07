@@ -271,8 +271,8 @@ defmodule Integrator.NonlinearEqnRoot do
         4 ->
           interpolate(z, :inverse_cubic_interpolation)
 
-        _ ->
-          if sign(z.c - z.a) * sign(z.c - z.b) > 0 do
+        length ->
+          if length < 4 || sign(z.c - z.a) * sign(z.c - z.b) > 0 do
             interpolate(z, :quadratic_interpolation_plus_newton)
           else
             # what do we do here?  it's not handled in fzero.m...

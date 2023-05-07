@@ -130,6 +130,12 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
 
     test "sine function - outputs values if a function is given" do
+      # Octave:
+      #   octave> fun = @sin;
+      #   octave> x0 = 3;
+      #   octave> x1 = 4;
+      #   octave> x = fzero(fun, [x0, x1])
+
       x0 = 3.0
       x1 = 4.0
 
@@ -140,27 +146,51 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
       result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
-      assert result.x == 3.1415926535897936
-      assert result.fx == -3.216245299353273e-16
+      assert_in_delta(result.x, 3.1415926535897936, 1.0e-15)
+      assert_in_delta(result.fx, -3.216245299353273e-16, 1.0e-15)
 
       x_data = DummyOutput.get_x(dummy_output_name)
       t_data = DummyOutput.get_t(dummy_output_name)
       assert length(x_data) == 7
       assert length(t_data) == 7
 
-      # IO.inspect(t_data)
+      # converging_t_data = [
+      #   3.0,
+      #   3.157162792479947,
+      #   3.157162792479945,
+      #   3.141596389566289,
+      #   3.141596389566289,
+      #   # Above value is repeated and should be this (below); figure out why it's repeated:
+      #   # 3.1415888925885564,
+      #   3.1415926535897936,
+      #   # Why does the last point show up twice?
+      #   3.1415926535897936
+      # ]
 
       converging_t_data = [
         3.0,
         3.157162792479947,
-        3.157162792479945,
-        3.141596389566289,
-        3.141596389566289,
+        3.141281736699444,
+        3.1415926145718243,
         # Above value is repeated and should be this (below); figure out why it's repeated:
-        # 3.1415888925885564,
-        3.1415926535897936,
+        # 3.141592692610915,
+        3.1415926145718243,
+        3.141592653589793,
         # Why does the last point show up twice?
-        3.1415926535897936
+        3.141592653589793
+      ]
+
+      # From Octave:
+      # t = [
+      converging_t_data = [
+        3.0,
+        3.157162792479947,
+        3.141281736699444,
+        3.141592614571824,
+        3.141592692610915,
+        3.141592653589793,
+        3.141592653589795,
+        3.141592653589795
       ]
 
       assert_lists_equal(t_data, converging_t_data, 1.0e-15)
@@ -194,9 +224,9 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_in_delta(result.c, expected_x, 1.0e-14)
       assert_in_delta(result.fx, 0.0, 1.0e-15)
 
-      assert result.fn_eval_count == 13
-      assert result.iteration_count == 6
-      assert result.iter_type == 4
+      assert result.fn_eval_count == 11
+      assert result.iteration_count == 4
+      assert result.iter_type == 2
 
       [x_low, x_high] = result.bracket_x
       # Expected values are from Octave:
@@ -216,7 +246,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       result = NonlinearEqnRoot.find_zero(&Math.cos/1, [x0, x1])
 
       expected_x = Math.pi() / 2.0
-      assert_in_delta(result.c, expected_x, 1.0e-15)
+      assert_in_delta(result.c, expected_x, 1.0e-14)
     end
 
     test "equation - test from Octave" do
@@ -306,15 +336,9 @@ defmodule Integrator.NonlinearEqnRootTest do
       # This should be close to zero because we found the zero root:
       assert_in_delta(result.fx, 0.0, 1.0e-13)
 
-      # 7 in Octave
-      # assert result.fn_eval_count == 7
-      assert result.fn_eval_count == 11
-
-      # 5 in Octave
-      # assert result.iteration_count == 5
-      assert result.iteration_count == 9
-
-      assert result.iter_type == 4
+      assert result.fn_eval_count == 7
+      assert result.iteration_count == 5
+      assert result.iter_type == 3
 
       [x__low, x_high] = result.bracket_x
       # Expected values are from Octave; note that these are the same except in the last digit:
@@ -325,16 +349,14 @@ defmodule Integrator.NonlinearEqnRootTest do
       # 4.077471967380223
 
       [y_1, y2] = result.bracket_fx
-      # Expected values are from Octave; note that these are essentially zero
-      # (on the plus and negative sides of zero):
-      assert_in_delta(y_1, 1.199040866595169e-14, 1.0e-14)
-      assert_in_delta(y2, -3.907985046680551e-14, 1.0e-14)
+      assert_in_delta(y_1, 0.0, 1.0e-14)
+      assert_in_delta(y2, 0.0, 1.0e-14)
       # In Octave:
       # [0, 0]
 
       x_out = DormandPrince45.interpolate(t, x, k_vals, Nx.tensor(result.c, type: :f64))
-      assert_in_delta(Nx.to_number(x_out[0][0]), 0.0, 1.0e-13)
-      assert_in_delta(Nx.to_number(x_out[1][0]), -20.0, 1.0e-13)
+      assert_in_delta(Nx.to_number(x_out[0][0]), 0.0, 1.0e-15)
+      assert_in_delta(Nx.to_number(x_out[1][0]), -20.0, 1.0e-14)
     end
   end
 
@@ -511,6 +533,30 @@ defmodule Integrator.NonlinearEqnRootTest do
       c = private(NonlinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
 
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
+    end
+
+    test "quadratic_interpolation_plus_newton - bug fix" do
+      # From Octave for ballode - first bounce
+
+      z = %NonlinearEqnRoot{
+        a: 3.995471442091821,
+        b: 4.294180317944318,
+        c: 3.995471442091821,
+        d: 2.898648469921000,
+        e: 4.294180317944318,
+        #
+        fa: 1.607028863214206,
+        fb: -4.564518118928532,
+        fc: 1.607028863214206,
+        fd: 16.76036011799988,
+        fe: -4.564518118928532,
+        #
+        iter_type: 2
+      }
+
+      c = private(NonlinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
+
+      assert_in_delta(c, 4.077471967384916, 1.0e-15)
     end
 
     test "inverse_cubic_interpolation" do
@@ -806,6 +852,72 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert_raise BracketingFailureError, fn ->
         private(NonlinearEqnRoot.bracket(z))
       end
+    end
+
+    test "bug fix - first iteration of first bounce of ballode.m" do
+      z = %NonlinearEqnRoot{
+        a: 2.898648469921000,
+        b: 4.294180317944318,
+        c: 3.995471442091821,
+        d: 4.294180317944318,
+        #
+        fa: 16.76036011799988,
+        fb: -4.564518118928532,
+        fc: 1.607028863214206,
+        fd: -4.564518118928532
+      }
+
+      {:continue, z} = private(NonlinearEqnRoot.bracket(z))
+
+      assert z.a == 3.995471442091821
+      assert z.fa == 1.607028863214206
+
+      assert z.b == 4.294180317944318
+      assert z.fb == -4.564518118928532
+
+      assert z.c == 3.995471442091821
+      assert z.fc == 1.607028863214206
+
+      assert z.d == 2.898648469921000
+      assert z.fd == 16.76036011799988
+    end
+  end
+
+  describe "compute_iteration_two_or_three" do
+    setup do
+      expose(NonlinearEqnRoot, compute_iteration_two_or_three: 1)
+    end
+
+    test "bug fix" do
+      z = %NonlinearEqnRoot{
+        a: 3.995471442091821,
+        b: 4.077471967384916,
+        c: 4.077471967384916,
+        d: 4.294180317944318,
+        e: 2.898648469921000,
+        #
+        fa: 1.607028863214206,
+        fb: -9.382095100818333e-11,
+        fc: -9.382095100818333e-11,
+        fd: -4.564518118928532,
+        fe: 16.76036011799988,
+        #
+        iter_type: 2
+      }
+
+      z = private(NonlinearEqnRoot.compute_iteration_two_or_three(z))
+
+      assert z.a == 3.995471442091821
+      assert z.b == 4.077471967384916
+      assert z.c == 4.077471967380238
+      assert z.d == 4.294180317944318
+      assert z.e == 2.898648469921000
+
+      assert z.fa == 1.607028863214206
+      assert z.fb == -9.382095100818333e-11
+      assert z.fc == -9.382095100818333e-11
+      assert z.fd == -4.564518118928532
+      assert z.fe == 16.76036011799988
     end
   end
 end
