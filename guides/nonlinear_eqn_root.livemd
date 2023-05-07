@@ -1,4 +1,4 @@
-# NonlinearEqnRoot Usage
+# NonLinearEqnRoot Usage
 
 ```elixir
   Mix.install(

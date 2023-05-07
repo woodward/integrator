@@ -1,10 +1,10 @@
-defmodule Integrator.NonlinearEqnRootTest do
+defmodule Integrator.NonLinearEqnRootTest do
   @moduledoc false
   use Integrator.TestCase
   use Patch
   import Nx, only: :sigils
 
-  alias Integrator.NonlinearEqnRoot.{
+  alias Integrator.NonLinearEqnRoot.{
     BracketingFailureError,
     InvalidInitialBracketError,
     MaxFnEvalsExceededError,
@@ -12,7 +12,7 @@ defmodule Integrator.NonlinearEqnRootTest do
   }
 
   alias Integrator.RungeKutta.DormandPrince45
-  alias Integrator.{DummyOutput, NonlinearEqnRoot}
+  alias Integrator.{DummyOutput, NonLinearEqnRoot}
 
   describe "find_zero" do
     test "sine function" do
@@ -41,7 +41,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 3.0
       x1 = 4.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
+      result = NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -52,12 +52,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.iter_type == 4
 
-      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
+      [x_low, x_high] = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
+      [y1, y2] = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -67,7 +67,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 4.0
       x1 = 3.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
+      result = NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -78,12 +78,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 6
       assert result.iter_type == 4
 
-      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
+      [x_low, x_high] = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
+      [y1, y2] = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -95,7 +95,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 3.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
+        NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
       end
     end
 
@@ -105,7 +105,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 4.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
+        NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1])
       end
     end
 
@@ -115,7 +115,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [max_iterations: 2]
 
       assert_raise MaxIterationsExceededError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
+        NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
       end
     end
 
@@ -125,7 +125,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       opts = [max_fn_eval_count: 2]
 
       assert_raise MaxFnEvalsExceededError, fn ->
-        NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
+        NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
       end
     end
 
@@ -145,7 +145,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
+      result = NonLinearEqnRoot.find_zero(&Math.sin/1, [x0, x1], opts)
       assert_in_delta(result.x, 3.1415926535897936, 1.0e-14)
       assert_in_delta(result.fx, -3.216245299353273e-16, 1.0e-14)
 
@@ -178,7 +178,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "sine function with single initial value (instead of 2)" do
       x0 = 3.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.sin/1, x0)
+      result = NonLinearEqnRoot.find_zero(&Math.sin/1, x0)
 
       # Expected value is from Octave:
       expected_x = 3.141592653589795
@@ -189,12 +189,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 4
       assert result.iter_type == 2
 
-      [x_low, x_high] = NonlinearEqnRoot.bracket_x(result)
+      [x_low, x_high] = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_in_delta(x_low, 3.141592653589793, 1.0e-14)
       assert_in_delta(x_high, 3.141592653589795, 1.0e-14)
 
-      [y1, y2] = NonlinearEqnRoot.bracket_fx(result)
+      [y1, y2] = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_in_delta(y1, 1.224646799147353e-16, 1.0e-14)
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
@@ -204,7 +204,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 0.0
       x1 = 3.0
 
-      result = NonlinearEqnRoot.find_zero(&Math.cos/1, [x0, x1])
+      result = NonLinearEqnRoot.find_zero(&Math.cos/1, [x0, x1])
 
       expected_x = Math.pi() / 2.0
       assert_in_delta(result.c, expected_x, 1.0e-14)
@@ -218,7 +218,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x1 = 1.0
       zero_fn = &(Math.pow(&1, 1 / 3) - 1.0e-8)
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, [x0, x1])
+      result = NonLinearEqnRoot.find_zero(zero_fn, [x0, x1])
 
       # Expected values are from Octave:
       assert_in_delta(result.x, 3.108624468950438e-16, 1.0e-24)
@@ -232,7 +232,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 0.0
       zero_fn = & &1
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+      result = NonLinearEqnRoot.find_zero(zero_fn, x0)
 
       assert_in_delta(result.x, 0.0, 1.0e-22)
       assert_in_delta(result.fx, 0.0, 1.0e-22)
@@ -242,7 +242,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 0.0
       zero_fn = &(&1 + 1)
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+      result = NonLinearEqnRoot.find_zero(zero_fn, x0)
 
       assert_in_delta(result.x, -1.0, 1.0e-22)
       assert_in_delta(result.fx, 0.0, 1.0e-22)
@@ -252,7 +252,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       x0 = 0.0
       zero_fn = &(&1 + 1)
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, x0)
+      result = NonLinearEqnRoot.find_zero(zero_fn, x0)
 
       assert_in_delta(result.x, -1.0, 1.0e-22)
       assert_in_delta(result.fx, 0.0, 1.0e-22)
@@ -264,12 +264,12 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       zero_fn = &(&1 * &1 - 4 * &1 + 3)
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, [0.5, 1.5])
+      result = NonLinearEqnRoot.find_zero(zero_fn, [0.5, 1.5])
 
       assert_in_delta(result.x, 1.0, 1.0e-15)
       assert_in_delta(result.fx, 0.0, 1.0e-14)
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, [3.5, 1.5])
+      result = NonLinearEqnRoot.find_zero(zero_fn, [3.5, 1.5])
 
       assert_in_delta(result.x, 3.0, 1.0e-15)
       assert_in_delta(result.fx, 0.0, 1.0e-15)
@@ -296,7 +296,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         Nx.to_number(x_out[0][0])
       end
 
-      result = NonlinearEqnRoot.find_zero(zero_fn, [t0, t1])
+      result = NonLinearEqnRoot.find_zero(zero_fn, [t0, t1])
 
       # Expected value is from Octave:
       expected_x = 4.077471967380223
@@ -308,7 +308,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       assert result.iteration_count == 5
       assert result.iter_type == 3
 
-      [x__low, x_high] = NonlinearEqnRoot.bracket_x(result)
+      [x__low, x_high] = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave; note that these are the same except in the last digit:
       assert_in_delta(x__low, 4.077471967380224, 1.0e-14)
       assert_in_delta(x_high, 4.077471967380227, 1.0e-14)
@@ -316,7 +316,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # 4.077471967380223
       # 4.077471967380223
 
-      [y_1, y2] = NonlinearEqnRoot.bracket_fx(result)
+      [y_1, y2] = NonLinearEqnRoot.bracket_fx(result)
       assert_in_delta(y_1, 0.0, 1.0e-14)
       assert_in_delta(y2, 0.0, 1.0e-14)
       # In Octave:
@@ -330,23 +330,23 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "bracket_x/1" do
     test "returns a & b" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.14,
         b: 3.15
       }
 
-      assert NonlinearEqnRoot.bracket_x(z) == [3.14, 3.15]
+      assert NonLinearEqnRoot.bracket_x(z) == [3.14, 3.15]
     end
   end
 
   describe "bracket_fx/1" do
     test "returns fa & fb" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         fa: 3.14,
         fb: 3.15
       }
 
-      assert NonlinearEqnRoot.bracket_fx(z) == [3.14, 3.15]
+      assert NonLinearEqnRoot.bracket_fx(z) == [3.14, 3.15]
     end
   end
 
@@ -355,7 +355,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "merge_default_opts/1" do
     setup do
-      expose(NonlinearEqnRoot, merge_default_opts: 1)
+      expose(NonLinearEqnRoot, merge_default_opts: 1)
 
       # assert Example.private_function(:argument) == {:ok, :argument}
     end
@@ -363,7 +363,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "returns defaults if no opts are provided" do
       opts = []
 
-      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
@@ -375,7 +375,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
       opts = [type: :f64]
 
-      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
@@ -385,7 +385,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       opts = [type: :f32]
 
-      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 1.1920929e-7,
                tolerance: 1.1920929e-7,
                max_iterations: 1000,
@@ -397,7 +397,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the value for :machine_eps if one is provided" do
       opts = [machine_eps: 1.0e-05]
 
-      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
                tolerance: 2.220446049250313e-16,
                max_iterations: 1000,
                max_fn_eval_count: 1000,
@@ -409,7 +409,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "use the value for :tolerance if one is provided" do
       opts = [tolerance: 1.0e-05]
 
-      assert private(NonlinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
                machine_eps: 2.220446049250313e-16,
                max_iterations: 1000,
                max_fn_eval_count: 1000,
@@ -425,11 +425,11 @@ defmodule Integrator.NonlinearEqnRootTest do
     # x = fzero(fun, [3, 4])
 
     setup do
-      expose(NonlinearEqnRoot, converged?: 3)
+      expose(NonLinearEqnRoot, converged?: 3)
     end
 
     test "returns :continue if not yet converged" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141592614571824,
         b: 3.157162792479947,
         u: 3.141592614571824
@@ -438,11 +438,11 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      assert private(NonlinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :continue
+      assert private(NonLinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :continue
     end
 
     test "returns :halt if converged" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141592653589793,
         b: 3.141592653589795,
         u: 3.141592653589793
@@ -451,13 +451,13 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      assert private(NonlinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :halt
+      assert private(NonLinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :halt
     end
   end
 
   describe "interpolate" do
     setup do
-      expose(NonlinearEqnRoot, interpolate: 2)
+      expose(NonLinearEqnRoot, interpolate: 2)
     end
 
     test "secant" do
@@ -465,7 +465,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3,
         b: 4,
         u: 3,
@@ -475,14 +475,14 @@ defmodule Integrator.NonlinearEqnRootTest do
         fu: 0.141120008059867
       }
 
-      c = private(NonlinearEqnRoot.interpolate(z, :secant))
+      c = private(NonLinearEqnRoot.interpolate(z, :secant))
 
       assert_in_delta(c, 3.157162792479947, 1.0e-15)
     end
 
     test "bisect" do
-      z = %NonlinearEqnRoot{a: 3, b: 4}
-      assert private(NonlinearEqnRoot.interpolate(z, :bisect)) == 3.5
+      z = %NonLinearEqnRoot{a: 3, b: 4}
+      assert private(NonLinearEqnRoot.interpolate(z, :bisect)) == 3.5
     end
 
     test "double_secant" do
@@ -490,7 +490,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141592614571824,
         b: 3.157162792479947,
         u: 3.141592614571824,
@@ -499,7 +499,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fu: 3.901796897832363e-08
       }
 
-      c = private(NonlinearEqnRoot.interpolate(z, :double_secant))
+      c = private(NonLinearEqnRoot.interpolate(z, :double_secant))
 
       assert_in_delta(c, 3.141592692610915, 1.0e-12)
     end
@@ -509,7 +509,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3,
         b: 3.157162792479947,
         d: 4,
@@ -520,7 +520,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         iter_type: 2
       }
 
-      c = private(NonlinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
+      c = private(NonLinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
 
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
@@ -528,7 +528,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "quadratic_interpolation_plus_newton - bug fix" do
       # From Octave for ballode - first bounce
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.995471442091821,
         b: 4.294180317944318,
         c: 3.995471442091821,
@@ -544,7 +544,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         iter_type: 2
       }
 
-      c = private(NonlinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
+      c = private(NonLinearEqnRoot.interpolate(z, :quadratic_interpolation_plus_newton))
 
       assert_in_delta(c, 4.077471967384916, 1.0e-15)
     end
@@ -554,7 +554,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141281736699444,
         b: 3.157162792479947,
         d: 3.0,
@@ -565,44 +565,44 @@ defmodule Integrator.NonlinearEqnRootTest do
         fe: -0.756802495307928
       }
 
-      c = private(NonlinearEqnRoot.interpolate(z, :inverse_cubic_interpolation))
+      c = private(NonLinearEqnRoot.interpolate(z, :inverse_cubic_interpolation))
       assert_in_delta(c, 3.141592614571824, 1.0e-12)
     end
   end
 
   describe "too_far?/1" do
     setup do
-      expose(NonlinearEqnRoot, too_far?: 2)
+      expose(NonLinearEqnRoot, too_far?: 2)
     end
 
     test "returns true if too far" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.2,
         b: 3.4,
         u: 4.0
       }
 
-      assert private(NonlinearEqnRoot.too_far?(3.0, z)) == true
+      assert private(NonLinearEqnRoot.too_far?(3.0, z)) == true
     end
 
     test "returns false if not too far" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141592614571824,
         b: 3.157162792479947,
         u: 3.141592614571824
       }
 
-      assert private(NonlinearEqnRoot.too_far?(3.141592692610915, z)) == false
+      assert private(NonLinearEqnRoot.too_far?(3.141592692610915, z)) == false
     end
   end
 
   describe "check_for_non_monotonicity/1" do
     setup do
-      expose(NonlinearEqnRoot, check_for_non_monotonicity: 1)
+      expose(NonLinearEqnRoot, check_for_non_monotonicity: 1)
     end
 
     test "monotonic" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         d: 3.141281736699444,
         fa: 3.901796897832363e-08,
         fb: -1.556950978832860e-02,
@@ -610,13 +610,13 @@ defmodule Integrator.NonlinearEqnRootTest do
         fd: 3.109168853400020e-04
       }
 
-      z = private(NonlinearEqnRoot.check_for_non_monotonicity(z))
+      z = private(NonLinearEqnRoot.check_for_non_monotonicity(z))
       assert_in_delta(z.e, 3.141281736699444, 1.0e-12)
       assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
     end
 
     test "non-monotonic" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         d: 3.141281736699444,
         fa: -3.911796897832363e-08,
         fb: -1.556950978832860e-02,
@@ -624,18 +624,18 @@ defmodule Integrator.NonlinearEqnRootTest do
         fd: 3.109168853400020e-04
       }
 
-      z = private(NonlinearEqnRoot.check_for_non_monotonicity(z))
+      z = private(NonLinearEqnRoot.check_for_non_monotonicity(z))
       assert_in_delta(z.fe, -3.902112221087341e-08, 1.0e-12)
     end
   end
 
   describe "fn_eval_new_point" do
     setup do
-      expose(NonlinearEqnRoot, fn_eval_new_point: 3)
+      expose(NonLinearEqnRoot, fn_eval_new_point: 3)
     end
 
     test "works" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         c: 3.141281736699444,
         iteration_count: 1,
         fn_eval_count: 3,
@@ -644,7 +644,7 @@ defmodule Integrator.NonlinearEqnRootTest do
 
       zero_fn = &Math.sin/1
       opts = [max_iterations: 1000]
-      z = private(NonlinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
+      z = private(NonLinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
 
       assert_in_delta(z.fc, 3.109168853400020e-04, 1.0e-16)
       assert_in_delta(z.fx, 3.109168853400020e-04, 1.0e-16)
@@ -657,7 +657,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "raises an error if max iterations exceeded" do
       max_iterations = 4
 
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         c: 3.141281736699444,
         iteration_count: max_iterations,
         fn_eval_count: 3,
@@ -668,18 +668,18 @@ defmodule Integrator.NonlinearEqnRootTest do
       zero_fn = &Math.sin/1
 
       assert_raise MaxIterationsExceededError, fn ->
-        private(NonlinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
+        private(NonLinearEqnRoot.fn_eval_new_point(z, zero_fn, opts))
       end
     end
   end
 
   describe "adjust_if_too_close_to_a_or_b" do
     setup do
-      expose(NonlinearEqnRoot, adjust_if_too_close_to_a_or_b: 3)
+      expose(NonLinearEqnRoot, adjust_if_too_close_to_a_or_b: 3)
     end
 
     test "when c is NOT too close" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.0,
         b: 4.0,
         c: 3.157162792479947,
@@ -689,13 +689,13 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
+      z = private(NonLinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-16)
     end
 
     test "when c IS too close" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.157162792479947,
         b: 3.157162792479948,
         c: 3.157162792479947,
@@ -705,7 +705,7 @@ defmodule Integrator.NonlinearEqnRootTest do
       machine_epsilon = 2.220446049250313e-16
       tolerance = 2.220446049250313e-16
 
-      z = private(NonlinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
+      z = private(NonLinearEqnRoot.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance))
 
       assert_in_delta(z.c, 3.157162792479947, 1.0e-15)
     end
@@ -713,13 +713,13 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "find_2nd_starting_point" do
     setup do
-      expose(NonlinearEqnRoot, find_2nd_starting_point: 2)
+      expose(NonLinearEqnRoot, find_2nd_starting_point: 2)
     end
 
     test "finds a value in the vicinity" do
       x0 = 3.0
 
-      result = private(NonlinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
+      result = private(NonLinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
 
       assert_in_delta(result.b, 3.3, 1.0e-15)
       assert_in_delta(result.fb, -0.1577456941432482, 1.0e-12)
@@ -730,7 +730,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     test "works if x0 is very close to zero" do
       x0 = -0.0005
 
-      result = private(NonlinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
+      result = private(NonLinearEqnRoot.find_2nd_starting_point(&Math.sin/1, x0))
 
       assert_in_delta(result.b, 0.0, 1.0e-15)
       assert_in_delta(result.fb, 0.0, 1.0e-12)
@@ -741,11 +741,11 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "bracket" do
     setup do
-      expose(NonlinearEqnRoot, bracket: 1)
+      expose(NonLinearEqnRoot, bracket: 1)
     end
 
     test "first case - move b down to c" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: nil,
         b: 3.157162792479947,
         c: 3.141592692610915,
@@ -755,7 +755,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: -3.902112221087341e-08
       }
 
-      {:continue, z} = private(NonlinearEqnRoot.bracket(z))
+      {:continue, z} = private(NonLinearEqnRoot.bracket(z))
 
       assert z.d == 3.157162792479947
       assert z.fd == -1.556950978832860e-02
@@ -765,7 +765,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
 
     test "second case - move a up to c" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.141281736699444,
         b: nil,
         c: 3.141592614571824,
@@ -775,7 +775,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: 3.901796897832363e-08
       }
 
-      {:continue, z} = private(NonlinearEqnRoot.bracket(z))
+      {:continue, z} = private(NonLinearEqnRoot.bracket(z))
 
       assert z.d == 3.141281736699444
       assert z.fd == 3.109168853400020e-04
@@ -785,7 +785,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
 
     test "third case - c is already at the root" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: nil,
         b: nil,
         c: 1.0,
@@ -795,7 +795,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fc: 0.0
       }
 
-      {:halt, z} = private(NonlinearEqnRoot.bracket(z))
+      {:halt, z} = private(NonLinearEqnRoot.bracket(z))
 
       assert z.a == 1.0
       assert z.fa == 0.0
@@ -805,7 +805,7 @@ defmodule Integrator.NonlinearEqnRootTest do
     end
 
     test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: nil,
         b: nil,
         c: 1.0,
@@ -816,12 +816,12 @@ defmodule Integrator.NonlinearEqnRootTest do
       }
 
       assert_raise BracketingFailureError, fn ->
-        private(NonlinearEqnRoot.bracket(z))
+        private(NonLinearEqnRoot.bracket(z))
       end
     end
 
     test "bug fix - first iteration of first bounce of ballode.m" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 2.898648469921000,
         b: 4.294180317944318,
         c: 3.995471442091821,
@@ -833,7 +833,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         fd: -4.564518118928532
       }
 
-      {:continue, z} = private(NonlinearEqnRoot.bracket(z))
+      {:continue, z} = private(NonLinearEqnRoot.bracket(z))
 
       assert z.a == 3.995471442091821
       assert z.fa == 1.607028863214206
@@ -851,11 +851,11 @@ defmodule Integrator.NonlinearEqnRootTest do
 
   describe "compute_iteration_two_or_three" do
     setup do
-      expose(NonlinearEqnRoot, compute_iteration_two_or_three: 1)
+      expose(NonLinearEqnRoot, compute_iteration_two_or_three: 1)
     end
 
     test "bug fix" do
-      z = %NonlinearEqnRoot{
+      z = %NonLinearEqnRoot{
         a: 3.995471442091821,
         b: 4.077471967384916,
         c: 4.077471967384916,
@@ -871,7 +871,7 @@ defmodule Integrator.NonlinearEqnRootTest do
         iter_type: 2
       }
 
-      z = private(NonlinearEqnRoot.compute_iteration_two_or_three(z))
+      z = private(NonLinearEqnRoot.compute_iteration_two_or_three(z))
 
       assert z.a == 3.995471442091821
       assert z.b == 4.077471967384916

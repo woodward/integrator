@@ -4,7 +4,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   import Nx.Defn
 
-  alias Integrator.{MaxErrorsExceededError, NonlinearEqnRoot, Utils}
+  alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, Utils}
 
   defmodule ComputedStep do
     @moduledoc false
@@ -580,7 +580,7 @@ defmodule Integrator.AdaptiveStepsize do
       event_fn.(t, x) |> Map.get(:value) |> Nx.to_number()
     end
 
-    root = NonlinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
+    root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
