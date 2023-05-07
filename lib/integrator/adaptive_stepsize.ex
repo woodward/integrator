@@ -196,6 +196,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
+    nx_type = Nx.type(x0)
     # Compute norm of initial conditions
     x_zeros = zero_vector(x0)
     d0 = abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
@@ -206,9 +207,9 @@ defmodule Integrator.AdaptiveStepsize do
 
     h0 =
       if d0 < 1.0e-5 or d1 < 1.0e-5 do
-        1.0e-6
+        Nx.tensor(1.0e-6, type: nx_type)
       else
-        0.01 * (d0 / d1)
+        Nx.tensor(0.01, type: nx_type) * (d0 / d1)
       end
 
     # Compute one step of Explicit-Euler
@@ -218,16 +219,18 @@ defmodule Integrator.AdaptiveStepsize do
     xh = ode_fn.(t0 + h0, x1)
 
     xh_minus_x = xh - x
-    d2 = 1.0 / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
+    d2 = Nx.tensor(1.0, type: nx_type) / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
+
+    one = Nx.tensor(1, type: nx_type)
 
     h1 =
       if max(d1, d2) <= 1.0e-15 do
-        max(1.0e-6, h0 * 1.0e-3)
+        max(Nx.tensor(1.0e-06, type: nx_type), h0 * Nx.tensor(1.0e-03, type: nx_type))
       else
-        Nx.pow(1.0e-2 / max(d1, d2), 1 / (order + 1))
+        Nx.pow(Nx.tensor(1.0e-02, type: nx_type) / max(d1, d2), one / (order + one))
       end
 
-    min(100.0 * h0, h1)
+    min(Nx.tensor(100.0, type: nx_type) * h0, h1)
   end
 
   @doc """
@@ -261,7 +264,8 @@ defmodule Integrator.AdaptiveStepsize do
     k_length = order + 2
 
     {length_x} = Nx.shape(x)
-    Nx.broadcast(0.0, {length_x, k_length})
+    zero = Nx.tensor(0.0, type: Nx.type(x))
+    Nx.broadcast(zero, {length_x, k_length})
   end
 
   @spec step_forward(
@@ -626,6 +630,7 @@ defmodule Integrator.AdaptiveStepsize do
   @spec zero_vector(Nx.t()) :: Nx.t()
   defnp zero_vector(x) do
     {length_of_x} = Nx.shape(x)
-    Nx.broadcast(0.0, {length_of_x})
+    zero = Nx.tensor(0.0, type: Nx.type(x))
+    Nx.broadcast(zero, {length_of_x})
   end
 end

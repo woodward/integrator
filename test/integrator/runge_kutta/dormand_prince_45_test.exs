@@ -105,6 +105,45 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       assert_all_close(x_est, expected_x_est, atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
+
+    test "gives the correct result for the ballode high fidelity example - first integration" do
+      t = ~V[  0.0  ]f64
+      x = ~V[  0.0  20.0  ]f64
+      dt = ~V[  0.001472499532027109  ]f64
+      #                    xxxxxxxxx
+      #         0.001472499236077083
+      #         0.001472499236077083
+
+      k_vals = ~M[
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+      ]f64
+
+      ode_fn = fn _t, x ->
+        x0 = x[1]
+        x1 = Nx.tensor(-9.81, type: :f64)
+        Nx.stack([x0, x1])
+      end
+
+      {t_next, x_next, x_est, k} = DormandPrince45.integrate(ode_fn, t, x, dt, k_vals)
+
+      # Expected values are from Octave:
+      expected_t_next = ~V[  1.472499532027109e-03  ]f64
+      expected_x_next = ~V[  0.02943935535039590  19.98555477959081  ]f64
+      #                     [0.0294393553503959,  19.985554779590814]       from this test
+      #                     [0.02943934943567045, 19.985554782494084]       from actual simulation
+      expected_x_est = ~V[   0.02943935535039590  19.98555477959081  ]f64
+
+      expected_k = ~M[
+         2.000000000000000e+01   1.999711095591816e+01   1.999566643387724e+01   1.998844382367265e+01   1.998715980408072e+01   1.998555477959081e+01   1.998555477959081e+01
+        -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00
+      ]f64
+
+      assert_all_close(t_next, expected_t_next, atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(x_next, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
+    end
   end
 
   describe "hermite_quartic_interpolation" do

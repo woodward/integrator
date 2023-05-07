@@ -21,7 +21,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -64,7 +64,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.007418363820761442, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -95,7 +95,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -130,7 +130,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [output_fn: output_fn, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -179,7 +179,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [event_fn: event_fn, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -221,7 +221,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, output_fn: output_fn, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -264,7 +264,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 1, output_fn: output_fn, type: :f64]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -306,7 +306,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       opts = [type: :f64, norm_control: false]
       t_values = Nx.linspace(t_start, t_end, n: 21, type: :f64) |> Nx.to_list()
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(6.812920690579614e-02, type: :f64)
 
       result =
@@ -359,7 +359,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       opts = [type: :f64]
       t_values = Nx.linspace(t_start, t_end, n: 61, type: :f64) |> Nx.to_list()
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(6.812920690579614e-02, type: :f64)
 
       result =
@@ -395,7 +395,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [store_results?: false, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
@@ -420,7 +420,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       t_end = Nx.tensor(20.0, type: :f64)
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.007418363820761442, type: :f64)
 
       # Set the max_number_of_errors to 1 so that an exception should be thrown:
@@ -443,7 +443,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
       opts = [refine: 4, type: :f64, norm_control: false]
 
-      # From Octave (or equivalently, from Utils.starting_stepsize/7):
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(1.778279410038923e-02, type: :f64)
 
       #  Octave:
@@ -483,6 +483,24 @@ defmodule Integrator.AdaptiveStepsizeTest do
         AdaptiveStepsize.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control: false)
 
       assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
+    end
+
+    test "works - high fidelity ballode example to double precision accuracy (works!!!)" do
+      order = 5
+      t0 = ~V[  0.0  ]f64
+      x0 = ~V[  0.0 20.0  ]f64
+      abs_tol = Nx.tensor(1.0e-14, type: :f64)
+      rel_tol = Nx.tensor(1.0e-14, type: :f64)
+      opts = [norm_control: false]
+
+      ode_fn = fn _t, x ->
+        x0 = x[1]
+        x1 = Nx.tensor(-9.81, type: :f64)
+        Nx.stack([x0, x1])
+      end
+
+      starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts)
+      assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 
@@ -713,6 +731,27 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ]f64
 
       assert_all_close(k_vals, expected_k_vals)
+
+      # The k_vals has the Nx type of x:
+      assert Nx.type(k_vals) == {:f, 64}
+    end
+
+    test "returns a tensor that has the Nx type of x" do
+      order = 3
+      type = {:f, 32}
+      x = Nx.tensor([1.0, 2.0, 3.0], type: type)
+      k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
+
+      expected_k_vals = ~M[
+        0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0
+      ]f64
+
+      assert_all_close(k_vals, expected_k_vals)
+
+      # The k_vals has the Nx type of x:
+      assert Nx.type(k_vals) == type
     end
   end
 
@@ -734,6 +773,18 @@ defmodule Integrator.AdaptiveStepsizeTest do
       norm = private(AdaptiveStepsize.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts))
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
+    end
+
+    test "when norm_control: false - :f64 - starting_stepsize for high-fidelity ballode" do
+      x0 = ~V[  0.0 20.0  ]f64
+      abs_tol = Nx.tensor(1.0e-14, type: :f64)
+      rel_tol = Nx.tensor(1.0e-14, type: :f64)
+      opts = [norm_control: false]
+      x_zeros = Nx.tensor([0.0, 0.0], type: :f64)
+
+      norm = private(AdaptiveStepsize.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts))
+
+      assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
 
     test "when norm_control: true" do
@@ -762,6 +813,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       y = private(AdaptiveStepsize.zero_vector(x))
       expected_y = Nx.tensor([0.0, 0.0, 0.0], type: :f64)
       assert_all_close(y, expected_y)
+      assert Nx.type(y) == {:f, 64}
     end
   end
 end

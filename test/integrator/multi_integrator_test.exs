@@ -84,7 +84,13 @@ defmodule Integrator.MultiIntegratorTest do
       event_fn: event_fn,
       coefficient_of_restitution: coefficient_of_restitution
     } do
-      opts = opts |> Keyword.merge(abs_tol: 1.0e-14, rel_tol: 1.0e-14)
+      opts =
+        opts
+        |> Keyword.merge(
+          abs_tol: Nx.tensor(1.0e-14, type: :f64),
+          rel_tol: Nx.tensor(1.0e-14, type: :f64),
+          norm_control: false
+        )
 
       transition_fn = fn t, x, multi, opts ->
         x0 = Nx.tensor(0.0, type: :f64)
