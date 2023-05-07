@@ -61,7 +61,7 @@ defmodule Integrator.MultiIntegratorTest do
 
       multi = MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
 
-      amount_to_check = 120
+      amount_to_check = 138
       expected_t = read_nx_list("test/fixtures/octave_results/ballode/default/t.csv") |> Enum.take(amount_to_check)
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
