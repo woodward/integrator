@@ -241,28 +241,31 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       [last_t | _rest] = result.output_t |> Enum.reverse()
 
+      # write_t(result.output_t, "test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/x_elixir.csv")
+
       # Expected last_t is from Octave:
       assert_in_delta(Nx.to_number(last_t), 4.077471967380223, 1.0e-14)
 
-      # assert result.count_cycles__compute_step == 9
-      # assert result.count_loop__increment_step == 8
-      # assert result.terminal_event == :halt
-      # assert result.terminal_output == :continue
+      [last_x | _rest] = result.output_x |> Enum.reverse()
+      assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
+      assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
 
-      # assert length(result.ode_t) == 9
-      # assert length(result.ode_x) == 9
-      # assert length(result.output_t) == 33
-      # assert length(result.output_x) == 33
+      assert result.count_cycles__compute_step == 18
+      assert result.count_loop__increment_step == 18
+      assert result.terminal_event == :halt
+      assert result.terminal_output == :continue
 
-      # # Verify the last time step is correct (bug fix!):
-      # [last_time | _rest] = result.output_t |> Enum.reverse()
-      # assert_all_close(last_time, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)
+      assert length(result.ode_t) == 19
+      assert length(result.ode_x) == 19
+      assert length(result.output_t) == 73
+      assert length(result.output_x) == 73
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
-      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/x.csv")
 
-      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
-      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
     test "works - no data interpolation (refine == 1) together with an output function" do

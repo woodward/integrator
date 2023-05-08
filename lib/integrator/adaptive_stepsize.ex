@@ -524,7 +524,8 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec interpolate_one_point(Nx.t(), t(), fun()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
-    do_interpolation(step, interpolate_fn, Nx.tensor(t_new)) |> List.first()
+    # Get rid of hard-wired type: :f64 here!  Pass in opts?
+    do_interpolation(step, interpolate_fn, Nx.tensor(t_new, type: :f64)) |> List.first()
   end
 
   @spec do_interpolation(t(), fun(), Nx.t()) :: [Nx.t()]
@@ -586,7 +587,7 @@ defmodule Integrator.AdaptiveStepsize do
 
     root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
-    %ComputedStep{t_new: root.x, x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+    %ComputedStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
 
   # Originally based on
