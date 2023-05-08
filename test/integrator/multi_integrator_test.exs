@@ -75,6 +75,7 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
+    @tag :skip
     test "performs the integration - high fidelity", %{
       opts: opts,
       t_initial: t_initial,

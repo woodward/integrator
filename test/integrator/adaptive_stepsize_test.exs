@@ -205,6 +205,66 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    test "works - event function with interpolation - ballode - high fidelity - one bounce" do
+      event_fn = fn _t, x ->
+        value = Nx.to_number(x[0])
+        answer = if value <= 0.0, do: :halt, else: :continue
+        %{status: answer, value: value}
+      end
+
+      stepper_fn = &DormandPrince45.integrate/5
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = fn _t, x ->
+        x0 = x[1]
+        x1 = Nx.tensor(-9.81, type: :f64)
+        Nx.stack([x0, x1])
+      end
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(30.0, type: :f64)
+      x0 = Nx.tensor([0.0, 20.0], type: :f64)
+
+      opts = [
+        event_fn: event_fn,
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-14, type: :f64),
+        rel_tol: Nx.tensor(1.0e-14, type: :f64)
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(1.472499532027109e-03, type: :f64)
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
+
+      [last_t | _rest] = result.output_t |> Enum.reverse()
+
+      # Expected last_t is from Octave:
+      assert_in_delta(Nx.to_number(last_t), 4.077471967380223, 1.0e-14)
+
+      # assert result.count_cycles__compute_step == 9
+      # assert result.count_loop__increment_step == 8
+      # assert result.terminal_event == :halt
+      # assert result.terminal_output == :continue
+
+      # assert length(result.ode_t) == 9
+      # assert length(result.ode_x) == 9
+      # assert length(result.output_t) == 33
+      # assert length(result.output_x) == 33
+
+      # # Verify the last time step is correct (bug fix!):
+      # [last_time | _rest] = result.output_t |> Enum.reverse()
+      # assert_all_close(last_time, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)
+
+      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
+      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
+
+      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
+      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
+
     test "works - no data interpolation (refine == 1) together with an output function" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
