@@ -75,7 +75,6 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    @tag :skip
     test "performs the integration - high fidelity", %{
       opts: opts,
       t_initial: t_initial,
@@ -122,7 +121,7 @@ defmodule Integrator.MultiIntegratorTest do
       # write_x(output_x, "test/fixtures/octave_results/ballode/high_fidelity/x_elixir.csv")
 
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-06, rtol: 1.0e-06)
-      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-06, rtol: 1.0e-06)
     end
 
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
