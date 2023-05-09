@@ -36,6 +36,7 @@ defmodule Integrator.AdaptiveStepsize do
           #
           dt: Nx.t() | nil,
           k_vals: Nx.t() | nil,
+          nx_type: Nx.Type.t(),
           #
           options_comp: Nx.t() | nil,
           fixed_times: [Nx.t()] | nil,
@@ -50,11 +51,11 @@ defmodule Integrator.AdaptiveStepsize do
           terminal_event: integration_status(),
           terminal_output: integration_status(),
           #
-          # The output of the integration:
+          # The output of the Runge Kutta integration:
           ode_t: [Nx.t()],
           ode_x: [Nx.t()],
           #
-          # The output of the integration, including the interpolated points:
+          # The output of the integration, plus the interpolated points:
           output_t: [Nx.t()],
           output_x: [Nx.t()],
           #
@@ -75,6 +76,7 @@ defmodule Integrator.AdaptiveStepsize do
     #
     :dt,
     :k_vals,
+    nx_type: :f32,
     #
     options_comp: 0.0,
     #
@@ -90,11 +92,11 @@ defmodule Integrator.AdaptiveStepsize do
     terminal_event: :continue,
     terminal_output: :continue,
     #
-    # The output of the integration:
+    # The output of the Runge Kutta integration:
     ode_t: [],
     ode_x: [],
     #
-    # The output of the integration, including the interpolated points:
+    # The output of the integration, plus the interpolated points:
     output_t: [],
     output_x: [],
     #
@@ -169,7 +171,8 @@ defmodule Integrator.AdaptiveStepsize do
       x_new: x0,
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0),
-      fixed_times: fixed_times
+      fixed_times: fixed_times,
+      nx_type: opts[:type]
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
     |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
@@ -524,8 +527,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec interpolate_one_point(Nx.t(), t(), fun()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
-    # Get rid of hard-wired type: :f64 here!  Pass in opts?
-    do_interpolation(step, interpolate_fn, Nx.tensor(t_new, type: :f64)) |> List.first()
+    do_interpolation(step, interpolate_fn, Nx.tensor(t_new, type: step.nx_type)) |> List.first()
   end
 
   @spec do_interpolation(t(), fun(), Nx.t()) :: [Nx.t()]

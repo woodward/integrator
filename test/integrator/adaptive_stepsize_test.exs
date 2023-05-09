@@ -715,7 +715,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
         x_old: x_old,
         t_new_rk_interpolate: t_new,
         x_new_rk_interpolate: x_new,
-        k_vals: k_vals
+        k_vals: k_vals,
+        nx_type: :f64
       }
 
       t = ~V[ 2.161317515510217 ]f64
