@@ -2,7 +2,7 @@ defmodule Integrator.MultiIntegratorTest do
   @moduledoc false
   use Integrator.TestCase
 
-  alias Integrator.{AdaptiveStepsize, MultiIntegrator}
+  alias Integrator.{AdaptiveStepsize, Demo, MultiIntegrator}
 
   describe "ballode.m" do
     setup do
@@ -12,11 +12,7 @@ defmodule Integrator.MultiIntegratorTest do
       opts = [type: :f64, norm_control: false]
       coefficient_of_restitution = Nx.tensor(-0.9, type: :f64)
 
-      ode_fn = fn _t, x ->
-        x0 = x[1]
-        x1 = Nx.tensor(-9.81, type: :f64)
-        Nx.stack([x0, x1])
-      end
+      ode_fn = &Demo.falling_particle/2
 
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])

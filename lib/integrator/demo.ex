@@ -41,4 +41,17 @@ defmodule Integrator.Demo do
     x2 = -0.51 * x[0] * x[1]
     Nx.stack([x0, x1, x2])
   end
+
+  @acc_due_to_gravity Nx.tensor(-9.81, type: :f64)
+
+  @doc """
+  Simulates a point mass or particle falling through pass affected by gravity.  Used for comparisons
+  with the Matlab/Octave `ballode.m` routine
+  """
+  @spec falling_particle(Nx.t(), Nx.t()) :: Nx.t()
+  defn falling_particle(_t, x) do
+    x0 = x[1]
+    x1 = @acc_due_to_gravity
+    Nx.stack([x0, x1])
+  end
 end

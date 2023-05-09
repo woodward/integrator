@@ -216,11 +216,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = fn _t, x ->
-        x0 = x[1]
-        x1 = Nx.tensor(-9.81, type: :f64)
-        Nx.stack([x0, x1])
-      end
+      ode_fn = &Demo.falling_particle/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(30.0, type: :f64)
@@ -555,12 +551,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
       rel_tol = Nx.tensor(1.0e-14, type: :f64)
       opts = [norm_control: false]
-
-      ode_fn = fn _t, x ->
-        x0 = x[1]
-        x1 = Nx.tensor(-9.81, type: :f64)
-        Nx.stack([x0, x1])
-      end
+      ode_fn = &Demo.falling_particle/2
 
       starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts)
       assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)

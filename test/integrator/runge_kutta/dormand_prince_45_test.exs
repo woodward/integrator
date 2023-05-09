@@ -3,6 +3,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
   use Integrator.TestCase
 
   import Nx, only: :sigils
+  alias Integrator.Demo
   alias Integrator.RungeKutta.DormandPrince45
 
   test "order/0" do
@@ -119,11 +120,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
       ]f64
 
-      ode_fn = fn _t, x ->
-        x0 = x[1]
-        x1 = Nx.tensor(-9.81, type: :f64)
-        Nx.stack([x0, x1])
-      end
+      ode_fn = &Demo.falling_particle/2
 
       {t_next, x_next, x_est, k} = DormandPrince45.integrate(ode_fn, t, x, dt, k_vals)
 
