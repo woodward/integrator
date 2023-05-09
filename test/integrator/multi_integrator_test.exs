@@ -10,7 +10,7 @@ defmodule Integrator.MultiIntegratorTest do
       t_final = Nx.tensor(30.0, type: :f64)
       x_initial = Nx.tensor([0.0, 20.0], type: :f64)
       opts = [type: :f64, norm_control: false]
-      coefficient_of_restitution = -0.9
+      coefficient_of_restitution = Nx.tensor(-0.9, type: :f64)
 
       ode_fn = fn _t, x ->
         x0 = x[1]
@@ -75,7 +75,7 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    test "performs the integration - high fidelity", %{
+    test "performs the integration - high fidelity multi-bounce ballode", %{
       opts: opts,
       t_initial: t_initial,
       t_final: t_final,
@@ -100,7 +100,7 @@ defmodule Integrator.MultiIntegratorTest do
         first_t = last_integration.ode_t |> List.first()
         [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
         [next_to_last_t | _rest] = rest_of_t
-        initial_step = Nx.to_number(last_t) - Nx.to_number(next_to_last_t)
+        initial_step = Nx.subtract(last_t, next_to_last_t)
         max_step = Nx.to_number(last_t) - Nx.to_number(first_t)
         opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
@@ -117,11 +117,36 @@ defmodule Integrator.MultiIntegratorTest do
       output_t = MultiIntegrator.all_output_data(multi, :output_t) |> Enum.take(amount_to_check)
       output_x = MultiIntegrator.all_output_data(multi, :output_x) |> Enum.take(amount_to_check)
 
+      {t_row_72, _rest} = output_t |> List.pop_at(72)
+      {x_row_72, _rest} = output_x |> List.pop_at(72)
+
+      # Compare against Octave results:
+      assert_in_delta(Nx.to_number(t_row_72), 4.07747196738022, 1.0e-17)
+      assert_in_delta(Nx.to_number(x_row_72[0]), 0.0, 1.0e-13)
+      assert_in_delta(Nx.to_number(x_row_72[1]), -20.0, 1.0e-13)
+
+      # Values after first RK integration of after the first bounce:
+      {t_row_76, _rest} = output_t |> List.pop_at(76)
+      {x_row_76, _rest} = output_x |> List.pop_at(76)
+
+      # Compare against Octave results:
+      assert_in_delta(Nx.to_number(t_row_76), 5.256295464839447, 1.0e-14)
+      assert_in_delta(Nx.to_number(x_row_76[0]), 14.40271312308144, 1.0e-13)
+      assert_in_delta(Nx.to_number(x_row_76[1]), 6.435741489925020, 1.0e-14)
+
       # write_t(output_t, "test/fixtures/octave_results/ballode/high_fidelity/t_elixir.csv")
       # write_x(output_x, "test/fixtures/octave_results/ballode/high_fidelity/x_elixir.csv")
 
-      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-06, rtol: 1.0e-06)
-      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-06, rtol: 1.0e-06)
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+
+      t_last_row = output_t |> List.last()
+      x_last_row = output_x |> List.last()
+
+      # Compare against Octave results:
+      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-14)
+      assert_in_delta(Nx.to_number(x_last_row[0]), -1.360023205165817e-13, 1.0e-12)
+      assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
 
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
