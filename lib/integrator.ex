@@ -63,7 +63,16 @@ defmodule Integrator do
         AdaptiveStepsize.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
       end)
 
-    validiate_args_precision([x0: x0, initial_step: initial_step], opts[:type])
+    validiate_args_precision(
+      [
+        x0: x0,
+        initial_step: initial_step,
+        abs_tol: opts[:abs_tol],
+        rel_tol: opts[:rel_tol]
+        # max_step: opts[:max_step]
+      ],
+      opts[:type]
+    )
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/5,

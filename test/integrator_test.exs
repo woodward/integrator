@@ -51,7 +51,9 @@ defmodule IntegratorTest do
       # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, type: :f64, norm_control: false)
+      opts = [type: :f64, abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64), norm_control: false]
+
+      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
@@ -68,7 +70,14 @@ defmodule IntegratorTest do
       # opts = odeset ("InitialStep", 0.1);
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opt);
 
-      opts = [type: :f64, norm_control: false, initial_step: Nx.tensor(0.1, type: :f64)]
+      opts = [
+        type: :f64,
+        norm_control: false,
+        initial_step: Nx.tensor(0.1, type: :f64),
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64)
+      ]
+
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/initial_step_specified/t.csv")
@@ -86,7 +95,8 @@ defmodule IntegratorTest do
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
       t_range = Nx.linspace(t_initial, t_final, n: 21, type: :f64)
-      solution = Integrator.integrate(&van_der_pol_fn/2, t_range, initial_x, norm_control: false)
+      opts = [abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64), norm_control: false]
+      solution = Integrator.integrate(&van_der_pol_fn/2, t_range, initial_x, opts)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
@@ -96,7 +106,14 @@ defmodule IntegratorTest do
     end
 
     test "performs the integration - high fidelity", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
-      opts = [abs_tol: 1.0e-10, rel_tol: 1.0e-10, integrator: :ode45, type: :f64, norm_control: false]
+      opts = [
+        abs_tol: Nx.tensor(1.0e-10, type: :f64),
+        rel_tol: Nx.tensor(1.0e-10, type: :f64),
+        integrator: :ode45,
+        type: :f64,
+        norm_control: false
+      ]
+
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
@@ -107,7 +124,13 @@ defmodule IntegratorTest do
     end
 
     test "works - uses Bogacki-Shampine23", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
-      opts = [refine: 4, integrator: :ode23, norm_control: false]
+      opts = [
+        refine: 4,
+        integrator: :ode23,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64)
+      ]
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
@@ -355,7 +378,7 @@ defmodule IntegratorTest do
       initial_x = Nx.tensor([2.0, 0.0], type: :f64)
       t_initial = Nx.tensor(0.0, type: :f64)
       t_final = Nx.tensor(20.0, type: :f64)
-      opts = []
+      opts = [abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-06, type: :f64)]
 
       [initial_x: initial_x, t_initial: t_initial, t_final: t_final, opts: opts]
     end
@@ -416,6 +439,55 @@ defmodule IntegratorTest do
           [t_initial, t_final],
           initial_x,
           Keyword.merge(opts, initial_step: initial_step, type: :f64)
+        )
+      end
+    end
+
+    test "raises an exception if :abs_tol is incorrect nx type", %{
+      t_initial: t_initial,
+      t_final: t_final,
+      initial_x: initial_x,
+      opts: opts
+    } do
+      assert_raise ArgPrecisionError, fn ->
+        Integrator.integrate(
+          &van_der_pol_fn/2,
+          [t_initial, t_final],
+          initial_x,
+          Keyword.merge(opts, abs_tol: 1.0e-06, type: :f64)
+        )
+      end
+    end
+
+    test "raises an exception if :rel_tol is incorrect nx type", %{
+      t_initial: t_initial,
+      t_final: t_final,
+      initial_x: initial_x,
+      opts: opts
+    } do
+      assert_raise ArgPrecisionError, fn ->
+        Integrator.integrate(
+          &van_der_pol_fn/2,
+          [t_initial, t_final],
+          initial_x,
+          Keyword.merge(opts, rel_tol: 1.0e-03, type: :f64)
+        )
+      end
+    end
+
+    @tag :skip
+    test "raises an exception if :max_step is incorrect nx type", %{
+      t_initial: t_initial,
+      t_final: t_final,
+      initial_x: initial_x,
+      opts: opts
+    } do
+      assert_raise ArgPrecisionError, fn ->
+        Integrator.integrate(
+          &van_der_pol_fn/2,
+          [t_initial, t_final],
+          initial_x,
+          Keyword.merge(opts, max_step: 1.0, type: :f64)
         )
       end
     end

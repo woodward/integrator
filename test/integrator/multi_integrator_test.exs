@@ -9,7 +9,7 @@ defmodule Integrator.MultiIntegratorTest do
       t_initial = Nx.tensor(0.0, type: :f64)
       t_final = Nx.tensor(30.0, type: :f64)
       x_initial = Nx.tensor([0.0, 20.0], type: :f64)
-      opts = [type: :f64, norm_control: false]
+      opts = [type: :f64, norm_control: false, abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64)]
       coefficient_of_restitution = Nx.tensor(-0.9, type: :f64)
 
       ode_fn = &Demo.falling_particle/2
