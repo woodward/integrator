@@ -48,8 +48,8 @@ defmodule Integrator.MultiIntegratorTest do
         first_t = last_integration.ode_t |> List.first()
         [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
         [next_to_last_t | _rest] = rest_of_t
-        initial_step = Nx.to_number(last_t) - Nx.to_number(next_to_last_t)
-        max_step = Nx.to_number(last_t) - Nx.to_number(first_t)
+        initial_step = Nx.subtract(last_t, next_to_last_t)
+        max_step = Nx.subtract(last_t, first_t)
         opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
@@ -164,8 +164,8 @@ defmodule Integrator.MultiIntegratorTest do
         first_t = last_integration.ode_t |> List.first()
         [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
         [next_to_last_t | _rest] = rest_of_t
-        initial_step = Nx.to_number(last_t) - Nx.to_number(next_to_last_t)
-        max_step = Nx.to_number(last_t) - Nx.to_number(first_t)
+        initial_step = Nx.subtract(last_t, next_to_last_t)
+        max_step = Nx.subtract(last_t, first_t)
         opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
         status = if length(multi.integrations) >= number_of_bounces, do: :halt, else: :continue
         {status, t, x, opts}

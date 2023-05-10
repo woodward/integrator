@@ -29,6 +29,14 @@ defmodule Integrator do
     integrator: :ode45
   ]
 
+  defmodule ArgPrecisionError do
+    defexception message: "argument precision error",
+                 invalid_argument: nil,
+                 argument_name: nil,
+                 expected_precision: nil,
+                 actual_precision: nil
+  end
+
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
   """
@@ -40,7 +48,7 @@ defmodule Integrator do
         ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
     opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts()) |> Keyword.merge(opts) |> set_default_refine_opt()
-    {opts, x0} = determine_nx_type(opts, x0)
+    opts = opts |> Keyword.put_new_lazy(:type, fn -> Utils.type_atom(x0) end)
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->
@@ -48,12 +56,14 @@ defmodule Integrator do
       end)
 
     order = integrator_mod.order()
-    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts)
+    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts[:type])
 
-    initial_tstep =
+    initial_step =
       Keyword.get_lazy(opts, :initial_step, fn ->
         AdaptiveStepsize.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
       end)
+
+    validiate_args_precision([x0: x0, initial_step: initial_step], opts[:type])
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/5,
@@ -62,23 +72,21 @@ defmodule Integrator do
       t_start,
       t_end,
       fixed_times,
-      initial_tstep,
+      initial_step,
       x0,
       order,
       opts
     )
   end
 
-  @spec parse_start_end([float() | Nx.t()] | Nx.t(), Keyword.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
-  defp parse_start_end([t_start, t_end], opts) do
-    nx_type = opts[:type]
+  # @spec parse_start_end([float() | Nx.t()] | Nx.t(), Nx.Type.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
+  defp parse_start_end([t_start, t_end], nx_type) do
+    validiate_args_precision([t_start: t_start, t_end: t_end], nx_type)
     {Nx.tensor(t_start, type: nx_type), Nx.tensor(t_end, type: nx_type), _fixed_times = nil}
   end
 
-  defp parse_start_end(t_range, opts) do
-    if Utils.type_atom(t_range) != opts[:type] do
-      raise ArgumentError, "The Nx type for the time range and the option[:type] do not match"
-    end
+  defp parse_start_end(t_range, nx_type) do
+    validiate_args_precision([t_range: t_range], nx_type)
 
     t_start = t_range[0]
     {length} = Nx.shape(t_range)
@@ -106,11 +114,21 @@ defmodule Integrator do
     end
   end
 
-  @spec determine_nx_type(Keyword.t(), Nx.t()) :: {Keyword.t(), Nx.t()}
-  defp determine_nx_type(opts, x0) do
-    case opts[:type] do
-      nil -> {Keyword.merge(opts, type: Utils.type_atom(x0)), x0}
-      nx_type -> {opts, Nx.as_type(x0, nx_type)}
-    end
+  # @spec validiate_args_precision(Keyword.t(), atom()) :: atom()
+  defp validiate_args_precision(args, expected_nx_type) do
+    args
+    |> Enum.each(fn {arg_name, arg_value} ->
+      nx_type = Utils.nx_type_atom(arg_value)
+
+      if nx_type != expected_nx_type do
+        raise ArgPrecisionError,
+          invalid_argument: arg_value,
+          expected_precision: expected_nx_type,
+          actual_precision: nx_type,
+          argument_name: arg_name
+      end
+    end)
+
+    :ok
   end
 end
