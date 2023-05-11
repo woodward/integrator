@@ -175,20 +175,25 @@ defmodule Integrator.AdaptiveStepsize do
     # If there are fixed output times, then refine can no longer be an integer value (such as 1 or 4):
     opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
 
-    # check_nx_type(
-    # [
-    # x0: x0,
-    # initial_step: initial_step,
-    # abs_tol: opts[:abs_tol],
-    # rel_tol: opts[:rel_tol]
-    # max_step: opts[:max_step]
-    # ],
-    # opts[:type]
-    # )
+    if fixed_times do
+      check_nx_type([fixed_times: hd(fixed_times)], opts[:type])
+    end
 
-    # check_nx_type([t_start: t_start, t_end: t_end], nx_type)
-    # check_nx_type([t_range: t_range], nx_type)
-    check_nx_type([x0: x0], opts[:type])
+    check_x_out = ode_fn.(t_start, x0)
+
+    check_nx_type(
+      [
+        t_start: t_start,
+        t_end: t_end,
+        x0: x0,
+        initial_tstep: initial_tstep,
+        abs_tol: opts[:abs_tol],
+        rel_tol: opts[:rel_tol],
+        max_step: opts[:max_step],
+        ode_fn: check_x_out
+      ],
+      opts[:type]
+    )
 
     %__MODULE__{
       t_new: t_start,

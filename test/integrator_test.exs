@@ -49,7 +49,13 @@ defmodule IntegratorTest do
       # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      opts = [type: :f64, abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64), norm_control: false]
+      opts = [
+        type: :f64,
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        norm_control: false,
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
 
@@ -73,7 +79,8 @@ defmodule IntegratorTest do
         norm_control: false,
         initial_step: Nx.tensor(0.1, type: :f64),
         abs_tol: Nx.tensor(1.0e-06, type: :f64),
-        rel_tol: Nx.tensor(1.0e-03, type: :f64)
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
       ]
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
@@ -93,7 +100,14 @@ defmodule IntegratorTest do
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
       t_range = Nx.linspace(t_initial, t_final, n: 21, type: :f64)
-      opts = [abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64), norm_control: false]
+
+      opts = [
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        norm_control: false,
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
       solution = Integrator.integrate(&van_der_pol_fn/2, t_range, initial_x, opts)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
@@ -109,7 +123,8 @@ defmodule IntegratorTest do
         rel_tol: Nx.tensor(1.0e-10, type: :f64),
         integrator: :ode45,
         type: :f64,
-        norm_control: false
+        norm_control: false,
+        max_step: Nx.tensor(2.0, type: :f64)
       ]
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
@@ -127,7 +142,8 @@ defmodule IntegratorTest do
         integrator: :ode23,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-06, type: :f64),
-        rel_tol: Nx.tensor(1.0e-03, type: :f64)
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
       ]
 
       solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
@@ -161,7 +177,13 @@ defmodule IntegratorTest do
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(12.0, type: :f64)
       x0 = Nx.tensor([0.0, 1.0, 1.0], type: :f64)
-      opts = [abs_tol: Nx.tensor(1.0e-07, type: :f64), rel_tol: Nx.tensor(1.0e-07, type: :f64), norm_control: false]
+
+      opts = [
+        abs_tol: Nx.tensor(1.0e-07, type: :f64),
+        rel_tol: Nx.tensor(1.0e-07, type: :f64),
+        norm_control: false,
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
 
       solution = Integrator.integrate(&euler_equations/2, [t_start, t_end], x0, opts)
 
@@ -198,7 +220,8 @@ defmodule IntegratorTest do
         refine: 1,
         integrator: :ode23,
         type: :f64,
-        norm_control: false
+        norm_control: false,
+        max_step: Nx.tensor(2.0, type: :f64)
       ]
 
       solution = Integrator.integrate(&euler_equations/2, [t_start, t_end], x0, opts)

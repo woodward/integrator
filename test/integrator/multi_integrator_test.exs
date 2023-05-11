@@ -9,7 +9,15 @@ defmodule Integrator.MultiIntegratorTest do
       t_initial = Nx.tensor(0.0, type: :f64)
       t_final = Nx.tensor(30.0, type: :f64)
       x_initial = Nx.tensor([0.0, 20.0], type: :f64)
-      opts = [type: :f64, norm_control: false, abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-03, type: :f64)]
+
+      opts = [
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
       coefficient_of_restitution = Nx.tensor(-0.9, type: :f64)
 
       ode_fn = &Demo.falling_particle/2
@@ -97,7 +105,7 @@ defmodule Integrator.MultiIntegratorTest do
         [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
         [next_to_last_t | _rest] = rest_of_t
         initial_step = Nx.subtract(last_t, next_to_last_t)
-        max_step = Nx.to_number(last_t) - Nx.to_number(first_t)
+        max_step = Nx.subtract(last_t, first_t)
         opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
