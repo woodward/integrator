@@ -2,8 +2,6 @@ defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
   use Patch
-  alias Integrator.ArgPrecisionError
-  import Nx, only: :sigils
 
   describe "test setup" do
     test "van_der_pol_fn" do
@@ -258,41 +256,14 @@ defmodule IntegratorTest do
 
   describe "parse_start_end/1" do
     setup do
-      expose(Integrator, parse_start_end: 2)
+      expose(Integrator, parse_start_end: 1)
     end
 
-    test "converts an array of floats to tensors - type :f64" do
-      {t_start, t_end, fixed_times} =
-        private(Integrator.parse_start_end([Nx.tensor(0.0, type: :f64), Nx.tensor(1.0, type: :f64)], :f64))
-
-      assert t_start.__struct__ == Nx.Tensor
-      assert t_start == Nx.tensor(0.0, type: :f64)
-      assert Nx.type(t_start) == {:f, 64}
-
-      assert t_end.__struct__ == Nx.Tensor
-      assert t_end == Nx.tensor(1.0, type: :f64)
-      assert Nx.type(t_end) == {:f, 64}
-
+    test "returns an array of times" do
+      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0]))
+      assert t_start == 0.0
+      assert t_end == 1.0
       assert fixed_times == nil
-    end
-
-    test "converts an array of floats to tensors - type :f32" do
-      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0], :f32))
-      assert t_start.__struct__ == Nx.Tensor
-      assert t_start == Nx.tensor(0.0, type: :f32)
-      assert Nx.type(t_start) == {:f, 32}
-
-      assert t_end.__struct__ == Nx.Tensor
-      assert t_end == Nx.tensor(1.0, type: :f32)
-      assert Nx.type(t_end) == {:f, 32}
-
-      assert fixed_times == nil
-    end
-
-    test "raises an error if the tensors are not of the correct type" do
-      assert_raise ArgPrecisionError, fn ->
-        private(Integrator.parse_start_end([Nx.tensor(0.0, type: :f32), Nx.tensor(1.0, type: :f32)], :f64))
-      end
     end
 
     test "creates an array of fixed_times if a single tensor is given" do
@@ -300,7 +271,7 @@ defmodule IntegratorTest do
       t_end = Nx.tensor(0.5, type: :f64)
       t_values = Nx.linspace(t_start, t_end, n: 6, type: :f64)
 
-      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end(t_values, :f64))
+      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end(t_values))
       assert t_start.__struct__ == Nx.Tensor
       assert t_start == Nx.tensor(0.0, type: :f64)
       assert Nx.type(t_start) == {:f, 64}
@@ -314,182 +285,6 @@ defmodule IntegratorTest do
       assert second_time.__struct__ == Nx.Tensor
       assert second_time == Nx.tensor(0.1, type: :f64)
       assert Nx.type(second_time) == {:f, 64}
-    end
-
-    test "creates an array of fixed_times if a single tensor is given - types don't match" do
-      opts = [type: :f64]
-
-      t_start = Nx.tensor(0.0, type: :f32)
-      t_end = Nx.tensor(0.5, type: :f32)
-      t_values = Nx.linspace(t_start, t_end, n: 6, type: :f32)
-
-      assert_raise ArgPrecisionError, fn ->
-        private(Integrator.parse_start_end(t_values, opts))
-      end
-    end
-  end
-
-  describe "validiate_args_precision/2" do
-    setup do
-      expose(Integrator, validiate_args_precision: 2)
-    end
-
-    test "checks one arg" do
-      x0 = ~V[ 2.0  3.0 ]f64
-      assert private(Integrator.validiate_args_precision([x0: x0], :f64)) == :ok
-    end
-
-    test "raises an exception if the arg is not a tensor and :f64 is required" do
-      x0 = 1.2345
-
-      assert_raise(ArgPrecisionError, fn ->
-        private(Integrator.validiate_args_precision([x0: x0], :f64))
-      end)
-    end
-
-    test "raises an exception if the arg is not of the correct precision - :f64 required" do
-      x0 = ~V[ 2.0  3.0 ]f32
-
-      assert_raise(ArgPrecisionError, fn ->
-        private(Integrator.validiate_args_precision([x0: x0], :f64))
-      end)
-    end
-
-    test "raises an exception if the arg is not of the correct precision - :f32 required" do
-      x0 = ~V[ 2.0  3.0 ]f64
-
-      assert_raise(ArgPrecisionError, fn ->
-        private(Integrator.validiate_args_precision([x0: x0], :f32))
-      end)
-    end
-
-    test "can check multiple args" do
-      x0 = ~V[ 2.0  3.0 ]f64
-      x1 = ~V[ 2.0  3.0 ]f32
-
-      assert_raise(ArgPrecisionError, fn ->
-        private(Integrator.validiate_args_precision([x0: x0, x1: x1], :f64))
-      end)
-    end
-  end
-
-  describe "validating all args" do
-    setup do
-      initial_x = Nx.tensor([2.0, 0.0], type: :f64)
-      t_initial = Nx.tensor(0.0, type: :f64)
-      t_final = Nx.tensor(20.0, type: :f64)
-      opts = [abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-06, type: :f64)]
-
-      [initial_x: initial_x, t_initial: t_initial, t_final: t_final, opts: opts]
-    end
-
-    test "does not raise an exception if all args are correct", %{
-      initial_x: initial_x,
-      t_initial: t_initial,
-      t_final: t_final,
-      opts: opts
-    } do
-      solution = Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
-      assert solution.__struct__ == Integrator.AdaptiveStepsize
-    end
-
-    test "raises an exception if t_initial is incorrect nx type", %{initial_x: initial_x, t_final: t_final, opts: opts} do
-      t_initial = Nx.tensor(0.0, type: :f32)
-
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
-      end
-    end
-
-    test "raises an exception if t_final is incorrect nx type", %{initial_x: initial_x, t_initial: t_initial, opts: opts} do
-      t_final = Nx.tensor(1.0, type: :f32)
-
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
-      end
-    end
-
-    test "raises an exception if t_range is incorrect nx type", %{initial_x: initial_x, opts: opts} do
-      t_range = Nx.linspace(0.0, 10.0, n: 21, type: :f32)
-
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(&van_der_pol_fn/2, t_range, initial_x, Keyword.merge(opts, type: :f64))
-      end
-    end
-
-    test "raises an exception if x_0 is incorrect nx type", %{t_initial: t_initial, t_final: t_final, opts: opts} do
-      initial_x = Nx.tensor([0.0, 1.0], type: :f32)
-
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
-      end
-    end
-
-    test "raises an exception if initial_step is incorrect nx type", %{
-      t_initial: t_initial,
-      t_final: t_final,
-      initial_x: initial_x,
-      opts: opts
-    } do
-      initial_step = 0.1
-
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(
-          &van_der_pol_fn/2,
-          [t_initial, t_final],
-          initial_x,
-          Keyword.merge(opts, initial_step: initial_step, type: :f64)
-        )
-      end
-    end
-
-    test "raises an exception if :abs_tol is incorrect nx type", %{
-      t_initial: t_initial,
-      t_final: t_final,
-      initial_x: initial_x,
-      opts: opts
-    } do
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(
-          &van_der_pol_fn/2,
-          [t_initial, t_final],
-          initial_x,
-          Keyword.merge(opts, abs_tol: 1.0e-06, type: :f64)
-        )
-      end
-    end
-
-    test "raises an exception if :rel_tol is incorrect nx type", %{
-      t_initial: t_initial,
-      t_final: t_final,
-      initial_x: initial_x,
-      opts: opts
-    } do
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(
-          &van_der_pol_fn/2,
-          [t_initial, t_final],
-          initial_x,
-          Keyword.merge(opts, rel_tol: 1.0e-03, type: :f64)
-        )
-      end
-    end
-
-    @tag :skip
-    test "raises an exception if :max_step is incorrect nx type", %{
-      t_initial: t_initial,
-      t_final: t_final,
-      initial_x: initial_x,
-      opts: opts
-    } do
-      assert_raise ArgPrecisionError, fn ->
-        Integrator.integrate(
-          &van_der_pol_fn/2,
-          [t_initial, t_final],
-          initial_x,
-          Keyword.merge(opts, max_step: 1.0, type: :f64)
-        )
-      end
     end
   end
 end

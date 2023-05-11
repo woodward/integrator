@@ -29,14 +29,6 @@ defmodule Integrator do
     integrator: :ode45
   ]
 
-  defmodule ArgPrecisionError do
-    defexception message: "argument precision error",
-                 invalid_argument: nil,
-                 argument_name: nil,
-                 expected_precision: nil,
-                 actual_precision: nil
-  end
-
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
   """
@@ -56,23 +48,12 @@ defmodule Integrator do
       end)
 
     order = integrator_mod.order()
-    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end, opts[:type])
+    {t_start, t_end, fixed_times} = parse_start_end(t_start_t_end)
 
     initial_step =
       Keyword.get_lazy(opts, :initial_step, fn ->
         AdaptiveStepsize.starting_stepsize(order, ode_fn, t_start, x0, opts[:abs_tol], opts[:rel_tol], opts)
       end)
-
-    validiate_args_precision(
-      [
-        x0: x0,
-        initial_step: initial_step,
-        abs_tol: opts[:abs_tol],
-        rel_tol: opts[:rel_tol]
-        # max_step: opts[:max_step]
-      ],
-      opts[:type]
-    )
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/5,
@@ -88,15 +69,10 @@ defmodule Integrator do
     )
   end
 
-  # @spec parse_start_end([float() | Nx.t()] | Nx.t(), Nx.Type.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
-  defp parse_start_end([t_start, t_end], nx_type) do
-    validiate_args_precision([t_start: t_start, t_end: t_end], nx_type)
-    {Nx.tensor(t_start, type: nx_type), Nx.tensor(t_end, type: nx_type), _fixed_times = nil}
-  end
+  @spec parse_start_end([float() | Nx.t()] | Nx.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
+  defp parse_start_end([t_start, t_end]), do: {t_start, t_end, nil}
 
-  defp parse_start_end(t_range, nx_type) do
-    validiate_args_precision([t_range: t_range], nx_type)
-
+  defp parse_start_end(t_range) do
     t_start = t_range[0]
     {length} = Nx.shape(t_range)
 
@@ -121,23 +97,5 @@ defmodule Integrator do
       default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
       opts |> Keyword.merge(refine: default_refine_for_integrator)
     end
-  end
-
-  # @spec validiate_args_precision(Keyword.t(), atom()) :: atom()
-  defp validiate_args_precision(args, expected_nx_type) do
-    args
-    |> Enum.each(fn {arg_name, arg_value} ->
-      nx_type = Utils.nx_type_atom(arg_value)
-
-      if nx_type != expected_nx_type do
-        raise ArgPrecisionError,
-          invalid_argument: arg_value,
-          expected_precision: expected_nx_type,
-          actual_precision: nx_type,
-          argument_name: arg_name
-      end
-    end)
-
-    :ok
   end
 end

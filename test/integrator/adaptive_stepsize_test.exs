@@ -6,6 +6,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   import Nx, only: :sigils
 
   alias Integrator.{AdaptiveStepsize, Demo, DummyOutput}
+  alias Integrator.AdaptiveStepsize.ArgPrecisionError
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
   describe "integrate" do
@@ -558,6 +559,145 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
   end
 
+  # describe "validating all args" do
+  #   setup do
+  #     initial_x = Nx.tensor([2.0, 0.0], type: :f64)
+  #     t_initial = Nx.tensor(0.0, type: :f64)
+  #     t_final = Nx.tensor(20.0, type: :f64)
+  #     opts = [abs_tol: Nx.tensor(1.0e-06, type: :f64), rel_tol: Nx.tensor(1.0e-06, type: :f64)]
+
+  #     [initial_x: initial_x, t_initial: t_initial, t_final: t_final, opts: opts]
+  #   end
+
+  #   test "does not raise an exception if all args are correct", %{
+  #     initial_x: initial_x,
+  #     t_initial: t_initial,
+  #     t_final: t_final,
+  #     opts: opts
+  #   } do
+  #     solution = AdaptiveStepsize.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
+  #     assert solution.__struct__ == AdaptiveStepsize
+  #   end
+
+  #   test "raises an exception if t_initial is incorrect nx type", %{initial_x: initial_x, t_final: t_final, opts: opts} do
+  #     t_initial = Nx.tensor(0.0, type: :f32)
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
+  #     end
+  #   end
+
+  #   test "raises an exception if t_final is incorrect nx type", %{initial_x: initial_x, t_initial: t_initial, opts: opts} do
+  #     t_final = Nx.tensor(1.0, type: :f32)
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
+  #     end
+  #   end
+
+  #   test "raises an exception if t_range is incorrect nx type", %{initial_x: initial_x, opts: opts} do
+  #     t_range = Nx.linspace(0.0, 10.0, n: 21, type: :f32)
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(&van_der_pol_fn/2, t_range, initial_x, Keyword.merge(opts, type: :f64))
+  #     end
+  #   end
+
+  #   test "raises an exception if x_0 is incorrect nx type", %{t_initial: t_initial, t_final: t_final, opts: opts} do
+  #     initial_x = Nx.tensor([0.0, 1.0], type: :f32)
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, Keyword.merge(opts, type: :f64))
+  #     end
+  #   end
+
+  #   test "raises an exception if initial_step is incorrect nx type", %{
+  #     t_initial: t_initial,
+  #     t_final: t_final,
+  #     initial_x: initial_x,
+  #     opts: opts
+  #   } do
+  #     initial_step = 0.1
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(
+  #         &van_der_pol_fn/2,
+  #         [t_initial, t_final],
+  #         initial_x,
+  #         Keyword.merge(opts, initial_step: initial_step, type: :f64)
+  #       )
+  #     end
+  #   end
+
+  #   test "raises an exception if :abs_tol is incorrect nx type", %{
+  #     t_initial: t_initial,
+  #     t_final: t_final,
+  #     initial_x: initial_x,
+  #     opts: opts
+  #   } do
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(
+  #         &van_der_pol_fn/2,
+  #         [t_initial, t_final],
+  #         initial_x,
+  #         Keyword.merge(opts, abs_tol: 1.0e-06, type: :f64)
+  #       )
+  #     end
+  #   end
+
+  #   test "raises an exception if :rel_tol is incorrect nx type", %{
+  #     t_initial: t_initial,
+  #     t_final: t_final,
+  #     initial_x: initial_x,
+  #     opts: opts
+  #   } do
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(
+  #         &van_der_pol_fn/2,
+  #         [t_initial, t_final],
+  #         initial_x,
+  #         Keyword.merge(opts, rel_tol: 1.0e-03, type: :f64)
+  #       )
+  #     end
+  #   end
+
+  #   @tag :skip
+  #   test "raises an exception if :max_step is incorrect nx type", %{
+  #     t_initial: t_initial,
+  #     t_final: t_final,
+  #     initial_x: initial_x,
+  #     opts: opts
+  #   } do
+  #     assert_raise ArgPrecisionError, fn ->
+  #       AdaptiveStepsize.integrate(
+  #         &van_der_pol_fn/2,
+  #         [t_initial, t_final],
+  #         initial_x,
+  #         Keyword.merge(opts, max_step: 1.0, type: :f64)
+  #       )
+  #     end
+  #   end
+
+  #   test "raises an error if the tensors are not of the correct type" do
+  #   assert_raise ArgPrecisionError, fn ->
+  #   private(Integrator.parse_start_end([Nx.tensor(0.0, type: :f32), Nx.tensor(1.0, type: :f32)], :f64))
+  #   end
+  #   end
+
+  #   test "creates an array of fixed_times if a single tensor is given - types don't match" do
+  #     opts = [type: :f64]
+
+  #     t_start = Nx.tensor(0.0, type: :f32)
+  #     t_end = Nx.tensor(0.5, type: :f32)
+  #     t_values = Nx.linspace(t_start, t_end, n: 6, type: :f32)
+
+  #     assert_raise ArgPrecisionError, fn ->
+  #       private(Integrator.parse_start_end(t_values, opts))
+  #     end
+  #   end
+
+  # end
+
   # ===========================================================================
   # Tests of private functions below here:
 
@@ -869,6 +1009,50 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_y = Nx.tensor([0.0, 0.0, 0.0], type: :f64)
       assert_all_close(y, expected_y)
       assert Nx.type(y) == {:f, 64}
+    end
+  end
+
+  describe "check_nx_type/2" do
+    setup do
+      expose(AdaptiveStepsize, check_nx_type: 2)
+    end
+
+    test "checks one arg" do
+      x0 = ~V[ 2.0  3.0 ]f64
+      assert private(AdaptiveStepsize.check_nx_type([x0: x0], :f64)) == :ok
+    end
+
+    test "raises an exception if the arg is not a tensor and :f64 is required" do
+      x0 = 1.2345
+
+      assert_raise(ArgPrecisionError, fn ->
+        private(AdaptiveStepsize.check_nx_type([x0: x0], :f64))
+      end)
+    end
+
+    test "raises an exception if the arg is not of the correct precision - :f64 required" do
+      x0 = ~V[ 2.0  3.0 ]f32
+
+      assert_raise(ArgPrecisionError, fn ->
+        private(AdaptiveStepsize.check_nx_type([x0: x0], :f64))
+      end)
+    end
+
+    test "raises an exception if the arg is not of the correct precision - :f32 required" do
+      x0 = ~V[ 2.0  3.0 ]f64
+
+      assert_raise(ArgPrecisionError, fn ->
+        private(AdaptiveStepsize.check_nx_type([x0: x0], :f32))
+      end)
+    end
+
+    test "can check multiple args" do
+      x0 = ~V[ 2.0  3.0 ]f64
+      x1 = ~V[ 2.0  3.0 ]f32
+
+      assert_raise(ArgPrecisionError, fn ->
+        private(AdaptiveStepsize.check_nx_type([x0: x0, x1: x1], :f64))
+      end)
     end
   end
 end
