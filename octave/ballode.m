@@ -85,14 +85,14 @@ end
 ## hold off
 % odeplot([],[],'done');
 
-format long 
-file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/t.csv', 'w');
-fdisp(file_id, tout);
-fclose(file_id);
-
-file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/x.csv', 'w');
-fdisp(file_id, yout);
-fclose(file_id);
+## format long 
+## file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/t.csv', 'w');
+## fdisp(file_id, tout);
+## fclose(file_id);
+## 
+## file_id = fopen('../test/fixtures/octave_results/ballode/high_fidelity/x.csv', 'w');
+## fdisp(file_id, yout);
+## fclose(file_id);
 
 % --------------------------------------------------------------------------
 function dydt = f(t,y)
