@@ -136,10 +136,11 @@ defmodule Integrator.AdaptiveStepsize do
 
   @default_opts [
     max_number_of_errors: 5_000,
-    max_step: 2.0,
     refine: 4,
     store_results?: true
   ]
+
+  @default_max_step %{f32: ~V[ 2.0 ]f32, f64: ~V[ 2.0 ]f64}
 
   @abs_rel_norm_opts %{
     f32: [abs_tol: ~V[ 1.0e-06 ]f32, rel_tol: ~V[ 1.0e-03 ]f32, norm_control: true],
@@ -165,7 +166,7 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = (@default_opts ++ @abs_rel_norm_opts[opts[:type]]) |> Keyword.merge(opts)
+    opts = (@default_opts ++ @abs_rel_norm_opts[opts[:type]] ++ [max_step: @default_max_step[opts[:type]]]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
