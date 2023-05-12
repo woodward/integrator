@@ -37,6 +37,7 @@ defmodule Integrator.UtilsTest do
     test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-13, rtol: 1.0e-13)
+      assert_nx_f64(x_out)
     end
 
     test "works for a single value of t (rather than an array of t)", %{t: t, x: x, der: der} do
@@ -49,6 +50,7 @@ defmodule Integrator.UtilsTest do
 
       x_out = Utils.hermite_quartic_interpolation(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_nx_f64(x_out)
     end
   end
 
@@ -83,6 +85,7 @@ defmodule Integrator.UtilsTest do
     test "gives the correct result", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
       x_out = Utils.hermite_cubic_interpolation(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_nx_f64(x_out)
     end
   end
 
@@ -99,6 +102,8 @@ defmodule Integrator.UtilsTest do
 
       assert_all_close(sum, expected_sum, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(comp, expected_comp, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_nx_f64(sum)
+      assert_nx_f64(comp)
     end
   end
 
@@ -136,14 +141,19 @@ defmodule Integrator.UtilsTest do
 
   describe "vector_as_list" do
     test "works" do
-      vector = Nx.tensor([1, 2, 3])
+      vector = Nx.tensor([1, 2, 3], type: :f64)
       vector_as_list = vector |> Utils.vector_as_list()
 
       assert vector_as_list == [
-               Nx.tensor(1),
-               Nx.tensor(2),
-               Nx.tensor(3)
+               Nx.tensor(1, type: :f64),
+               Nx.tensor(2, type: :f64),
+               Nx.tensor(3, type: :f64)
              ]
+
+      [first | [second | [third]]] = vector_as_list
+      assert_nx_f64(first)
+      assert_nx_f64(second)
+      assert_nx_f64(third)
     end
   end
 

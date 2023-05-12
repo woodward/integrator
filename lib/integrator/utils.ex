@@ -67,15 +67,12 @@ defmodule Integrator.Utils do
   """
   @spec hermite_quartic_interpolation(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic_interpolation(t, x, der, t_out) do
-    type = :f64
-    # type = nx_type_atom(x)
-
     dt = t[1] - t[0]
     x_col1 = Nx.slice_along_axis(x, 0, 1, axis: 1)
 
     # 4th order approximation of x in t+dt/2 as proposed by Shampine in
     # Lawrence, Shampine, "Some Practical Runge-Kutta Formulas", 1986.
-    u_half = x_col1 + 0.5 * dt * Nx.new_axis(Nx.dot(der, @coefs_u_half[type]), 1)
+    u_half = x_col1 + 0.5 * dt * Nx.new_axis(Nx.dot(der, @coefs_u_half[nx_type_atom(x)]), 1)
 
     # Rescale time on [0,1]
     s = (t_out - t[0]) / dt
