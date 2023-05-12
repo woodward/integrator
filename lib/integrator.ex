@@ -39,8 +39,8 @@ defmodule Integrator do
           opts :: Keyword.t()
         ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts()) |> Keyword.merge(opts) |> set_default_refine_opt()
     opts = opts |> Keyword.put_new_lazy(:type, fn -> Utils.type_atom(x0) end)
+    opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts(opts[:type])) |> Keyword.merge(opts) |> set_default_refine_opt()
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->

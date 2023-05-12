@@ -3,6 +3,7 @@ defmodule Integrator.AdaptiveStepsize do
   Integrates a set of ODEs with an adaptive timestep.
   """
   import Nx.Defn
+  import Nx, only: :sigils
 
   alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, Utils}
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
@@ -140,12 +141,10 @@ defmodule Integrator.AdaptiveStepsize do
     store_results?: true
   ]
 
-  @abs_rel_norm_opts [
-    # Perhaps the default abs_tol and rel_tol should be based on the precision ():f32 or :f64)?
-    abs_tol: 1.0e-06,
-    rel_tol: 1.0e-03,
-    norm_control: true
-  ]
+  @abs_rel_norm_opts %{
+    f32: [abs_tol: ~V[ 1.0e-06 ]f32, rel_tol: ~V[ 1.0e-03 ]f32, norm_control: true],
+    f64: [abs_tol: ~V[ 1.0e-06 ]f64, rel_tol: ~V[ 1.0e-03 ]f64, norm_control: true]
+  }
 
   @doc """
   Integrates a set of ODEs. Originally adapted from the Octave
@@ -166,7 +165,7 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = (@default_opts ++ @abs_rel_norm_opts) |> Keyword.merge(opts)
+    opts = (@default_opts ++ @abs_rel_norm_opts[opts[:type]]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
@@ -269,8 +268,8 @@ defmodule Integrator.AdaptiveStepsize do
   Gets the default values used by the absolute-relative norm; e.g., `abs_tol`, `rel_tol`, and
   `norm_control`
   """
-  @spec abs_rel_norm_opts() :: Keyword.t()
-  def abs_rel_norm_opts(), do: @abs_rel_norm_opts
+  @spec abs_rel_norm_opts(atom) :: Keyword.t()
+  def abs_rel_norm_opts(nx_type), do: @abs_rel_norm_opts[nx_type]
 
   # ===========================================================================
   # Private functions below here:
