@@ -126,8 +126,8 @@ defmodule Integrator.AdaptiveStepsize do
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
 
-  @stepsize_factor_min 0.8
-  @stepsize_factor_max 1.5
+  @stepsize_factor_min %{f32: Nx.tensor(0.8, type: :f32), f64: Nx.tensor(0.8, type: :f64)}
+  @stepsize_factor_max %{f32: Nx.tensor(1.5, type: :f32), f64: Nx.tensor(1.5, type: :f64)}
 
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
@@ -179,7 +179,7 @@ defmodule Integrator.AdaptiveStepsize do
       check_nx_type([fixed_times: hd(fixed_times)], opts[:type])
     end
 
-    check_x_out = ode_fn.(t_start, x0)
+    ode_fn_nx_type_check = ode_fn.(t_start, x0)
 
     check_nx_type(
       [
@@ -190,7 +190,7 @@ defmodule Integrator.AdaptiveStepsize do
         abs_tol: opts[:abs_tol],
         rel_tol: opts[:rel_tol],
         max_step: opts[:max_step],
-        ode_fn: check_x_out
+        ode_fn: ode_fn_nx_type_check
       ],
       opts[:type]
     )
@@ -198,6 +198,8 @@ defmodule Integrator.AdaptiveStepsize do
     %__MODULE__{
       t_new: t_start,
       x_new: x0,
+      # t_old must be set on the initial struct in case there's an error when computing the first step (used in t_next/2)
+      t_old: t_start,
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times,
@@ -393,15 +395,17 @@ defmodule Integrator.AdaptiveStepsize do
   # Formula taken from Hairer
   @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
   defnp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
+    nx_type = opts[:type]
+
     # # Avoid divisions by zero:
-    error = error + epsilon(opts[:type])
+    error = error + epsilon(nx_type)
 
     # factor should be cached somehow; perhaps passed in in the options?
-    factor = 0.38 ** (1.0 / (order + 1))
+    factor = Nx.tensor(0.38, type: nx_type) ** (1 / (order + 1))
 
     foo = factor * (1 / error ** (1 / (order + 1)))
 
-    dt = dt * min(@stepsize_factor_max, max(@stepsize_factor_min, foo))
+    dt = dt * min(@stepsize_factor_max[nx_type], max(@stepsize_factor_min[nx_type], foo))
     dt = min(Nx.abs(dt), opts[:max_step])
 
     # # ## Make sure we don't go past t_end:

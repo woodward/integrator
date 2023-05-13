@@ -623,6 +623,110 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
+
+    test "works - uses Bogacki-Shampine23 - high fidelity" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 4)
+      #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &BogackiShampine23.integrate/5
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      opts = [
+        refine: 4,
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(2.020515504676623e-04, type: :f64)
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 952
+      assert result.count_loop__increment_step == 950
+      assert length(result.ode_t) == 951
+      assert length(result.ode_x) == 951
+      assert length(result.output_t) == 3_801
+      assert length(result.output_x) == 3_801
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+
+      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/x_elixir.csv")
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/x.csv")
+
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+
+    test "works - uses Bogacki-Shampine23 - high fidelity - no interpolation" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 1)
+      #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &BogackiShampine23.integrate/5
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      opts = [
+        refine: 1,
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(2.020515504676623e-04, type: :f64)
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
+
+      assert result.count_cycles__compute_step == 952
+      assert result.count_loop__increment_step == 950
+      assert length(result.ode_t) == 951
+      assert length(result.ode_x) == 951
+      assert length(result.output_t) == 951
+      assert length(result.output_x) == 951
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+
+      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/x_elixir.csv")
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/x.csv")
+
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
   end
 
   describe "starting_stepsize" do
@@ -911,6 +1015,169 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(error, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    test "works - bug fix for Bogacki-Shampine23" do
+      # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
+      k_vals = ~M[
+        -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
+        -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
+      ]f64
+
+      step = %AdaptiveStepsize{
+        t_new: Nx.tensor(3.453755516815583e-04, type: :f64),
+        x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
+        options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
+        dt: Nx.tensor(1.048148240128353e-04, type: :f64),
+        k_vals: k_vals
+      }
+
+      stepper_fn = &BogackiShampine23.integrate/5
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      opts = [
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+      ]
+
+      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+
+      expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
+      expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
+
+      expected_k_vals = ~M[
+        -6.903933604135114e-04  -7.950996330065260e-04  -8.474280732402655e-04  -8.997729805855904e-04
+        -1.997928701004975e+00  -1.997614546170481e+00  -1.997457534649594e+00  -1.997300479207187e+00
+      ]f64
+
+      expected_options_comp = Nx.tensor(-2.710505431213761e-20, type: :f64)
+      expected_error = Nx.tensor(0.383840528805912, type: :f64)
+
+      assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
+      assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
+
+      # Note that the error is just accurate to single precision, which is ok; see the test below for abs_rel_norm
+      # to see how sensitive the error is to input values:
+      assert_all_close(error, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+
+    test "works - bug fix for Bogacki-Shampine23 - 2nd attempt" do
+      # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
+      k_vals = ~M[
+        -2.585758248155079e-04  -3.687257174741470e-04  -4.237733527882678e-04  -4.788391990136420e-04
+        -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
+      ]f64
+
+      step = %AdaptiveStepsize{
+        t_new: Nx.tensor(2.395056256047516e-04, type: :f64),
+        x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
+        options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
+        dt: Nx.tensor(1.058699260768067e-04, type: :f64),
+        k_vals: k_vals
+      }
+
+      stepper_fn = &BogackiShampine23.integrate/5
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      opts = [
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+      ]
+
+      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+
+      expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
+      #                   Elixir: 3.4537555168155827e-4
+      expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
+      #                  Elixir:  [1.9999998807569168 -6.903933604135114e-4]
+
+      expected_k_vals = ~M[
+        -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
+        -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
+      ]f64
+
+      # -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04  Octave
+      # -4.78839199013642e-4    -5.846330800545818e-4   -6.375048176907232e-4   -6.903933604135114e-4],  Elixir
+
+      # -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00  Octave
+      # -1.998563425163596,     -1.9982460182566815,    -1.998087382041041,     -1.9979287010049749]    Elixir
+      expected_options_comp = Nx.tensor(1.355252715606881e-20, type: :f64)
+      #                       Elixir:  -2.710505431213761e-20
+      expected_error = Nx.tensor(0.395533432395734, type: :f64)
+      #                  Elixir: 0.3955334323957338
+
+      # dbg(error)
+
+      assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
+      assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
+      assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+    end
+
+    test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
+      # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
+      # Expected values are from Octave
+      k_vals = ~M[
+        -2.585758248155079e-4  -3.687257174741469e-4  -4.2377335278826774e-4  -4.78839199013642e-4
+        -1.999224255823159     -1.9988937919269867    -1.9987286328288005     -1.9985634251635955
+      ]f64
+
+      step = %AdaptiveStepsize{
+        t_new: Nx.tensor(2.3950562560475164e-04, type: :f64),
+        x_new: Nx.tensor([1.9999999426507922, -4.78839199013642e-4], type: :f64),
+        options_comp: Nx.tensor(0.0, type: :f64),
+        dt: Nx.tensor(1.0586992285952218e-4, type: :f64),
+        # dt is WRONG!!!!
+        # dt: Nx.tensor(1.058699260768067e-04, type: :f64),
+        k_vals: k_vals
+      }
+
+      stepper_fn = &BogackiShampine23.integrate/5
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      opts = [
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+      ]
+
+      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+
+      expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
+      #                   Elixir: 3.453755 484642738e-4
+      expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
+      #                  Elixir:  [1.9999998807569193 -6.903933 539856063e-4]
+
+      expected_k_vals = ~M[
+        -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
+        -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
+      ]f64
+
+      # -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04  Octave
+      # -4.78839199013642e-4    -5.846330800545818e-4   -6.375048176907232e-4   -6.903933604135114e-4],  Elixir
+
+      # -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00  Octave
+      # -1.998563425163596,     -1.9982460182566815,    -1.998087382041041,     -1.9979287010049749]    Elixir
+      expected_options_comp = Nx.tensor(1.355252715606881e-20, type: :f64)
+      #                       Elixir:  -2.710505431213761e-20
+      expected_error = Nx.tensor(0.395533432395734, type: :f64)
+      #                  Elixir: 0.3955334323957338
+
+      # dbg(computed_step.x_new)
+
+      # assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
+      # assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+      # assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
+      # assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
+      # assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+    end
   end
 
   describe "call_event_fn" do
@@ -1074,6 +1341,44 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_dt = Nx.tensor(0.289, type: :f64)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
+
+    test "bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above)" do
+      dt = Nx.tensor(2.020515504676623e-4, type: :f64)
+      error = Nx.tensor(2.7489475539627106, type: :f64)
+      order = 3
+      t_old = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(20.0, type: :f64)
+      opts = [type: :f64, max_step: Nx.tensor(2.0, type: :f64)]
+
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+
+      # From Octave:
+      expected_dt = Nx.tensor(1.616412403741299e-04, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
+    end
+
+    test "2nd bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above) - compare Elixir input" do
+      # Input values are from Elixir for t_old = 2.395056256047516e-04:
+      dt = Nx.tensor(1.1019263330544775e-04, type: :f64)
+
+      # If I use error value from Octave - succeeds:
+      error = Nx.tensor(0.445967698534111, type: :f64)
+
+      # TRY ENABLING THIS AGAIN AFTER KAHAN FIX!!!
+      #  If I use error value from Elixir - fails:
+      # error = Nx.tensor(0.4459677527442196, type: :f64)
+
+      order = 3
+      t_old = Nx.tensor(2.3950562560475164e-4, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      opts = [type: :f64, max_step: Nx.tensor(2.0, type: :f64)]
+
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+
+      # Expected dt from Octave:
+      expected_dt = Nx.tensor(1.058699260768067e-04, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
+    end
   end
 
   describe "initial_empty_k_vals" do
@@ -1147,6 +1452,36 @@ defmodule Integrator.AdaptiveStepsizeTest do
       norm = private(AdaptiveStepsize.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts))
 
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
+    end
+
+    test "when norm_control: false - :f64 - for high-fidelity Bogacki-Shampine" do
+      # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
+      x_old = ~V[ 1.999999880756917  -6.903933604135114e-04 ]f64
+      #         [ 1.999999880756917, -6.903933604135114e-04 ]  Elixir values agree exactly
+
+      x_next = ~V[ 1.999999797419839   -8.997729805855904e-04  ]f64
+      #          [ 1.9999997974198394, -8.997729805855904e-4]  Elixir values agree exactly
+
+      # This works (from Octave):
+      x_est = ~V[ 1.999999797419983  -8.997729809694310e-04 ]f64
+
+      # This doesn't work (from Elixir); note the _very_ small differences in x[1]:
+      # x_est = ~V[ 1.9999997974199832 -8.997729809694309e-04 ]f64
+
+      # From Octave:
+      expected_error = Nx.tensor(0.383840528805912, type: :f64)
+      #                          0.3838404203856949
+      #                          Value from Elixir using x_est above.
+      # Note that it seems to be just single precision agreement
+      # The equations in abs_rel_norm check out ok; they are just SUPER sensitive to small differences
+      # in the input values
+
+      abs_tol = Nx.tensor(1.0e-12, type: :f64)
+      rel_tol = Nx.tensor(1.0e-12, type: :f64)
+
+      error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+
+      assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
     test "when norm_control: true" do
