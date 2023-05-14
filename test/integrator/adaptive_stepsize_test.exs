@@ -1170,13 +1170,11 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_error = Nx.tensor(0.395533432395734, type: :f64)
       #                  Elixir: 0.3955334323957338
 
-      # dbg(computed_step.x_new)
-
-      # assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
-      # assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
-      # assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
-      # assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
-      # assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-11, rtol: 1.0e-11)
+      assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-11, rtol: 1.0e-11)
+      assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-11, rtol: 1.0e-11)
+      assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
+      assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
 
