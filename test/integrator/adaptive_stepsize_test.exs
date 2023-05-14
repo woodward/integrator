@@ -1465,6 +1465,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # This doesn't work (from Elixir); note the _very_ small differences in x[1]:
       # x_est = ~V[ 1.9999997974199832 -8.997729809694309e-04 ]f64
+      # x_est = ~V[ 1.999999797419983  -8.997729809694310e-04 ]f64  Octave values from above
 
       # From Octave:
       expected_error = Nx.tensor(0.383840528805912, type: :f64)
