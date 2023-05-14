@@ -53,7 +53,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   and [here](https://en.wikipedia.org/wiki/Bogacki%E2%80%93Shampine_method)
   """
   @impl RungeKutta
-  defn integrate(ode_fn, t, x, dt, k_vals) do
+  defn integrate(ode_fn, t, x, dt, k_vals, t_next) do
     nx_type = nx_type_atom(x)
 
     s = t + dt * @b[nx_type]
@@ -73,8 +73,6 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     k1 = ode_fn.(s[1], x + k0 * aa[1][0])
     k2 = ode_fn.(s[2], x + k1 * aa[2][1])
 
-    t_next = t + dt
-
     k_0_2 = Nx.stack([k0, k1, k2]) |> Nx.transpose()
 
     # 3rd order approximation
@@ -85,7 +83,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     k_new = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
-    {t_next, x_next, x_error_est, k_new}
+    {x_next, x_error_est, k_new}
   end
 
   @doc """

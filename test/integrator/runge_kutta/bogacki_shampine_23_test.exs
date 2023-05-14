@@ -15,13 +15,14 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
       t = Nx.tensor(19.72183417709078, type: :f64)
       x = Nx.tensor([1.923461755449107, 0.747222633689152], type: :f64)
       dt = Nx.tensor(8.681595746273718e-02, type: :f64)
+      t_next = Nx.add(t, dt)
 
       k_vals = ~M[
          1.079890741687383   0.903592427759665   0.829725464741113   0.747222633689152
         -4.474844799526085  -4.233168820979167  -4.087042667720291  -3.940742528893131
       ]f64
 
-      {t_next, x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
+      {x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
       expected_t_next = Nx.tensor(19.80865013455352, type: :f64)
       expected_x_next = ~V[ 1.974378491284494   0.435401764107805 ]f64
@@ -42,13 +43,14 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
       t = Nx.tensor(0.0, type: :f64)
       x = Nx.tensor([2.0, 0.0], type: :f64)
       dt = Nx.tensor(1.778279410038923e-02, type: :f64)
+      t_next = Nx.add(t, dt)
 
       k_vals = ~M[
         0.0  0.0  0.0  0.0
         0.0  0.0  0.0  0.0
       ]f64
 
-      {t_next, x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
+      {x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
       expected_t_next = Nx.tensor(1.778279410038923e-02, type: :f64)
       expected_x_next = ~V[ 1.999689395647235 -3.463209532501924e-02 ]f64

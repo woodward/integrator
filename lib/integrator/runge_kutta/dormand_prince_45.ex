@@ -73,10 +73,9 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   Berlin, New York: Springer-Verlag, ISBN 978-3-540-56670-0
   """
   @impl RungeKutta
-  defn integrate(ode_fn, t, x, dt, k_vals) do
+  defn integrate(ode_fn, t, x, dt, k_vals, t_next) do
     nx_type = nx_type_atom(x)
 
-    t_next = t + dt
     s = t + dt * @b[nx_type]
     cc = dt * @c[nx_type]
     aa = dt * @a[nx_type]
@@ -120,7 +119,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     cc_prime = dt * @c_prime[nx_type]
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
-    {t_next, x_next, x_error_est, k_new}
+    {x_next, x_error_est, k_new}
   end
 
   @doc """

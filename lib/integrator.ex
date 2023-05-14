@@ -56,7 +56,7 @@ defmodule Integrator do
       end)
 
     AdaptiveStepsize.integrate(
-      &integrator_mod.integrate/5,
+      &integrator_mod.integrate/6,
       &integrator_mod.interpolate/4,
       ode_fn,
       t_start,

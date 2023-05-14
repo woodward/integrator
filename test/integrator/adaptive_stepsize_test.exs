@@ -11,7 +11,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
   describe "integrate" do
     test "works" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -61,7 +61,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works - high fidelity" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -99,7 +99,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works - no data interpolation (refine == 1)" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -142,7 +142,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       DummyOutput.start_link(name: dummy_output_name)
       output_fn = fn t, x -> DummyOutput.add_data(dummy_output_name, %{t: t, x: x}) end
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -199,7 +199,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         %{status: answer, value: value}
       end
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -251,7 +251,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         %{status: answer, value: value}
       end
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -309,7 +309,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       DummyOutput.start_link(name: dummy_output_name)
       output_fn = fn t, x -> DummyOutput.add_data(dummy_output_name, %{t: t, x: x}) end
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -361,7 +361,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       DummyOutput.start_link(name: dummy_output_name)
       output_fn = fn t, x -> DummyOutput.add_data_and_halt(dummy_output_name, %{t: t, x: x}) end
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -410,7 +410,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works - fixed stepsize output that's a tensor with specific values" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -471,7 +471,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #   fdisp(file_id, y)
       #   fclose(file_id)
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -516,7 +516,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works - do not store results" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -550,7 +550,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "throws an exception if too many errors" do
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
@@ -578,7 +578,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "works - uses Bogacki-Shampine23" do
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
@@ -631,7 +631,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 4)
       #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
 
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
@@ -683,7 +683,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 1)
       #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
 
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
@@ -767,7 +767,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         max_step: Nx.tensor(2.0, type: :f64)
       ]
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
       ode_fn = &Demo.van_der_pol_fn/2
@@ -992,7 +992,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         k_vals: k_vals
       }
 
-      stepper_fn = &DormandPrince45.integrate/5
+      stepper_fn = &DormandPrince45.integrate/6
       ode_fn = &Demo.van_der_pol_fn/2
       opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
@@ -1031,7 +1031,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         k_vals: k_vals
       }
 
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &Demo.van_der_pol_fn/2
 
       opts = [
@@ -1079,7 +1079,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         k_vals: k_vals
       }
 
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &Demo.van_der_pol_fn/2
 
       opts = [
@@ -1138,7 +1138,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         k_vals: k_vals
       }
 
-      stepper_fn = &BogackiShampine23.integrate/5
+      stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &Demo.van_der_pol_fn/2
 
       opts = [

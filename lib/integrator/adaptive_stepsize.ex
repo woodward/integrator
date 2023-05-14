@@ -203,7 +203,8 @@ defmodule Integrator.AdaptiveStepsize do
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times,
-      nx_type: opts[:type]
+      nx_type: opts[:type],
+      options_comp: Nx.tensor(0.0, type: opts[:type])
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
     |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
@@ -504,8 +505,8 @@ defmodule Integrator.AdaptiveStepsize do
           error :: Nx.t()
         }
   defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
-    {_t_new, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
-    {t_next, x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old)
+    {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
+    {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
     error = abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
     {t_next, x_next, k_vals, options_comp, error}
   end

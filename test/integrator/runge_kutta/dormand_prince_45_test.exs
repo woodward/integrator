@@ -21,13 +21,14 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       t = ~V[  19.93252120192793  ]f64
       x = ~V[  2.006431879061176e+00   9.819789615529644e-02  ]f64
       dt = ~V[  1.988834221159869e-03  ]f64
+      t_next = Nx.add(t, dt)
 
       k_vals = ~M[
          1.027961290443385e-01   1.018737675533550e-01   1.014138104312208e-01   9.911536312201520e-02   9.870744000286301e-02    9.819786643607928e-02   9.819789615529644e-02
         -2.317186695289708e+00  -2.314454227194995e+00  -2.313091000296263e+00  -2.306277176899946e+00  -2.305067401715800e+00   -2.303555944193641e+00  -2.303556017851066e+00
       ]f64
 
-      {t_next, x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
+      {x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
       expected_t_next = ~V[  19.93451003614909  ]f64
       expected_x_next = ~V[  2.006622631532748e+00   9.362999867595886e-02  ]f64
@@ -55,13 +56,14 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       t = ~V[  0.0  ]f64
       x = ~V[  2.0 1.0  ]f64
       dt = ~V[  1.463190090188842e-03  ]f64
+      t_next = Nx.add(t, dt)
 
       k_vals = ~M[
          0.0 0.0 0.0 0.0 0.0 0.0 0.0
          0.0 0.0 0.0 0.0 0.0 0.0 0.0
        ]f64
 
-      {t_next, x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals)
+      {x_next, x_est, k} = DormandPrince45.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
       expected_t_next = ~V[ 1.463190090188842e-03 ]f64
       expected_x_next = ~V[ 2.001457843004331  0.992694771307345 ]f64
@@ -82,6 +84,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       t = Nx.tensor(3.162277660168380e-02, type: :f64)
       x = Nx.tensor([3.161482041589618e-02, 9.995001266279027e-01, 9.997450958099772e-01], type: :f64)
       dt = Nx.tensor(4.743416490252569e-02, type: :f64)
+      t_next = Nx.add(t, dt)
 
       k_vals = ~M[
         1.000000000000000   1.000000000000000   0.999932051032750   0.999516901172172   0.999403489664703    0.999245108800132   0.999245349857697
@@ -89,7 +92,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
         0                  -0.003225523213372  -0.004838067097241  -0.012894069373540  -0.014321499330348   -0.016110258607291  -0.016115498674593
       ]f64
 
-      {t_next, x_next, x_est, k} = DormandPrince45.integrate(&euler_equations/2, t, x, dt, k_vals)
+      {x_next, x_est, k} = DormandPrince45.integrate(&euler_equations/2, t, x, dt, k_vals, t_next)
 
       expected_t_next = Nx.tensor(7.905694150420950e-02, type: :f64)
       expected_x_next = ~V[ 7.893280729541992e-02  9.968799385689663e-01  9.984099869704532e-01 ]f64
@@ -111,6 +114,8 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
       t = ~V[  0.0  ]f64
       x = ~V[  0.0  20.0  ]f64
       dt = ~V[  0.001472499532027109  ]f64
+      t_next = Nx.add(t, dt)
+
       #                    xxxxxxxxx
       #         0.001472499236077083
       #         0.001472499236077083
@@ -122,7 +127,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
       ode_fn = &Demo.falling_particle/2
 
-      {t_next, x_next, x_est, k} = DormandPrince45.integrate(ode_fn, t, x, dt, k_vals)
+      {x_next, x_est, k} = DormandPrince45.integrate(ode_fn, t, x, dt, k_vals, t_next)
 
       # Expected values are from Octave:
       expected_t_next = ~V[  1.472499532027109e-03  ]f64
