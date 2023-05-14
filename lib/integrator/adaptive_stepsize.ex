@@ -404,8 +404,10 @@ defmodule Integrator.AdaptiveStepsize do
     # factor should be cached somehow; perhaps passed in in the options?
     factor = Nx.tensor(0.38, type: nx_type) ** (1 / (order + 1))
 
-    foo = factor * (1 / error ** (1 / (order + 1)))
+    # Octave:
+    #  dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
 
+    foo = factor * (1 / error) ** (1 / (order + 1))
     dt = dt * min(@stepsize_factor_max[nx_type], max(@stepsize_factor_min[nx_type], foo))
     dt = min(Nx.abs(dt), opts[:max_step])
 
