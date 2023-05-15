@@ -126,6 +126,25 @@ defmodule Integrator.AdaptiveStepsize do
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
 
+  # This attempt didn't work:
+
+  # @one Nx.tensor(1.0, type: :f64)
+  # @three Nx.tensor(3.0, type: :f64)
+  # @five Nx.tensor(5.0, type: :f64)
+
+  # # exponent = one / (order + one)
+  # @factor_exponent %{
+  #   3 => Nx.divide(@one, Nx.add(@three, @one)),
+  #   5 => Nx.divide(@one, Nx.add(@five, @one))
+  # }
+
+  # # factor = Nx.tensor(0.38, type: nx_type) ** exponent
+  # @zero_three_eight Nx.tensor(0.38, type: :f64)
+  # @factor %{
+  #   3 => Nx.pow(@zero_three_eight, @factor_exponent[3]),
+  #   5 => Nx.pow(@zero_three_eight, @factor_exponent[5])
+  # }
+
   @stepsize_factor_min %{f32: Nx.tensor(0.8, type: :f32), f64: Nx.tensor(0.8, type: :f64)}
   @stepsize_factor_max %{f32: Nx.tensor(1.5, type: :f32), f64: Nx.tensor(1.5, type: :f64)}
 
@@ -400,6 +419,14 @@ defmodule Integrator.AdaptiveStepsize do
 
     # # Avoid divisions by zero:
     error = error + epsilon(nx_type)
+
+    # Octave:
+    #  dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
+
+    # This attempt didn't work - figure it out:
+    # foo = @factor[order] * (@one / error) ** @factor_exponent[order]
+    # dt = dt * min(@stepsize_factor_max[nx_type], max(@stepsize_factor_min[nx_type], foo))
+    # dt = min(Nx.abs(dt), opts[:max_step])
 
     one = Nx.tensor(1.0, type: nx_type)
 
