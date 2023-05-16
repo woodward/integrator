@@ -692,7 +692,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(zero, {length_of_x})
   end
 
-  # @spec check_nx_type(Keyword.t(), atom()) :: atom()
+  @spec check_nx_type(Keyword.t(), Nx.Type.t()) :: atom()
   defp check_nx_type(args, expected_nx_type) do
     args
     |> Enum.each(fn {arg_name, arg_value} ->
