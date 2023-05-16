@@ -12,6 +12,7 @@ defmodule Integrator.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      #
       # Hex
       description: "Numerical integration in Elixir",
       package: package(),
@@ -24,7 +25,6 @@ defmodule Integrator.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
@@ -35,17 +35,14 @@ defmodule Integrator.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.0", only: :test},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      #
-      {:ex_doc, github: "elixir-lang/ex_doc", commit: "2c581239e0989fdc91e3c83b4ce28ef4fe0adda6", only: :dev, runtime: false},
-      # {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:math, "~> 0.7"},
-      {:patch, "~> 0.12.0", only: [:test]},
+      {:patch, "~> 0.12.0", only: :test},
       {:nx, "~> 0.5"}
     ]
   end
