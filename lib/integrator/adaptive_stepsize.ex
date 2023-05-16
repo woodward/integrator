@@ -434,7 +434,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # What should the typespec be for a deftransformp?
-  @spec epsilon(any()) :: float()
+  # @spec epsilon(atom()) :: float()
+  @spec epsilon({:f, 32 | 64}) :: float()
   deftransformp epsilon(type) do
     Utils.epsilon(type)
   end
