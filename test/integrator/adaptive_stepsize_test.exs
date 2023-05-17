@@ -339,7 +339,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
 
-      [last_t | _rest] = result.output_t |> Enum.reverse()
+      [_last_t | _rest] = result.output_t |> Enum.reverse()
 
       assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
 
@@ -401,7 +401,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
 
-      [last_t | _rest] = result.output_t |> Enum.reverse()
+      [_last_t | _rest] = result.output_t |> Enum.reverse()
 
       assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
 

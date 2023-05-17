@@ -157,7 +157,8 @@ defmodule Integrator.AdaptiveStepsize do
   @default_opts [
     max_number_of_errors: 5_000,
     refine: 4,
-    store_results?: true
+    store_results?: true,
+    speed: :no_delay
   ]
 
   @default_max_step %{f32: ~V[ 2.0 ]f32, f64: ~V[ 2.0 ]f64}
@@ -166,6 +167,10 @@ defmodule Integrator.AdaptiveStepsize do
     f32: [abs_tol: ~V[ 1.0e-06 ]f32, rel_tol: ~V[ 1.0e-03 ]f32, norm_control: true],
     f64: [abs_tol: ~V[ 1.0e-06 ]f64, rel_tol: ~V[ 1.0e-03 ]f64, norm_control: true]
   }
+
+  # :no_delay means to perform the integration as fast as possible
+  # For float values, 1.0 means integrate in real-time, 0.5 means half of real-time, 2.0 means twice as fast as real time, etc.
+  @type speed :: :no_delay | float()
 
   @doc """
   Integrates a set of ODEs. Originally adapted from the Octave
@@ -375,7 +380,7 @@ defmodule Integrator.AdaptiveStepsize do
       end
 
     dt = compute_next_timestep(step.dt, error_est, order, step.t_new, t_end, opts)
-    step = %{step | dt: dt} |> adjust_playback_speed(opts[:speed])
+    step = %{step | dt: dt} |> delay_simulation(opts[:speed])
 
     step
     |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
@@ -509,12 +514,12 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
-  @spec adjust_playback_speed(t(), float() | nil) :: t()
-  defp adjust_playback_speed(step, speed) when is_nil(speed), do: step
+  @spec delay_simulation(t(), speed()) :: t()
+  defp delay_simulation(step, :no_delay), do: step
 
-  defp adjust_playback_speed(%{error_count: error_count} = step, _speed) when error_count > 0, do: step
+  defp delay_simulation(%{error_count: error_count} = step, _speed) when error_count > 0, do: step
 
-  defp adjust_playback_speed(step, speed) do
+  defp delay_simulation(step, speed) do
     t_new = Nx.to_number(step.t_new) * 1000
     t_now = timestamp_ms() - step.timestamp_start_ms
     t_diff = trunc((t_new - t_now) / speed)
