@@ -186,7 +186,8 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = (@default_opts ++ @abs_rel_norm_opts[opts[:type]] ++ [max_step: @default_max_step[opts[:type]]]) |> Keyword.merge(opts)
+    nx_type = opts[:type]
+    opts = (@default_opts ++ @abs_rel_norm_opts[nx_type] ++ [max_step: @default_max_step[nx_type]]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
@@ -196,7 +197,7 @@ defmodule Integrator.AdaptiveStepsize do
     opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
 
     if fixed_times do
-      check_nx_type([fixed_times: hd(fixed_times)], opts[:type])
+      check_nx_type([fixed_times: hd(fixed_times)], nx_type)
     end
 
     ode_fn_nx_type_check = ode_fn.(t_start, x0)
@@ -212,7 +213,7 @@ defmodule Integrator.AdaptiveStepsize do
         max_step: opts[:max_step],
         ode_fn: ode_fn_nx_type_check
       ],
-      opts[:type]
+      nx_type
     )
 
     timestamp_now = timestamp_ms()
@@ -225,8 +226,8 @@ defmodule Integrator.AdaptiveStepsize do
       dt: initial_tstep,
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times,
-      nx_type: opts[:type],
-      options_comp: Nx.tensor(0.0, type: opts[:type]),
+      nx_type: nx_type,
+      options_comp: Nx.tensor(0.0, type: nx_type),
       timestamp_ms: timestamp_now,
       timestamp_start_ms: timestamp_now
     }
