@@ -64,7 +64,10 @@ defmodule Integrator.AdaptiveStepsize do
           # The last chunk of points; will include the computed point plus the interpolated points (if
           # interpolation is enabled) or just the computed point (if interpolation is disabled):
           t_new_chunk: [Nx.t()],
-          x_new_chunk: [Nx.t()]
+          x_new_chunk: [Nx.t()],
+          #
+          timestamp_ms: integer() | nil,
+          timestamp_start_ms: integer() | nil
         }
   defstruct [
     :t_old,
@@ -105,7 +108,10 @@ defmodule Integrator.AdaptiveStepsize do
     # The last chunk of points; will include the computed point plus the interpolated points (if
     # interpolation is enabled) or just the computed point (if interpolation is disabled):
     t_new_chunk: [],
-    x_new_chunk: []
+    x_new_chunk: [],
+    #
+    timestamp_ms: nil,
+    timestamp_start_ms: nil
   ]
 
   defmodule MaxErrorsExceededError do
@@ -209,6 +215,8 @@ defmodule Integrator.AdaptiveStepsize do
       opts[:type]
     )
 
+    timestamp_now = timestamp_ms()
+
     %__MODULE__{
       t_new: t_start,
       x_new: x0,
@@ -218,11 +226,14 @@ defmodule Integrator.AdaptiveStepsize do
       k_vals: initial_empty_k_vals(order, x0),
       fixed_times: fixed_times,
       nx_type: opts[:type],
-      options_comp: Nx.tensor(0.0, type: opts[:type])
+      options_comp: Nx.tensor(0.0, type: opts[:type]),
+      timestamp_ms: timestamp_now,
+      timestamp_start_ms: timestamp_now
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
     |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
+    |> Map.put(:timestamp_ms, timestamp_ms())
   end
 
   @doc """
@@ -288,6 +299,9 @@ defmodule Integrator.AdaptiveStepsize do
   """
   @spec abs_rel_norm_opts(atom) :: Keyword.t()
   def abs_rel_norm_opts(nx_type), do: @abs_rel_norm_opts[nx_type]
+
+  @spec elapsed_time_ms(t()) :: pos_integer()
+  def elapsed_time_ms(step), do: step.timestamp_ms - step.timestamp_start_ms
 
   # ===========================================================================
   # Private functions below here:
@@ -356,7 +370,7 @@ defmodule Integrator.AdaptiveStepsize do
       end
 
     dt = compute_next_timestep(step.dt, error_est, order, step.t_new, t_end, opts)
-    step = %{step | dt: dt}
+    step = %{step | dt: dt} |> adjust_playback_speed(opts[:speed])
 
     step
     |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
@@ -488,6 +502,19 @@ defmodule Integrator.AdaptiveStepsize do
   @spec increment_compute_counter(t()) :: t()
   defp increment_compute_counter(step) do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
+  end
+
+  @spec adjust_playback_speed(t(), float() | nil) :: t()
+  defp adjust_playback_speed(step, speed) when is_nil(speed), do: step
+
+  defp adjust_playback_speed(%{error_count: error_count} = step, _speed) when error_count > 0, do: step
+
+  defp adjust_playback_speed(step, speed) do
+    t_new = Nx.to_number(step.t_new) * 1000
+    t_now = timestamp_ms() - step.timestamp_start_ms
+    t_diff = trunc((t_new - t_now) / speed)
+    if t_diff > 0, do: Process.sleep(t_diff)
+    %{step | timestamp_ms: timestamp_ms()}
   end
 
   @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
@@ -709,4 +736,7 @@ defmodule Integrator.AdaptiveStepsize do
 
     :ok
   end
+
+  @spec timestamp_ms() :: pos_integer()
+  defp timestamp_ms(), do: :os.system_time(:millisecond)
 end

@@ -32,4 +32,5 @@ integrator-*.tar
 octave/octave-workspace
 matlab
 
+*_elixir.csv
 

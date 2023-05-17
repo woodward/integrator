@@ -40,6 +40,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert length(result.ode_x) == 51
       assert length(result.output_t) == 201
       assert length(result.output_x) == 201
+      assert is_integer(result.timestamp_start_ms)
+      assert result.timestamp_ms != result.timestamp_start_ms
+      assert AdaptiveStepsize.elapsed_time_ms(result) > 1
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = result.output_t |> Enum.reverse()
@@ -302,6 +305,131 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+
+    test "works - playback speed of 1.0" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-06, "RelTol", 1.0e-03);
+      #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      opts = [
+        speed: 1.0,
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-06, type: :f64),
+        rel_tol: Nx.tensor(1.0e-03, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64),
+        refine: 4
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(6.812920690579614e-02, type: :f64)
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
+
+      [last_t | _rest] = result.output_t |> Enum.reverse()
+
+      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
+
+      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed/x_elixir.csv")
+
+      # # Expected last_t is from Octave:
+      # assert_in_delta(Nx.to_number(last_t), 0.1, 1.0e-14)
+
+      # [last_x | _rest] = result.output_x |> Enum.reverse()
+      # assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
+      # assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
+
+      # assert result.count_cycles__compute_step == 18
+      # assert result.count_loop__increment_step == 18
+      # assert result.terminal_event == :halt
+      # assert result.terminal_output == :continue
+
+      # assert length(result.ode_t) == 19
+      # assert length(result.ode_x) == 19
+      # assert length(result.output_t) == 73
+      # assert length(result.output_x) == 73
+
+      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/t.csv")
+      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/x.csv")
+
+      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+
+    test "works - high fidelity - playback speed of 1.0" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11);
+      #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &Demo.van_der_pol_fn/2
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      opts = [
+        speed: 1.0,
+        type: :f64,
+        norm_control: false,
+        abs_tol: Nx.tensor(1.0e-11, type: :f64),
+        rel_tol: Nx.tensor(1.0e-11, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(5.054072392284442e-03, type: :f64)
+
+      result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
+
+      [last_t | _rest] = result.output_t |> Enum.reverse()
+
+      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
+
+      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/x_elixir.csv")
+
+      # Expected last_t is from Octave:
+      # assert_in_delta(Nx.to_number(last_t), 0.1, 1.0e-14)
+
+      # [last_x | _rest] = result.output_x |> Enum.reverse()
+      # assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
+      # assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
+
+      # assert result.count_cycles__compute_step == 18
+      # assert result.count_loop__increment_step == 18
+      # assert result.terminal_event == :halt
+      # assert result.terminal_output == :continue
+
+      # assert length(result.ode_t) == 19
+      # assert length(result.ode_x) == 19
+      # assert length(result.output_t) == 73
+      # assert length(result.output_x) == 73
+
+      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/speed_high_fidelity/t.csv")
+      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/speed_high_fidelity/x.csv")
+
+      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
     test "works - no data interpolation (refine == 1) together with an output function" do
