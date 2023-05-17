@@ -193,12 +193,15 @@ defmodule Integrator.AdaptiveStepsize do
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
 
-    # If there are fixed output times, then refine can no longer be an integer value (such as 1 or 4):
-    opts = if fixed_times, do: Keyword.merge(opts, refine: :fixed_times), else: opts
+    opts =
+      if fixed_times do
+        check_nx_type([fixed_times: hd(fixed_times)], nx_type)
 
-    if fixed_times do
-      check_nx_type([fixed_times: hd(fixed_times)], nx_type)
-    end
+        # If there are fixed output times, then refine can no longer be an integer value (such as 1 or 4):
+        Keyword.merge(opts, refine: :fixed_times)
+      else
+        opts
+      end
 
     ode_fn_nx_type_check = ode_fn.(t_start, x0)
 
@@ -234,6 +237,7 @@ defmodule Integrator.AdaptiveStepsize do
     |> store_first_point(t_start, x0, opts[:store_results?])
     |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
+    # Capture end timestamp:
     |> Map.put(:timestamp_ms, timestamp_ms())
   end
 
