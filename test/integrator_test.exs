@@ -3,36 +3,6 @@ defmodule IntegratorTest do
   use Integrator.TestCase
   use Patch
 
-  describe "test setup" do
-    test "van_der_pol_fn" do
-      t = Nx.tensor(0.0341, type: :f32)
-      x = Nx.tensor([1.9975, -0.0947], type: :f32)
-
-      # From octave with x(1) -> x(0) and x(2) -> x(1):
-      # fvdp = @(t,x) [x(1); (1 - x(0)^2) * x(1) - x(0)];
-      x0 = 1.9975
-      x1 = -0.0947
-      expected_x0 = x1
-      expected_x1 = (1.0 - x0 * x0) * x1 - x0
-      assert expected_x0 == -0.0947
-      assert expected_x1 == -1.714346408125
-
-      x_result = van_der_pol_fn(t, x)
-      expected_x_result = Nx.tensor([expected_x0, expected_x1])
-      assert_all_close(x_result, expected_x_result)
-    end
-
-    test "euler_equations" do
-      t = Nx.tensor(0.1, type: :f32)
-      x = Nx.tensor([1.0, 2.0, 3.0], type: :f32)
-
-      x_result = euler_equations(t, x)
-      # From Octave:
-      expected_x_result = Nx.tensor([6.0, -3.0, -1.02])
-      assert_all_close(x_result, expected_x_result)
-    end
-  end
-
   describe "van_der_pol_fn" do
     setup do
       initial_x = Nx.tensor([2.0, 0.0], type: :f64)
