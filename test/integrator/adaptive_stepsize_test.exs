@@ -5,7 +5,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
   import Nx, only: :sigils
 
-  alias Integrator.{AdaptiveStepsize, Demo, DummyOutput}
+  alias Integrator.{AdaptiveStepsize, SampleEqns, DummyOutput}
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
@@ -15,7 +15,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -68,7 +68,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -106,7 +106,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -149,7 +149,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -206,7 +206,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -258,7 +258,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.falling_particle/2
+      ode_fn = &SampleEqns.falling_particle/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(30.0, type: :f64)
@@ -318,7 +318,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(0.1, type: :f64)
@@ -381,7 +381,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(0.1, type: :f64)
@@ -441,7 +441,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -493,7 +493,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -542,7 +542,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -603,7 +603,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(3.0, type: :f64)
@@ -648,7 +648,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -682,7 +682,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -710,7 +710,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -763,7 +763,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(0.1, type: :f64)
@@ -815,7 +815,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       interpolate_fn = &BogackiShampine23.interpolate/4
       order = BogackiShampine23.order()
 
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(0.1, type: :f64)
@@ -878,7 +878,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
       rel_tol = Nx.tensor(1.0e-14, type: :f64)
       opts = [norm_control: false]
-      ode_fn = &Demo.falling_particle/2
+      ode_fn = &SampleEqns.falling_particle/2
 
       starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts)
       assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
@@ -898,7 +898,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -1121,7 +1121,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       }
 
       stepper_fn = &DormandPrince45.integrate/6
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
       opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
       {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
@@ -1160,7 +1160,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       opts = [
         type: :f64,
@@ -1208,7 +1208,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       opts = [
         type: :f64,
@@ -1267,7 +1267,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
-      ode_fn = &Demo.van_der_pol_fn/2
+      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       opts = [
         type: :f64,
@@ -1331,7 +1331,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert new_step.terminal_event == :continue
     end
 
-    test ":halt event for Demo.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
+    test ":halt event for SampleEqns.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
       t_old = Nx.tensor(2.155396117711071, type: :f64)
       t_new = Nx.tensor(2.742956500140625, type: :f64)
 

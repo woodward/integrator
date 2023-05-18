@@ -14,15 +14,15 @@ Mix.install(
 ## Numerical Integration in Elixir
 
 Numerical integration is easy with `Integrator`.  For example, let's integrate the 
-Van der Pol equation `Integrator.Demo.van_der_pol_fn` for 20 seconds:
+Van der Pol equation `Integrator.SampleEqns.van_der_pol_fn` for 20 seconds:
 
 ```elixir
-alias Integrator.Demo
+alias Integrator.SampleEqns
 
 t_initial = 0.0
 t_final = 20.0
 x_initial = Nx.tensor([2.0, 0.0])
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial)
 ```
 
 Now you can plot the results via Kino:

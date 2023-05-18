@@ -1,4 +1,4 @@
-defmodule Integrator.Demo do
+defmodule Integrator.SampleEqns do
   @moduledoc """
   Functions to be used in testing
   """

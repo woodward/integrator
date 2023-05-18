@@ -3,7 +3,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
   use Integrator.TestCase
 
   import Nx, only: :sigils
-  alias Integrator.Demo
+  alias Integrator.SampleEqns
   alias Integrator.RungeKutta.DormandPrince45
 
   test "order/0" do
@@ -125,7 +125,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
       ]f64
 
-      ode_fn = &Demo.falling_particle/2
+      ode_fn = &SampleEqns.falling_particle/2
 
       {x_next, x_est, k} = DormandPrince45.integrate(ode_fn, t, x, dt, k_vals, t_next)
 

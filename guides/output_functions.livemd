@@ -38,7 +38,7 @@ chart =
 Now, let's connect an output function to the simulation, and we'll inject a `Process.sleep(50)` on purpose so that the simulation takes a while. Watch the chart above while you run the simulation below.
 
 ```elixir
-alias Integrator.Demo
+alias Integrator.SampleEqns
 
 t_initial = 0.0
 t_final = 20.0
@@ -65,5 +65,5 @@ end
 
 opts = [output_fn: output_fn]
 
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
 ```

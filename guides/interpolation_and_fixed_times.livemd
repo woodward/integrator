@@ -17,12 +17,12 @@ By default, `refine: 4` for integrator `ode45`.  This means that four points are
 for every solution of the ODE.
 
 ```elixir
-alias Integrator.Demo
+alias Integrator.SampleEqns
 
 t_initial = 0.0
 t_final = 20.0
 x_initial = Nx.tensor([2.0, 0.0])
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial)
 ```
 
 Visualizing `refine: 4`:
@@ -67,7 +67,7 @@ t_initial = 0.0
 t_final = 20.0
 x_initial = Nx.tensor([2.0, 0.0])
 opts = [refine: 1]
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
 VanDerPol.plot(solution)
 ```
 
@@ -83,6 +83,6 @@ t_final = 20.0
 x_initial = Nx.tensor([2.0, 0.0])
 t_range = Nx.linspace(t_initial, t_final, n: 201)
 opts = [refine: 1]
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, t_range, x_initial, opts)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_range, x_initial, opts)
 VanDerPol.plot(solution)
 ```

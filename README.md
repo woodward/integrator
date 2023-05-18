@@ -46,14 +46,14 @@ test suite.
 ## Usage
 
 See the Livebook guides for detailed examples of usage. As a simple example, you can integrate the
-Van der Pol equation as defined in `Integrator.Demo.van_der_pol_fn/2` from time 0 to 20 with an
+Van der Pol equation as defined in `Integrator.SampleEqns.van_der_pol_fn/2` from time 0 to 20 with an
 intial x value of `[0, 1]` via:
 
 ```elixir
 t_initial = 0.0
 t_final = 20.0
 x_initial = Nx.tensor([0.0, 1.0])
-solution = Integrator.integrate(&Demo.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial)
 ```
 
 Then, `solution.output_t` contains a list of output times, and `solution.output_x` contains a list
