@@ -11,6 +11,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   import Nx.Defn
   import Integrator.Utils, only: [nx_type_atom: 1]
 
+  @doc """
+  Returns the order of this Runge-Kutta method (which is 3)
+  """
   @impl RungeKutta
   def order, do: 3
 

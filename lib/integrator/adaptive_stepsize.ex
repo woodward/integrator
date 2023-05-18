@@ -9,7 +9,9 @@ defmodule Integrator.AdaptiveStepsize do
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
 
   defmodule ComputedStep do
-    @moduledoc false
+    @moduledoc """
+    The results of the computation of an individual Runge-Kutta step
+    """
 
     @type t :: %__MODULE__{
             t_new: Nx.t(),
@@ -33,6 +35,7 @@ defmodule Integrator.AdaptiveStepsize do
           t_new: Nx.t() | nil,
           x_new: Nx.t() | nil,
           #
+          # t & x used for Runge-Kutta interpolations:
           t_new_rk_interpolate: Nx.t() | nil,
           x_new_rk_interpolate: Nx.t() | nil,
           #
@@ -41,6 +44,8 @@ defmodule Integrator.AdaptiveStepsize do
           nx_type: Nx.Type.t(),
           #
           options_comp: Nx.t() | nil,
+          #
+          # Fixed output times; e.g., integration output computed at times at [0.1, 0.2, 0.3, ...] via interpolation:
           fixed_times: [Nx.t()] | nil,
           #
           count_loop__increment_step: integer(),
@@ -61,8 +66,8 @@ defmodule Integrator.AdaptiveStepsize do
           output_t: [Nx.t()],
           output_x: [Nx.t()],
           #
-          # The last chunk of points; will include the computed point plus the interpolated points (if
-          # interpolation is enabled) or just the computed point (if interpolation is disabled):
+          # The last chunk of points for this computed step; will include the computed point plus the
+          # interpolated points (if # interpolation is enabled) or just the computed point (if interpolation is disabled):
           t_new_chunk: [Nx.t()],
           x_new_chunk: [Nx.t()],
           #
@@ -76,6 +81,7 @@ defmodule Integrator.AdaptiveStepsize do
     :t_new,
     :x_new,
     #
+    # t & x used for Runge-Kutta interpolations:
     :t_new_rk_interpolate,
     :x_new_rk_interpolate,
     #
@@ -85,6 +91,7 @@ defmodule Integrator.AdaptiveStepsize do
     #
     options_comp: 0.0,
     #
+    # Fixed output times; e.g., integration output computed at times at [0.1, 0.2, 0.3, ...] via interpolation:
     fixed_times: nil,
     #
     count_loop__increment_step: 0,
@@ -105,8 +112,8 @@ defmodule Integrator.AdaptiveStepsize do
     output_t: [],
     output_x: [],
     #
-    # The last chunk of points; will include the computed point plus the interpolated points (if
-    # interpolation is enabled) or just the computed point (if interpolation is disabled):
+    # The last chunk of points for this computed step; will include the computed point plus the
+    # interpolated points (if # interpolation is enabled) or just the computed point (if interpolation is disabled):
     t_new_chunk: [],
     x_new_chunk: [],
     #
@@ -132,23 +139,6 @@ defmodule Integrator.AdaptiveStepsize do
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
 
-  @one Nx.tensor(1.0, type: :f64)
-  @three Nx.tensor(3.0, type: :f64)
-  @five Nx.tensor(5.0, type: :f64)
-
-  # exponent = one / (order + one)
-  @exponent_order3 Nx.divide(@one, Nx.add(@three, @one))
-  @exponent_order5 Nx.divide(@one, Nx.add(@five, @one))
-
-  # factor = Nx.tensor(0.38, type: nx_type) ** exponent
-  @zero_three_eight Nx.tensor(0.38, type: :f64)
-
-  @factor_order3 Nx.pow(@zero_three_eight, @exponent_order3)
-  @factor_order5 Nx.pow(@zero_three_eight, @exponent_order5)
-
-  @stepsize_factor_min %{f32: Nx.tensor(0.8, type: :f32), f64: Nx.tensor(0.8, type: :f64)}
-  @stepsize_factor_max %{f32: Nx.tensor(1.5, type: :f32), f64: Nx.tensor(1.5, type: :f64)}
-
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
@@ -169,7 +159,7 @@ defmodule Integrator.AdaptiveStepsize do
   }
 
   # :no_delay means to perform the integration as fast as possible
-  # For float values, 1.0 means integrate in real-time, 0.5 means half of real-time, 2.0 means twice as fast as real time, etc.
+  # For float values, 1.0 means to integrate in real-time, 0.5 means half of real-time, 2.0 means twice as fast as real time, etc.
   @type speed :: :no_delay | float()
 
   @doc """
@@ -200,6 +190,7 @@ defmodule Integrator.AdaptiveStepsize do
 
     opts =
       if fixed_times do
+        # Spot-check the Nx type of the first time value in the list of fixed times:
         check_nx_type([fixed_times: hd(fixed_times)], nx_type)
 
         # If there are fixed output times, then refine can no longer be an integer value (such as 1 or 4):
@@ -207,8 +198,6 @@ defmodule Integrator.AdaptiveStepsize do
       else
         opts
       end
-
-    ode_fn_nx_type_check = ode_fn.(t_start, x0)
 
     check_nx_type(
       [
@@ -219,7 +208,7 @@ defmodule Integrator.AdaptiveStepsize do
         abs_tol: opts[:abs_tol],
         rel_tol: opts[:rel_tol],
         max_step: opts[:max_step],
-        ode_fn: ode_fn_nx_type_check
+        ode_fn: ode_fn.(t_start, x0)
       ],
       nx_type
     )
@@ -264,7 +253,15 @@ defmodule Integrator.AdaptiveStepsize do
   "Solving Ordinary Differential Equations I: Nonstiff Problems",
   Springer.
   """
-  @spec starting_stepsize(integer(), fun(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
+  @spec starting_stepsize(
+          order :: integer(),
+          ode_fn :: fun(),
+          t0 :: Nx.t(),
+          x0 :: Nx.t(),
+          abs_tol :: Nx.t(),
+          rel_tol :: Nx.t(),
+          opts :: Keyword.t()
+        ) :: Nx.t()
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, opts \\ []) do
     nx_type = Nx.type(x0)
     # Compute norm of initial conditions
@@ -310,6 +307,9 @@ defmodule Integrator.AdaptiveStepsize do
   @spec abs_rel_norm_opts(atom) :: Keyword.t()
   def abs_rel_norm_opts(nx_type), do: @abs_rel_norm_opts[nx_type]
 
+  @doc """
+  Returns the total elapsed time for the integration (in milleseconds)
+  """
   @spec elapsed_time_ms(t()) :: pos_integer()
   def elapsed_time_ms(step), do: step.timestamp_ms - step.timestamp_start_ms
 
@@ -341,6 +341,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(zero, {length_x, k_length})
   end
 
+  #  The main integration loop
   @spec step_forward(
           step :: t(),
           t_old :: float(),
@@ -419,6 +420,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.to_number(step.t_new)
   end
 
+  # Results are stored on lists in reverse order for speed; reverse them before returning them to the user
   @spec reverse_results(t()) :: t()
   defp reverse_results(step) do
     %{
@@ -430,6 +432,23 @@ defmodule Integrator.AdaptiveStepsize do
         ode_t: step.ode_t |> Enum.reverse()
     }
   end
+
+  @one Nx.tensor(1.0, type: :f64)
+  @three Nx.tensor(3.0, type: :f64)
+  @five Nx.tensor(5.0, type: :f64)
+
+  # exponent = one / (order + one)
+  @exponent_order3 Nx.divide(@one, Nx.add(@three, @one))
+  @exponent_order5 Nx.divide(@one, Nx.add(@five, @one))
+
+  # factor = Nx.tensor(0.38, type: nx_type) ** exponent
+  @zero_three_eight Nx.tensor(0.38, type: :f64)
+
+  @factor_order3 Nx.pow(@zero_three_eight, @exponent_order3)
+  @factor_order5 Nx.pow(@zero_three_eight, @exponent_order5)
+
+  @stepsize_factor_min %{f32: Nx.tensor(0.8, type: :f32), f64: Nx.tensor(0.8, type: :f64)}
+  @stepsize_factor_max %{f32: Nx.tensor(1.5, type: :f32), f64: Nx.tensor(1.5, type: :f64)}
 
   @spec exponent(Nx.t()) :: Nx.t()
   defnp exponent(order), do: if(order == 3, do: @exponent_order3, else: @exponent_order5)
@@ -471,11 +490,10 @@ defmodule Integrator.AdaptiveStepsize do
       | count_loop__increment_step: step.count_loop__increment_step + 1,
         i_step: step.i_step + 1,
         error_count: 0
-        # terminal_event: false,
-        # terminal_output: false
     }
   end
 
+  # Merges a newly-computed Runge-Kutta step into the AdaptiveStepsize struct
   @spec merge_new_step(t(), ComputedStep.t()) :: t()
   defp merge_new_step(step, computed_step) do
     %{
@@ -514,6 +532,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
+  # Inserts a delay for performing real-time simulations
   @spec delay_simulation(t(), speed()) :: t()
   defp delay_simulation(step, :no_delay), do: step
 
@@ -527,6 +546,8 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | timestamp_ms: timestamp_ms()}
   end
 
+  # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
+  # perform the actual numerical computations
   @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
@@ -546,6 +567,7 @@ defmodule Integrator.AdaptiveStepsize do
      }, error}
   end
 
+  # Computes the next Runge-Kutta step and the associated error
   @spec compute_step_nx(
           stepper_fn :: fun(),
           ode_fn :: fun(),
@@ -637,6 +659,7 @@ defmodule Integrator.AdaptiveStepsize do
     x_out |> Utils.columns_as_list(0, tadd_length - 1)
   end
 
+  # Calls an output function (such as for plotting while the simulation is in progress)
   @spec call_output_fn(t(), fun()) :: t()
   defp call_output_fn(step, output_fn) when is_nil(output_fn) do
     step
@@ -647,6 +670,7 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | terminal_output: result}
   end
 
+  # Calls an event function (e.g., checking to see if a bouncing ball has collided with a surface)
   @spec call_event_fn(t(), fun(), fun(), Keyword.t()) :: t()
   defp call_event_fn(step, event_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
@@ -672,6 +696,7 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
+  # Hones in (via interpolation) on the exact point that the event function goes to zero
   @spec compute_new_event_fn_step(t(), fun(), fun(), Keyword.t()) :: ComputedStep.t()
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
@@ -729,6 +754,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(zero, {length_of_x})
   end
 
+  # Checks that the Nx types are in line with what is expected. This avoids args with mismatched types.
   @spec check_nx_type(Keyword.t(), Nx.Type.t()) :: atom()
   defp check_nx_type(args, expected_nx_type) do
     args
@@ -747,6 +773,7 @@ defmodule Integrator.AdaptiveStepsize do
     :ok
   end
 
+  # Returns a timestamp in milliseconds
   @spec timestamp_ms() :: pos_integer()
   defp timestamp_ms(), do: :os.system_time(:millisecond)
 end

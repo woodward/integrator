@@ -170,6 +170,7 @@ defmodule Integrator.Utils do
       ~V[ 2  6  10 ]s8,
       ~V[ 3  7  11 ]s8,
       ~V[ 4  8  12 ]s8
+    ]
 
   """
   @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
@@ -215,7 +216,7 @@ defmodule Integrator.Utils do
   end
 
   # In Octave, get these via eps("single") or eps("double")
-  # Can they be obtained from the underlying machine somehow?
+  # Can they be obtained from the underlying machine CPU somehow?
   @epislon_f32 1.1920929e-07
   @epislon_f64 2.220446049250313e-16
 

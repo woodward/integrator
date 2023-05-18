@@ -61,6 +61,9 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     f32: Nx.as_type(@c_prime_f64, :f32)
   }
 
+  @doc """
+  Returns the order of this Runge-Kutta method (which is 5)
+  """
   @impl RungeKutta
   def order, do: 5
 

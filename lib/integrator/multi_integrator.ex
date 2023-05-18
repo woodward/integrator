@@ -1,5 +1,8 @@
 defmodule Integrator.MultiIntegrator do
-  @moduledoc false
+  @moduledoc """
+  Integrates multiple simulations that are tied together somehow, such as a bouncing ball
+  in the `ballode.m` example.
+  """
 
   alias Integrator.AdaptiveStepsize
 
@@ -26,6 +29,9 @@ defmodule Integrator.MultiIntegrator do
     integration_status: :continue
   ]
 
+  @doc """
+  Integrates multiple times, with a transition function handling the junction between integrations
+  """
   @spec integrate(
           ode_fn :: fun(),
           event_fn :: fun(),
@@ -41,6 +47,9 @@ defmodule Integrator.MultiIntegrator do
     integrate_next_segment(multi, :continue, ode_fn, transition_fn, Nx.to_number(t_start), Nx.to_number(t_end), x0, opts)
   end
 
+  @doc """
+  Collates the simulation output from all of the integrations
+  """
   @spec all_output_data(t(), atom()) :: [Nx.t()]
   def all_output_data(multi, t_or_x) do
     output =

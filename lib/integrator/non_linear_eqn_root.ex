@@ -202,15 +202,16 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @spec compute_iteration(t()) :: t()
   defp compute_iteration(%{iter_type: 1} = z) do
+    # Octave:
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
-    #   # Secant step.
-    #   c = u - (a - b) / (fa - fb) * fu;
-    # else
-    #   # Bisection step.
-    #   c = 0.5*(a + b);
-    # endif
-    # d = u; fd = fu;
-    # iter_type = 5;
+    #     # Secant step.
+    #     c = u - (a - b) / (fa - fb) * fu;
+    #   else
+    #     # Bisection step.
+    #     c = 0.5*(a + b);
+    #   endif
+    #   d = u; fd = fu;
+    #   iter_type = 5;
 
     # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
     c =
@@ -377,7 +378,6 @@ defmodule Integrator.NonLinearEqnRoot do
   @spec fn_eval_new_point(t(), fun(), Keyword.t()) :: t()
   defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
-    #  fval = fc    What is this used for in Octave? `fval` is the output function evaluation
     # Perhaps move the incrementing of the iteration count elsewhere?
     iteration_count = z.iteration_count + 1
     fn_eval_count = z.fn_eval_count + 1
@@ -462,7 +462,7 @@ defmodule Integrator.NonLinearEqnRoot do
     #     u = a; fu = fa;
     #   else
     #     u = b; fu = fb;
-    #   end
+    #   endif
 
     if abs(z.fa) < abs(z.fb) do
       %{z | u: z.a, fu: z.fa}
