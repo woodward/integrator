@@ -42,4 +42,23 @@ defmodule Integrator.SampleEqnsTest do
       assert_all_close(x_result, expected_x_result, atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
+
+  describe "falling_particle/2" do
+    test "returns the correct values to the right precision" do
+      # Octave:
+      #   format long
+      #   x = [0.5; 1.2];
+      #   dydt = @(t,x) [x(2); -9.81];
+      #   t = 0.3;  ## Not used
+      #   dydt(t, x)
+      t = ~V[  0.3  ]f64
+      x = ~V[  0.5  1.2  ]f64
+
+      x_result = SampleEqns.falling_particle(t, x)
+
+      # Expected value from Octave:
+      expected_x_result = ~V[  1.200000000000000  -9.810000000000000  ]f64
+      assert_all_close(x_result, expected_x_result, atol: 1.0e-15, rtol: 1.0e-15)
+    end
+  end
 end
