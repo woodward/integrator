@@ -151,8 +151,6 @@ defmodule Integrator.AdaptiveStepsize do
     speed: :no_delay
   ]
 
-  @default_max_step %{f32: ~V[ 2.0 ]f32, f64: ~V[ 2.0 ]f64}
-
   @abs_rel_norm_opts %{
     f32: [abs_tol: ~V[ 1.0e-06 ]f32, rel_tol: ~V[ 1.0e-03 ]f32, norm_control: true],
     f64: [abs_tol: ~V[ 1.0e-06 ]f64, rel_tol: ~V[ 1.0e-03 ]f64, norm_control: true]
@@ -182,8 +180,13 @@ defmodule Integrator.AdaptiveStepsize do
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     nx_type = opts[:type]
-    opts = (@default_opts ++ @abs_rel_norm_opts[nx_type] ++ [max_step: @default_max_step[nx_type]]) |> Keyword.merge(opts)
+    opts = (@default_opts ++ @abs_rel_norm_opts[nx_type] ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
+
+    # The Nx types of :initial_tstep and opts[:max_step] need to be checked PRIOR to the call to Nx.min()
+    # as Nx.min() will convert :f32's to :f64's:
+    check_nx_type([initial_tstep: initial_tstep, max_step: opts[:max_step]], nx_type)
+    initial_tstep = Nx.min(Nx.abs(initial_tstep), opts[:max_step])
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     if fun = opts[:output_fn], do: fun.([t_start], [x0])
@@ -204,10 +207,8 @@ defmodule Integrator.AdaptiveStepsize do
         t_start: t_start,
         t_end: t_end,
         x0: x0,
-        initial_tstep: initial_tstep,
         abs_tol: opts[:abs_tol],
         rel_tol: opts[:rel_tol],
-        max_step: opts[:max_step],
         ode_fn: ode_fn.(t_start, x0)
       ],
       nx_type
@@ -322,6 +323,14 @@ defmodule Integrator.AdaptiveStepsize do
   defp drop_first_point(fixed_times) do
     [_drop_first_point | rest_of_fixed_times] = fixed_times
     rest_of_fixed_times
+  end
+
+  @point_one Nx.tensor(0.1, type: :f64)
+
+  @spec default_max_step(Nx.t(), Nx.t()) :: Nx.t()
+  defnp default_max_step(t_start, t_end) do
+    # See Octave: integrate_adaptive.m:89
+    @point_one * Nx.abs(t_start - t_end)
   end
 
   @spec store_first_point(t(), Nx.t(), Nx.t(), boolean()) :: t()

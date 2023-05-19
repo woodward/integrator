@@ -73,7 +73,7 @@ defmodule Integrator.Helpers do
     |> CSV.decode!(field_transform: &String.trim/1)
     |> Enum.to_list()
     |> Enum.map(fn row ->
-      row |> Enum.map(&String.to_float(&1)) |> Nx.tensor()
+      row |> Enum.map(&String.to_float(&1)) |> Nx.tensor(type: :f64)
     end)
   end
 
