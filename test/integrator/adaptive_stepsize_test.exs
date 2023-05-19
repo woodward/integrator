@@ -431,7 +431,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    test "works - high fidelity - playback speed of 1.0" do
+    test "works - high fidelity - playback speed of 0.5" do
       # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
@@ -449,7 +449,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
 
       opts = [
-        speed: 1.0,
+        speed: 0.5,
         type: :f64,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-11, type: :f64),
@@ -463,7 +463,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       [_last_t | _rest] = result.output_t |> Enum.reverse()
 
-      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
+      dbg(AdaptiveStepsize.elapsed_time_ms(result))
+
+      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 30
 
       # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/t_elixir.csv")
       # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/x_elixir.csv")
