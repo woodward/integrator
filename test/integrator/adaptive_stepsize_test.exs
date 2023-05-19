@@ -392,7 +392,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-06, type: :f64),
         rel_tol: Nx.tensor(1.0e-03, type: :f64),
-        max_step: Nx.tensor(2.0, type: :f64),
         refine: 4
       ]
 
@@ -401,35 +400,35 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       result = AdaptiveStepsize.integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, nil, initial_tstep, x0, order, opts)
 
-      [_last_t | _rest] = result.output_t |> Enum.reverse()
+      [last_t | _rest] = result.output_t |> Enum.reverse()
 
       assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
 
-      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed/t_elixir.csv")
-      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed/x_elixir.csv")
+      # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed/t_elixir2.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed/x_elixir2.csv")
 
-      # # Expected last_t is from Octave:
-      # assert_in_delta(Nx.to_number(last_t), 0.1, 1.0e-14)
+      # Expected last_t is from Octave:
+      assert_in_delta(Nx.to_number(last_t), 0.1, 1.0e-14)
 
-      # [last_x | _rest] = result.output_x |> Enum.reverse()
-      # assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
-      # assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
+      [last_x | _rest] = result.output_x |> Enum.reverse()
+      assert_in_delta(Nx.to_number(last_x[0]), 1.990933460195306, 1.0e-13)
+      assert_in_delta(Nx.to_number(last_x[1]), -0.172654870547380, 1.0e-13)
 
-      # assert result.count_cycles__compute_step == 18
-      # assert result.count_loop__increment_step == 18
-      # assert result.terminal_event == :halt
-      # assert result.terminal_output == :continue
+      assert result.count_cycles__compute_step == 10
+      assert result.count_loop__increment_step == 10
+      assert result.terminal_event == :continue
+      assert result.terminal_output == :continue
 
-      # assert length(result.ode_t) == 19
-      # assert length(result.ode_x) == 19
-      # assert length(result.output_t) == 73
-      # assert length(result.output_x) == 73
+      assert length(result.ode_t) == 11
+      assert length(result.ode_x) == 11
+      assert length(result.output_t) == 41
+      assert length(result.output_x) == 41
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/t.csv")
-      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/x.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/speed/x.csv")
 
-      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
-      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-16, rtol: 1.0e-16)
+      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
     test "works - high fidelity - playback speed of 1.0" do
@@ -454,8 +453,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         type: :f64,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-11, type: :f64),
-        rel_tol: Nx.tensor(1.0e-11, type: :f64),
-        max_step: Nx.tensor(2.0, type: :f64)
+        rel_tol: Nx.tensor(1.0e-11, type: :f64)
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
