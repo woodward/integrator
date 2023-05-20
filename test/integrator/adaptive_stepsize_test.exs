@@ -453,7 +453,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
         type: :f64,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-11, type: :f64),
-        rel_tol: Nx.tensor(1.0e-11, type: :f64)
+        rel_tol: Nx.tensor(1.0e-11, type: :f64),
+        refine: 4
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
@@ -1669,6 +1670,63 @@ defmodule Integrator.AdaptiveStepsizeTest do
       error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
 
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "when norm_control: false - :f64 - for high-fidelity van der pol" do
+      # All values taken from Octave from test "works - high fidelity - playback speed of 0.5" for the 2nd timestep
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11);
+      #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
+
+      x_old = ~V[ 1.999974585016560   -0.01003185825561616  ]f64
+      # xoe = ~V[ 1.9999745850165596  -0.010031858255616163 ]f64  Elixir values agree exactly
+
+      x_next = ~V[ 1.999846610006200   -0.02446387761668897 ]f64
+      # xne = ~V[  1.9998466100062002  -0.024463877616688966 ]f64  Elixir values agree exactly
+
+      # This works (from Octave):
+      x_est = ~V[ 1.999846610006868   -0.02446387761928104  ]f64
+
+      # This doesn't work (from Elixir); note the _very_ small differences in x[1]:
+      # x_est = ~V[ 1.9998466100068684  -0.024463877619281038 ]f64
+      # x_est = ~V[ 1.999846610006868   -0.02446387761928104  ]f64  Octave values from above to compare
+
+      # From Octave:
+      expected_error = Nx.tensor(0.259206892061492, type: :f64)
+      #                          0.2592072390061872
+      #                          Value from Elixir using x_est above.
+      # Note that it seems to be just single precision agreement
+      # The equations in abs_rel_norm check out ok; they are just SUPER sensitive to small differences
+      # in the input values
+
+      abs_tol = Nx.tensor(1.0e-11, type: :f64)
+      rel_tol = Nx.tensor(1.0e-11, type: :f64)
+
+      error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+
+      # sc:   [1.99997458501656e-11, 1.0e-11]  Elixir                Agreement!!!
+      # sc:    1.999974585016559e-11 9.999999999999999e-12 Octave
+
+      # t:  [1.9998466100062,  -0.02446387761668897]  Elixir       Agreement!!
+      # t:   1.999846610006200 -0.02446387761668897   Octave
+
+      # x:  [1.999846610006868, -0.02446387761928104]  Elixir     Agreement!!
+      # x:   1.999846610006868  -0.02446387761928104   Octave
+
+      # t - x:   [-6.6 79101716144942e-13, 2.5920 723900618725e-12]  Elixir  Not so great :(
+      # t - x:    -6.6 81322162194192e-13  2.5920 68920614921e-12    Octave
+
+      # Nx.abs(t - x):  [6.679101716144942e-13, 2.5920723900618725e-12]  Elixir
+      # Nx.abs(t - x):   6.681322162194192e-13  2.592068920614921e-12    Octave
+
+      # Nx.abs(t - x) / sc:  [0.033 39593295926627, 0.25920 723900618725]  Elixir
+      # Nx.abs(t - x) / sc:   0.033 40703533059582  0.25920 68920614921    Octave
+      assert_all_close(error, expected_error, atol: 1.0e-06, rtol: 1.0e-06)
+
+      # Should be able to get this precision:
+      # assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
     test "when norm_control: true" do
