@@ -548,10 +548,10 @@ defmodule Integrator.AdaptiveStepsize do
   defp delay_simulation(%{error_count: error_count} = step, _speed) when error_count > 0, do: step
 
   defp delay_simulation(step, speed) do
-    t_new = Nx.to_number(step.t_new) * 1000
-    t_now = timestamp_ms() - step.timestamp_start_ms
-    t_diff = trunc((t_new - t_now) / speed)
-    if t_diff > 0, do: Process.sleep(t_diff)
+    desired_time_interval = Nx.to_number(Nx.subtract(step.t_new, step.t_old)) * 1000 / speed
+    elapsed_time = timestamp_ms() - step.timestamp_ms
+    sleep_time = trunc(desired_time_interval - elapsed_time)
+    if sleep_time > 0, do: Process.sleep(sleep_time)
     %{step | timestamp_ms: timestamp_ms()}
   end
 

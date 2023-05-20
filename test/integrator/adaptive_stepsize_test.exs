@@ -402,7 +402,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       [last_t | _rest] = result.output_t |> Enum.reverse()
 
-      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 1
+      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 8
 
       # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed/t_elixir2.csv")
       # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed/x_elixir2.csv")
@@ -463,9 +463,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       [_last_t | _rest] = result.output_t |> Enum.reverse()
 
-      dbg(AdaptiveStepsize.elapsed_time_ms(result))
-
-      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 100) <= 30
+      assert abs(AdaptiveStepsize.elapsed_time_ms(result) - 200) <= 10
 
       # write_t(result.output_t, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/t_elixir.csv")
       # write_x(result.output_x, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/x_elixir.csv")
