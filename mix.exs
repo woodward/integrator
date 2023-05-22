@@ -44,6 +44,7 @@ defmodule Integrator.MixProject do
       {:math, "~> 0.7"},
       {:patch, "~> 0.12.0", only: :test},
       {:nx, "~> 0.5"}
+#      {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
 

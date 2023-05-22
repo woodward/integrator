@@ -442,28 +442,17 @@ defmodule Integrator.AdaptiveStepsize do
     }
   end
 
-  @one Nx.tensor(1.0, type: :f64)
-  @three Nx.tensor(3.0, type: :f64)
-  @five Nx.tensor(5.0, type: :f64)
+  @stepsize_factor_min 0.8
+  @stepsize_factor_max 1.5
 
-  # exponent = one / (order + one)
-  @exponent_order3 Nx.divide(@one, Nx.add(@three, @one))
-  @exponent_order5 Nx.divide(@one, Nx.add(@five, @one))
+  @spec exponent(Nx.t(), Nx.Type.t()) :: Nx.t()
+  defnp exponent(order, nx_type), do: Nx.tensor(1, type: nx_type) / (Nx.tensor(1, type: nx_type) + order)
 
-  # factor = Nx.tensor(0.38, type: nx_type) ** exponent
-  @zero_three_eight Nx.tensor(0.38, type: :f64)
-
-  @factor_order3 Nx.pow(@zero_three_eight, @exponent_order3)
-  @factor_order5 Nx.pow(@zero_three_eight, @exponent_order5)
-
-  @stepsize_factor_min %{f32: Nx.tensor(0.8, type: :f32), f64: Nx.tensor(0.8, type: :f64)}
-  @stepsize_factor_max %{f32: Nx.tensor(1.5, type: :f32), f64: Nx.tensor(1.5, type: :f64)}
-
-  @spec exponent(Nx.t()) :: Nx.t()
-  defnp exponent(order), do: if(order == 3, do: @exponent_order3, else: @exponent_order5)
-
-  @spec factor(Nx.t()) :: Nx.t()
-  defnp factor(order), do: if(order == 3, do: @factor_order3, else: @factor_order5)
+  @spec factor(Nx.t(), Nx.Type.t()) :: Nx.t()
+  # defnp factor(order, nx_type), do: if(order == 3, do: @factor_order3, else: @factor_order5)
+  defnp factor(order, nx_type) do
+    Nx.tensor(0.38, type: nx_type) ** exponent(order, nx_type)
+  end
 
   # Formula taken from Hairer
   @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
@@ -477,8 +466,8 @@ defmodule Integrator.AdaptiveStepsize do
     #   dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
 
     one = Nx.tensor(1.0, type: nx_type)
-    foo = factor(order) * (one / error) ** exponent(order)
-    dt = dt * min(@stepsize_factor_max[nx_type], max(@stepsize_factor_min[nx_type], foo))
+    foo = factor(order, nx_type) * (one / error) ** exponent(order, nx_type)
+    dt = dt * min(Nx.tensor(@stepsize_factor_max, type: nx_type), max(Nx.tensor(@stepsize_factor_min, type: nx_type), foo))
     dt = min(Nx.abs(dt), opts[:max_step])
 
     # Make sure we don't go past t_end:

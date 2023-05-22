@@ -1545,8 +1545,15 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     test "2nd bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above) - compare Elixir input" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 1);
+      #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
+
       # Input values are from Elixir for t_old = 2.395056256047516e-04:
       dt = Nx.tensor(1.1019263330544775e-04, type: :f64)
+      #              1.101926333054478e-04  Octave
 
       # If I use error value from Octave - succeeds:
       error = Nx.tensor(0.445967698534111, type: :f64)
