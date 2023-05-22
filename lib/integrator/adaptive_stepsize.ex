@@ -460,7 +460,7 @@ defmodule Integrator.AdaptiveStepsize do
     nx_type = opts[:type]
 
     # Avoid divisions by zero:
-    error = error + epsilon(nx_type)
+    error = error + Nx.Constants.epsilon(nx_type)
 
     # Octave:
     #   dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
@@ -472,13 +472,6 @@ defmodule Integrator.AdaptiveStepsize do
 
     # Make sure we don't go past t_end:
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
-  end
-
-  # What should the typespec be for a deftransformp?
-  # @spec epsilon(atom()) :: float()
-  @spec epsilon({:f, 32 | 64}) :: float()
-  deftransformp epsilon(type) do
-    Utils.epsilon(type)
   end
 
   @spec increment_and_reset_counters(t()) :: t()

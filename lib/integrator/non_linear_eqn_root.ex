@@ -106,9 +106,9 @@ defmodule Integrator.NonLinearEqnRoot do
 
     * `:type` - `:f32` or `:f64`. Defaults to `:f64`
 
-    * `:machine_eps` - The machine epsilon. Defaults to `Itegrator.Utils.epsilon/1`
+    * `:machine_eps` - The machine epsilon. Defaults to `Nx.Constants.epsilon/1`
 
-    * `:tolerance` - The tolerance for the convergence.  Defaults to `Itegrator.Utils.epsilon/1`
+    * `:tolerance` - The tolerance for the convergence.  Defaults to `Nx.Constants.epsilon/1`
 
     * `:nonlinear_eqn_root_output_fn` - An output function to call so intermediate results can be retrieved
 
