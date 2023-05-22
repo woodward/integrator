@@ -43,8 +43,8 @@ defmodule Integrator.MixProject do
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:math, "~> 0.7"},
       {:patch, "~> 0.12.0", only: :test},
-      {:nx, "~> 0.5"}
-#      {:nx, path: "/Users/Greg/Development/nx/nx"}
+      # {:nx, "~> 0.5"}
+      {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
 
