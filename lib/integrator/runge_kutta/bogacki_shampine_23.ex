@@ -9,7 +9,6 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @behaviour RungeKutta
 
   import Nx.Defn
-  import Integrator.Utils, only: [nx_type_atom: 1]
 
   @doc """
   Returns the order of this Runge-Kutta method (which is 3)
@@ -17,36 +16,15 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   @impl RungeKutta
   def order, do: 3
 
-  @a_f64 Nx.tensor(
-           [
-             [0, 0, 0],
-             [1 / 2, 0, 0],
-             [0, 3 / 4, 0]
-           ],
-           type: :f64
-         )
-  @a %{
-    f64: @a_f64,
-    f32: Nx.as_type(@a_f64, :f32)
-  }
+  @a_0 [0, 0, 0]
+  @a_1 [1 / 2, 0, 0]
+  @a_2 [0, 3 / 4, 0]
 
-  @b_f64 Nx.tensor([0, 1 / 2, 3 / 4, 1], type: :f64)
-  @b %{
-    f64: @b_f64,
-    f32: Nx.as_type(@b_f64, :f32)
-  }
+  @b [0, 1 / 2, 3 / 4, 1]
 
-  @c_f64 Nx.tensor([2 / 9, 1 / 3, 4 / 9], type: :f64)
-  @c %{
-    f64: @c_f64,
-    f32: Nx.as_type(@c_f64, :f32)
-  }
+  @c [2 / 9, 1 / 3, 4 / 9]
 
-  @c_prime_f64 Nx.tensor([7 / 24, 1 / 4, 1 / 3, 1 / 8], type: :f64)
-  @c_prime %{
-    f64: @c_prime_f64,
-    f32: Nx.as_type(@c_prime_f64, :f32)
-  }
+  @c_prime [7 / 24, 1 / 4, 1 / 3, 1 / 8]
 
   @doc """
   Solves a set of non-stiff Ordinary Differential Equations (non-stiff ODEs) with the well-known
@@ -57,11 +35,16 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals, t_next) do
-    nx_type = nx_type_atom(x)
+    nx_type = Nx.type(x)
 
-    s = t + dt * @b[nx_type]
-    cc = dt * @c[nx_type]
-    aa = dt * @a[nx_type]
+    a = Nx.tensor([@a_0, @a_1, @a_2], type: nx_type)
+    b = Nx.tensor(@b, type: nx_type)
+    c = Nx.tensor(@c, type: nx_type)
+    c_prime = Nx.tensor(@c_prime, type: nx_type)
+
+    s = t + dt * b
+    cc = dt * c
+    aa = dt * a
     # k = zeros (rows (x), 4);
     # k = Nx.broadcast(0.0, {length_of_x, 4})
 
@@ -82,7 +65,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     x_next = x + Nx.dot(k_0_2, cc)
 
     k3 = ode_fn.(t_next, x_next)
-    cc_prime = dt * @c_prime[nx_type]
+    cc_prime = dt * c_prime
     k_new = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
