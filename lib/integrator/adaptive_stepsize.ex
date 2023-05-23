@@ -3,7 +3,6 @@ defmodule Integrator.AdaptiveStepsize do
   Integrates a set of ODEs with an adaptive timestep.
   """
   import Nx.Defn
-  import Nx, only: :sigils
 
   alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, Utils}
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
@@ -151,11 +150,6 @@ defmodule Integrator.AdaptiveStepsize do
     speed: :no_delay
   ]
 
-  @abs_rel_norm_opts %{
-    f32: [abs_tol: ~V[ 1.0e-06 ]f32, rel_tol: ~V[ 1.0e-03 ]f32, norm_control: true],
-    f64: [abs_tol: ~V[ 1.0e-06 ]f64, rel_tol: ~V[ 1.0e-03 ]f64, norm_control: true]
-  }
-
   # :no_delay means to perform the integration as fast as possible
   # For float values, 1.0 means to integrate in real-time, 0.5 means half of real-time, 2.0 means twice as fast as real time, etc.
   @type speed :: :no_delay | float()
@@ -180,7 +174,7 @@ defmodule Integrator.AdaptiveStepsize do
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     nx_type = opts[:type]
-    opts = (@default_opts ++ @abs_rel_norm_opts[nx_type] ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
+    opts = (@default_opts ++ abs_rel_norm_opts(nx_type) ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # The Nx types of :initial_tstep and opts[:max_step] need to be checked PRIOR to the call to Nx.min()
@@ -305,8 +299,10 @@ defmodule Integrator.AdaptiveStepsize do
   Gets the default values used by the absolute-relative norm; e.g., `abs_tol`, `rel_tol`, and
   `norm_control`
   """
-  @spec abs_rel_norm_opts(atom) :: Keyword.t()
-  def abs_rel_norm_opts(nx_type), do: @abs_rel_norm_opts[nx_type]
+  @spec abs_rel_norm_opts(Nx.Type.t()) :: Keyword.t()
+  def abs_rel_norm_opts(nx_type) do
+    [abs_tol: Nx.tensor(1.0e-06, type: nx_type), rel_tol: Nx.tensor(1.0e-03, type: nx_type), norm_control: true]
+  end
 
   @doc """
   Returns the total elapsed time for the integration (in milleseconds)
