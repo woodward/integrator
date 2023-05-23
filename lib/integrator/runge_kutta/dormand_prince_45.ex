@@ -24,42 +24,19 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @behaviour RungeKutta
 
   import Nx.Defn
-  import Integrator.Utils, only: [nx_type_atom: 1]
 
-  @a_f64 Nx.tensor(
-           [
-             [0, 0, 0, 0, 0, 0],
-             [1 / 5, 0, 0, 0, 0, 0],
-             [3 / 40, 9 / 40, 0, 0, 0, 0],
-             [44 / 45, -56 / 15, 32 / 9, 0, 0, 0],
-             [19_372 / 6_561, -25_360 / 2187, 64_448 / 6561, -212 / 729, 0, 0],
-             [9_017 / 3_168, -355 / 33, 46_732 / 5247, 49 / 176, -5103 / 18_656, 0]
-           ],
-           type: :f64
-         )
+  @a_0 [0, 0, 0, 0, 0, 0]
+  @a_1 [1 / 5, 0, 0, 0, 0, 0]
+  @a_2 [3 / 40, 9 / 40, 0, 0, 0, 0]
+  @a_3 [44 / 45, -56 / 15, 32 / 9, 0, 0, 0]
+  @a_4 [19_372 / 6_561, -25_360 / 2187, 64_448 / 6561, -212 / 729, 0, 0]
+  @a_5 [9_017 / 3_168, -355 / 33, 46_732 / 5247, 49 / 176, -5103 / 18_656, 0]
 
-  @a %{
-    f64: @a_f64,
-    f32: Nx.as_type(@a_f64, :f32)
-  }
+  @b [0, 1 / 5, 3 / 10, 4 / 5, 8 / 9, 1, 1]
 
-  @b_f64 Nx.tensor([0, 1 / 5, 3 / 10, 4 / 5, 8 / 9, 1, 1], type: :f64)
-  @b %{
-    f64: @b_f64,
-    f32: Nx.as_type(@b_f64, :f32)
-  }
+  @c [35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84]
 
-  @c_f64 Nx.tensor([35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84], type: :f64)
-  @c %{
-    f64: @c_f64,
-    f32: Nx.as_type(@c_f64, :f32)
-  }
-
-  @c_prime_f64 Nx.tensor([5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40], type: :f64)
-  @c_prime %{
-    f64: @c_prime_f64,
-    f32: Nx.as_type(@c_prime_f64, :f32)
-  }
+  @c_prime [5179 / 57_600, 0, 7571 / 16_695, 393 / 640, -92_097 / 339_200, 187 / 2100, 1 / 40]
 
   @doc """
   Returns the order of this Runge-Kutta method (which is 5)
@@ -77,11 +54,15 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   """
   @impl RungeKutta
   defn integrate(ode_fn, t, x, dt, k_vals, t_next) do
-    nx_type = nx_type_atom(x)
+    nx_type = Nx.type(x)
+    a = Nx.tensor([@a_0, @a_1, @a_2, @a_3, @a_4, @a_5], type: nx_type)
+    b = Nx.tensor(@b, type: nx_type)
+    c = Nx.tensor(@c, type: nx_type)
+    c_prime = Nx.tensor(@c_prime, type: nx_type)
 
-    s = t + dt * @b[nx_type]
-    cc = dt * @c[nx_type]
-    aa = dt * @a[nx_type]
+    s = t + dt * b
+    cc = dt * c
+    aa = dt * a
 
     slice = fn aa, row ->
       Nx.slice_along_axis(aa, row, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, row)
@@ -119,7 +100,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
 
     k6 = ode_fn.(t_next, x_next)
     k_new = Nx.stack([k0, k1, k2, k3, k4, k5, k6]) |> Nx.transpose()
-    cc_prime = dt * @c_prime[nx_type]
+    cc_prime = dt * c_prime
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
     {x_next, x_error_est, k_new}
