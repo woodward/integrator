@@ -141,8 +141,6 @@ defmodule Integrator.AdaptiveStepsize do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @nx_true Nx.tensor(1, type: :u8)
-
   @default_opts [
     max_number_of_errors: 5_000,
     refine: 4,
@@ -393,7 +391,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @spec less_than_one?(Nx.t()) :: boolean()
-  defp less_than_one?(error_est), do: Nx.less(error_est, 1.0) == @nx_true
+  defp less_than_one?(error_est), do: Nx.less(error_est, 1.0) == Nx.tensor(1, type: :u8)
 
   @spec halt?(t()) :: integration_status()
   defp halt?(%{terminal_event: :halt} = _step), do: :halt
@@ -586,7 +584,7 @@ defmodule Integrator.AdaptiveStepsize do
   defp add_fixed_point(step, interpolate_fn) do
     [fixed_time | remaining_fixed_times] = step.fixed_times
 
-    if add_fixed_point?(fixed_time, step.t_new) == @nx_true do
+    if add_fixed_point?(fixed_time, step.t_new) == Nx.tensor(1, type: :u8) do
       x_at_fixed_time = interpolate_one_point(fixed_time, step, interpolate_fn)
 
       step = %{
