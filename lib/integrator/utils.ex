@@ -41,22 +41,15 @@ defmodule Integrator.Utils do
     x1 + x2 + x3 + x4
   end
 
-  @coefs_u_half_f64 Nx.tensor(
-                      [
-                        6_025_192_743 / 30_085_553_152,
-                        0.0,
-                        51_252_292_925 / 65_400_821_598,
-                        -2_691_868_925 / 45_128_329_728,
-                        187_940_372_067 / 1_594_534_317_056,
-                        -1_776_094_331 / 19_743_644_256,
-                        11_237_099 / 235_043_384
-                      ],
-                      type: :f64
-                    )
-  @coefs_u_half %{
-    f64: @coefs_u_half_f64,
-    f32: Nx.as_type(@coefs_u_half_f64, :f32)
-  }
+  @coefs_u_half [
+    6_025_192_743 / 30_085_553_152,
+    0.0,
+    51_252_292_925 / 65_400_821_598,
+    -2_691_868_925 / 45_128_329_728,
+    187_940_372_067 / 1_594_534_317_056,
+    -1_776_094_331 / 19_743_644_256,
+    11_237_099 / 235_043_384
+  ]
 
   @doc """
   Performs a 4th order Hermite interpolation. Used by an ODE solver to interpolate the
@@ -72,7 +65,7 @@ defmodule Integrator.Utils do
 
     # 4th order approximation of x in t+dt/2 as proposed by Shampine in
     # Lawrence, Shampine, "Some Practical Runge-Kutta Formulas", 1986.
-    u_half = x_col1 + 0.5 * dt * Nx.new_axis(Nx.dot(der, @coefs_u_half[nx_type_atom(x)]), 1)
+    u_half = x_col1 + 0.5 * dt * Nx.new_axis(Nx.dot(der, Nx.tensor(@coefs_u_half, type: Nx.type(x))), 1)
 
     # Rescale time on [0,1]
     s = (t_out - t[0]) / dt
