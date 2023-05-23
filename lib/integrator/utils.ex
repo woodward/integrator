@@ -215,21 +215,6 @@ defmodule Integrator.Utils do
     end)
   end
 
-  # In Octave, get these via eps("single") or eps("double")
-  # Can they be obtained from the underlying machine CPU somehow?
-  @epislon_f32 1.1920929e-07
-  @epislon_f64 2.220446049250313e-16
-
-  @doc """
-  Gets the epsilon for a particular Nx type
-  """
-  @spec epsilon(Nx.Type.t()) :: float()
-  def epsilon(:f32), do: @epislon_f32
-  def epsilon({:f, 32}), do: @epislon_f32
-
-  def epsilon(:f64), do: @epislon_f64
-  def epsilon({:f, 64}), do: @epislon_f64
-
   @doc """
   Given a list of elements, create a new list with only the unique elements from the list
   """

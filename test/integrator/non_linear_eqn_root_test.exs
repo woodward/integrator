@@ -386,8 +386,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       opts = [type: :f32]
 
       assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
-               machine_eps: 1.1920929e-7,
-               tolerance: 1.1920929e-7,
+               machine_eps: 1.1920928955078125e-07,
+               tolerance: 1.1920928955078125e-07,
                max_iterations: 1000,
                max_fn_eval_count: 1000,
                type: :f32

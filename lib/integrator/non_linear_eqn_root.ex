@@ -11,7 +11,7 @@ defmodule Integrator.NonLinearEqnRoot do
   slightly modified.
   """
 
-  import Integrator.Utils, only: [sign: 1, epsilon: 1]
+  import Integrator.Utils, only: [sign: 1]
   alias Integrator.Utils
 
   @type interpolation_type ::
@@ -509,10 +509,14 @@ defmodule Integrator.NonLinearEqnRoot do
   # Option handling
 
   @spec set_tolerance(Keyword.t()) :: Keyword.t()
-  defp set_tolerance(opts), do: Keyword.put_new_lazy(opts, :tolerance, fn -> epsilon(opts[:type]) end)
+  defp set_tolerance(opts) do
+    Keyword.put_new_lazy(opts, :tolerance, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+  end
 
   @spec set_machine_eps(Keyword.t()) :: Keyword.t()
-  defp set_machine_eps(opts), do: Keyword.put_new_lazy(opts, :machine_eps, fn -> epsilon(opts[:type]) end)
+  defp set_machine_eps(opts) do
+    Keyword.put_new_lazy(opts, :machine_eps, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+  end
 
   @spec merge_default_opts(Keyword.t()) :: Keyword.t()
   defp merge_default_opts(opts) do
