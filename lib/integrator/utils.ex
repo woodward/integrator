@@ -140,7 +140,7 @@ defmodule Integrator.Utils do
   @doc """
   Returns the sign of the tensor as -1 or 1 (or 0 for zero tensors)
   """
-  @spec sign(Nx.t()) :: float()
+  @spec sign(float()) :: float()
   def sign(x) when x < 0.0, do: -1.0
   def sign(x) when x > 0.0, do: 1.0
   def sign(_x), do: 0.0
