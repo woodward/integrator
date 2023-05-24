@@ -1,7 +1,6 @@
 defmodule Integrator.Helpers do
   @moduledoc false
   import ExUnit.Assertions
-  alias Integrator.Utils
 
   @doc """
   Asserts `lhs` is close to `rhs`.
@@ -105,6 +104,6 @@ defmodule Integrator.Helpers do
     File.write!(filename, data)
   end
 
-  def assert_nx_f32(nx_value), do: assert(Utils.nx_type_atom(nx_value) == :f32)
-  def assert_nx_f64(nx_value), do: assert(Utils.nx_type_atom(nx_value) == :f64)
+  def assert_nx_f32(nx_value), do: assert(Nx.type(nx_value) |> Nx.Type.to_string() == "f32")
+  def assert_nx_f64(nx_value), do: assert(Nx.type(nx_value) |> Nx.Type.to_string() == "f64")
 end

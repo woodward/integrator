@@ -744,9 +744,9 @@ defmodule Integrator.AdaptiveStepsize do
   defp check_nx_type(args, expected_nx_type) do
     args
     |> Enum.each(fn {arg_name, arg_value} ->
-      nx_type = Utils.nx_type_atom(arg_value)
+      nx_type = Nx.type(arg_value) |> Nx.Type.to_string()
 
-      if nx_type != expected_nx_type do
+      if nx_type != Atom.to_string(expected_nx_type) do
         raise ArgPrecisionError,
           invalid_argument: arg_value,
           expected_precision: expected_nx_type,

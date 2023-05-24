@@ -12,7 +12,7 @@ defmodule Integrator do
 
   """
 
-  alias Integrator.{AdaptiveStepsize, Utils}
+  alias Integrator.AdaptiveStepsize
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
   @integrator_options %{
@@ -39,7 +39,7 @@ defmodule Integrator do
           opts :: Keyword.t()
         ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    opts = opts |> Keyword.put_new_lazy(:type, fn -> Utils.type_atom(x0) end)
+    opts = opts |> Keyword.put_new_lazy(:type, fn -> Nx.type(x0) |> Nx.Type.to_string() |> String.to_atom() end)
     opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts(opts[:type])) |> Keyword.merge(opts) |> set_default_refine_opt()
 
     integrator_mod =

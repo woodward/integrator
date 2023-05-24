@@ -215,20 +215,4 @@ defmodule Integrator.Utils do
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
-
-  @doc """
-  Given the Nx type tuple, return it as an atom.  E.g., {:f, 32} returns :f32
-
-  Is there a built-in Nx way of doing this?  If so, delete this function
-  """
-  @spec type_atom(Nx.t()) :: atom()
-  def type_atom(tensor) do
-    tensor |> Nx.type() |> Nx.Type.to_string() |> String.to_atom()
-  end
-
-  @doc """
-  A defn-compatible version of `type_atom/1`
-  """
-  @spec nx_type_atom(Nx.t()) :: atom()
-  deftransform nx_type_atom(tensor), do: type_atom(tensor)
 end
