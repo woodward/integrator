@@ -14,6 +14,13 @@ defmodule Integrator.NonLinearEqnRoot do
   import Integrator.Utils, only: [sign: 1]
   alias Integrator.Utils
 
+  alias Integrator.NonLinearEqnRoot.{
+    BracketingFailureError,
+    InvalidInitialBracketError,
+    MaxFnEvalsExceededError,
+    MaxIterationsExceededError
+  }
+
   @type interpolation_type ::
           :bisect
           | :double_secant
@@ -80,11 +87,6 @@ defmodule Integrator.NonLinearEqnRoot do
     # Change iter_type to a more descriptive atom later (possibly?):
     iter_type: 1
   ]
-
-  defmodule BracketingFailureError, do: defexception(message: "Zero point is not bracketed", step: nil)
-  defmodule InvalidInitialBracketError, do: defexception(message: "Invalid initial bracket", step: nil)
-  defmodule MaxIterationsExceededError, do: defexception(message: "Too many iterations", step: nil, iteration_count: nil)
-  defmodule MaxFnEvalsExceededError, do: defexception(message: "Too many function evaluations", step: nil, fn_eval_count: nil)
 
   @default_opts [
     max_iterations: 1000,

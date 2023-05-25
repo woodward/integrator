@@ -5,7 +5,7 @@ defmodule Integrator.AdaptiveStepsize do
   import Nx.Defn
 
   alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, Utils}
-  alias Integrator.AdaptiveStepsize.ArgPrecisionError
+  alias Integrator.AdaptiveStepsize.{ArgPrecisionError, MaxErrorsExceededError}
 
   defmodule ComputedStep do
     @moduledoc """
@@ -119,21 +119,6 @@ defmodule Integrator.AdaptiveStepsize do
     timestamp_ms: nil,
     timestamp_start_ms: nil
   ]
-
-  defmodule MaxErrorsExceededError do
-    defexception message: "Too many errors",
-                 error_count: 0,
-                 max_number_of_errors: 0,
-                 step: nil
-  end
-
-  defmodule ArgPrecisionError do
-    defexception message: "argument precision error",
-                 invalid_argument: nil,
-                 argument_name: nil,
-                 expected_precision: nil,
-                 actual_precision: nil
-  end
 
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
