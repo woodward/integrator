@@ -435,7 +435,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
-      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11);
+      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
       #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
 
       stepper_fn = &DormandPrince45.integrate/6
@@ -454,7 +454,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-11, type: :f64),
         rel_tol: Nx.tensor(1.0e-11, type: :f64),
-        refine: 4
+        refine: 1
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
@@ -1599,6 +1599,46 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Expected dt from Octave:
       expected_dt = Nx.tensor(1.058699260768067e-04, type: :f64)
+      assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
+    end
+
+    test "bug fix for 'works - high fidelity - playback speed of 0.5'" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
+      #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
+
+      # Input values are from Elixir for t_old = 0.005054072392284442:
+      dt = Nx.tensor(0.007408247469735083, type: :f64)
+      #              0.007408247469735083  Octave  EXACT MATCH!
+
+      # Error from Elixir only agrees to single precision - THIS IS THE PROBLEM!
+      # error_from_elixir = Nx.tensor(0.25920723900618725, type: :f64)
+
+      # The test passes if I use the error from Octave:
+      error_from_octave = Nx.tensor(0.259206892061492, type: :f64)
+      # error = error_from_elixir
+      error = error_from_octave
+
+      order = 5
+      t_old = Nx.tensor(0.012462319862019525, type: :f64)
+      #                 0.01246231986201952   Octave  EXACT MATCH!
+
+      t_end = Nx.tensor(0.1, type: :f64)
+
+      opts = [
+        type: :f64,
+        max_step: Nx.tensor(0.01, type: :f64),
+        rel_tol: Nx.tensor(1.0e-11, type: :f64),
+        abs_tol: Nx.tensor(1.0e-11, type: :f64),
+        norm_control: false
+      ]
+
+      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+
+      # Expected dt from Octave:
+      expected_dt = Nx.tensor(0.007895960916517373, type: :f64)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
     end
   end
