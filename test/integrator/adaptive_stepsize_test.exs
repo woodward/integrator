@@ -1817,9 +1817,19 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # problematic subtraction         : 2.5920 723900618725e-12
       # expected_subtraction_from_octave: 2.5920 68920614921e-12
 
+      # If I enter these values directly into Octave (rather than printing them out from the integration proces)
+      # I get:
+      # Octave:
+      #   x_new_2 = -2.446387761668897e-02
+      #   x_est_2 = -2.446387761928104e-02
+      #   subtraction = x_new_2 - x_est_2
+      #   2.592072390061873e-12
+      # which is also single precision agreement
+
       subtraction = Nx.subtract(x_new_2, x_est_2)
       # IO.inspect(Nx.to_number(subtraction), label: "problematic subtraction         ")
       expected_subtraction_from_octave = Nx.tensor(2.592068920614921e-12, type: :f64)
+      #                                            2.5920 72390061873e-12  Octave from above when directly entering values
       # IO.inspect(Nx.to_number(expected_subtraction_from_octave), label: "expected_subtraction_from_octave")
       # assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-06, rtol: 1.0e-06)
       assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-17, rtol: 1.0e-17)
