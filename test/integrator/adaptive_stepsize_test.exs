@@ -5,6 +5,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
   import Nx, only: :sigils
 
+  import Nx.Defn
+
   alias Integrator.{AdaptiveStepsize, SampleEqns, DummyOutput}
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
@@ -1745,6 +1747,82 @@ defmodule Integrator.AdaptiveStepsizeTest do
       error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
 
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "when norm_control: false - :f64 - for test 'works - high fidelity - playback speed of 0.5'" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
+      #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
+
+      # Values for t = 0.005054072392284442:
+      x_next = ~V[ 1.9998466100062002  -0.024463877616688966 ]f64
+      # Octave:
+      # x_next = ~V[ 1.999846610006200   -0.02446387761668897 ]f64
+
+      x_old = ~V[  1.9999745850165596  -0.010031858255616163 ]f64
+      # Octave:
+      # x_old = ~V[  1.999974585016560   -0.01003185825561616 ]f64
+
+      x_est = ~V[  1.9998466100068684  -0.024463877619281038 ]f64
+      # Octave:
+      # x_est = ~V[  1.999846610006868   -0.02446387761928104 ]f64
+
+      # Octave:
+
+      abs_tol = Nx.tensor(1.0e-11, type: :f64)
+      rel_tol = Nx.tensor(1.0e-11, type: :f64)
+
+      expected_error = Nx.tensor(0.259206892061492, type: :f64)
+
+      # error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+      {error, _t_minus_x} = abs_rel_norm_for_test_purposes(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+
+      # IO.inspect(Nx.to_number(error), label: "error")
+      # IO.inspect(t_minus_x, label: "t_minus_x")
+
+      # sc (Elixir): [1.9999745850165594e-11, 1.0e-11
+      # sc (Octave): [1.999974585016559e-11   9.999999999999999e-12]
+
+      # x_next - x_est, which is t - x in abs_rel_norm:
+      # t - x (Elixir): [-6.681322162194192e-13, 2.5920 723900618725e-12]
+      # t - x (Octave): [-6.681322162194192e-13, 2.5920 68920614921e-12]   SINGLE PRECISION AGREEMENT!!!
+
+      # Nx.abs(t - x) (Elixir) [6.681322162194192e-13, 2.5920 723900618725e-12]
+      # Nx.abs(t - x) (Octave) [6.681322162194192e-13, 2.5920 68920614921e-12 ]  SINGLE PRECISION AGREEMENT!!!
+
+      # We can currently get single precision agreement, but not double precision:
+      assert_all_close(error, expected_error, atol: 1.0e-06, rtol: 1.0e-06)
+
+      _subtraction = Nx.subtract(x_next[1], x_est[1])
+      # IO.inspect(Nx.to_number(subtraction), label: "problematic subtraction")
+      # subtraction (Elixir): 2.5920 723900618725e-12
+      # subtraction (Octave): 2.5920 68920614921e-12
+
+      # This doesn't work, but should:
+      # assert_all_close(error, expected_error, atol: 1.0e-11, rtol: 1.0e-11)
+    end
+
+    defn abs_rel_norm_for_test_purposes(t, t_old, x, abs_tolerance, rel_tolerance, _opts \\ []) do
+      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
+      {(Nx.abs(t - x) / sc) |> Nx.reduce_max(), t - x}
+    end
+
+    test "trying to figure out precision problem" do
+      # Values from Octave:
+      x_new_2 = Nx.tensor(-2.446387761668897e-02, type: :f64)
+      x_est_2 = Nx.tensor(-2.446387761928104e-02, type: :f64)
+
+      # problematic subtraction         : 2.5920 723900618725e-12
+      # expected_subtraction_from_octave: 2.5920 68920614921e-12
+
+      subtraction = Nx.subtract(x_new_2, x_est_2)
+      # IO.inspect(Nx.to_number(subtraction), label: "problematic subtraction         ")
+      expected_subtraction_from_octave = Nx.tensor(2.592068920614921e-12, type: :f64)
+      # IO.inspect(Nx.to_number(expected_subtraction_from_octave), label: "expected_subtraction_from_octave")
+      # assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-06, rtol: 1.0e-06)
+      assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-17, rtol: 1.0e-17)
     end
 
     test "when norm_control: false - :f64 - for high-fidelity van der pol" do
