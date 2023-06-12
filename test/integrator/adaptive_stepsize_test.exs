@@ -1805,6 +1805,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     defn abs_rel_norm_for_test_purposes(t, t_old, x, abs_tolerance, rel_tolerance, _opts \\ []) do
+      # Octave code:
+      #   sc = max (AbsTol(:), RelTol .* max (abs (x), abs (x_old)));
+      #   retval = max (abs (x - y) ./ sc);
+
       sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
       {(Nx.abs(t - x) / sc) |> Nx.reduce_max(), t - x}
     end
@@ -1823,7 +1827,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       #   x_new_2 = -2.446387761668897e-02
       #   x_est_2 = -2.446387761928104e-02
       #   subtraction = x_new_2 - x_est_2
-      #   2.592072390061873e-12
+      #   2.592072390061873e-12  Octave value
+      #   2.5920723900618725e-12 Elixir value
       # which is also single precision agreement
 
       subtraction = Nx.subtract(x_new_2, x_est_2)
