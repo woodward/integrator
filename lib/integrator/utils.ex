@@ -124,10 +124,10 @@ defmodule Integrator.Utils do
   @spec kahan_sum(Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn kahan_sum(sum, comp, term) do
     # Octave code:
-    # x = term - comp;
-    # t = sum + x;
-    # comp = (t - sum) - x;
-    # sum = t;
+    #   x = term - comp;
+    #   t = sum + x;
+    #   comp = (t - sum) - x;
+    #   sum = t;
 
     x = term - comp
     t = sum + x
