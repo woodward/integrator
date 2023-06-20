@@ -131,10 +131,8 @@ defmodule Integrator.Utils do
 
     x = term - comp
     t = sum + x
-    comp = t - sum - x
-    sum = t
 
-    {sum, comp}
+    {t, t - sum - x}
   end
 
   @doc """
