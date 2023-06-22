@@ -6,10 +6,21 @@ defmodule Integrator.RungeKutta do
   See the [list of Runge-Kutta methods](https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods)
   """
 
+  @type stepper_fn_t :: ((Nx.t(), Nx.t() -> Nx.t()), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t() -> {Nx.t(), Nx.t(), Nx.t(), Nx.t()})
+  @type ode_fn_t :: (Nx.t(), Nx.t() -> Nx.t())
+  @type interpolate_fn_t :: (Nx.t(), Nx.t(), Nx.t(), Nx.t() -> Nx.t())
+
   @doc """
   Integrates an ODE function
   """
-  @callback integrate(ode_fn :: fun(), t :: Nx.t(), x :: Nx.t(), dt :: Nx.t(), k_vals :: Nx.t(), t_next :: Nx.t()) ::
+  @callback integrate(
+              ode_fn :: ode_fn_t(),
+              t :: Nx.t(),
+              x :: Nx.t(),
+              dt :: Nx.t(),
+              k_vals :: Nx.t(),
+              t_next :: Nx.t()
+            ) ::
               {x_next :: Nx.t(), x_est :: Nx.t(), k_new :: Nx.t()}
 
   @doc """

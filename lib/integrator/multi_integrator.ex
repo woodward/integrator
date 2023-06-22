@@ -4,10 +4,11 @@ defmodule Integrator.MultiIntegrator do
   in the `ballode.m` example.
   """
 
-  alias Integrator.AdaptiveStepsize
+  alias Integrator.{AdaptiveStepsize, RungeKutta}
 
   @type integration_status :: :halt | :continue | :completed
   @zero_tolerance 1.0e-07
+  @type transition_fn_t :: (Nx.t(), Nx.t(), t(), Keyword.t() -> {integration_status, Nx.t(), Nx.t(), Keyword.t()})
 
   @type t :: %__MODULE__{
           event_t: [Nx.t()],
@@ -33,9 +34,9 @@ defmodule Integrator.MultiIntegrator do
   Integrates multiple times, with a transition function handling the junction between integrations
   """
   @spec integrate(
-          ode_fn :: fun(),
-          event_fn :: fun(),
-          transition_fn :: fun(),
+          ode_fn :: RungeKutta.ode_fn_t(),
+          event_fn :: AdaptiveStepsize.event_fn_t(),
+          transition_fn :: transition_fn_t(),
           t_start :: Nx.t(),
           t_end :: Nx.t(),
           x0 :: Nx.t(),
@@ -70,8 +71,8 @@ defmodule Integrator.MultiIntegrator do
   @spec integrate_next_segment(
           multi :: t(),
           status :: integration_status(),
-          ode_fn :: fun(),
-          transition_fn :: fun(),
+          ode_fn :: RungeKutta.ode_fn_t(),
+          transition_fn :: transition_fn_t(),
           t_start :: float(),
           t_end :: float(),
           x0 :: Nx.t(),

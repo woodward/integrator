@@ -21,6 +21,9 @@ defmodule Integrator.NonLinearEqnRoot do
     MaxIterationsExceededError
   }
 
+  @type zero_fn_t :: (float() -> float())
+  @type output_fn_t :: (float(), float() -> any())
+
   @type interpolation_type ::
           :bisect
           | :double_secant
@@ -115,7 +118,7 @@ defmodule Integrator.NonLinearEqnRoot do
     * `:nonlinear_eqn_root_output_fn` - An output function to call so intermediate results can be retrieved
 
   """
-  @spec find_zero(fun(), [float()] | float(), Keyword.t()) :: t()
+  @spec find_zero(zero_fn_t(), [float()] | float(), Keyword.t()) :: t()
   def find_zero(zero_fn, initial_values, opts \\ [])
 
   def find_zero(zero_fn, [a, b], opts) do
@@ -171,7 +174,7 @@ defmodule Integrator.NonLinearEqnRoot do
   # ===========================================================================
   # Private functions below here:
 
-  @spec iterate(t(), atom(), fun(), Keyword.t()) :: t()
+  @spec iterate(t(), atom(), zero_fn_t(), Keyword.t()) :: t()
   defp iterate(z, :halt, _zero_fn, _opts), do: z
 
   defp iterate(z, _status, zero_fn, opts) do
@@ -287,7 +290,7 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
 
-  @spec find_2nd_starting_point(fun(), float()) :: map()
+  @spec find_2nd_starting_point(zero_fn_t(), float()) :: map()
   defp find_2nd_starting_point(zero_fn, a) do
     # For very small values, switch to absolute rather than relative search:
     a =
@@ -304,7 +307,7 @@ defmodule Integrator.NonLinearEqnRoot do
     searching_for_point(:continue, zero_fn, x, @search_values)
   end
 
-  @spec searching_for_point(atom(), fun(), map(), [float()]) :: map()
+  @spec searching_for_point(atom(), zero_fn_t(), map(), [float()]) :: map()
   defp searching_for_point(:found, _zero_fn, x, _search_values), do: x
 
   defp searching_for_point(:continue, zero_fn, x, search_values) do
@@ -377,7 +380,7 @@ defmodule Integrator.NonLinearEqnRoot do
     abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
-  @spec fn_eval_new_point(t(), fun(), Keyword.t()) :: t()
+  @spec fn_eval_new_point(t(), zero_fn_t(), Keyword.t()) :: t()
   defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
     # Perhaps move the incrementing of the iteration count elsewhere?
@@ -449,7 +452,7 @@ defmodule Integrator.NonLinearEqnRoot do
     {status, z}
   end
 
-  @spec call_output_fn(t(), fun()) :: t()
+  @spec call_output_fn(t(), output_fn_t()) :: t()
   defp call_output_fn(z, nil = _output_fn), do: z
 
   defp call_output_fn(z, output_fn) do

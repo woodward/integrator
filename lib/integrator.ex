@@ -13,6 +13,7 @@ defmodule Integrator do
   """
 
   alias Integrator.AdaptiveStepsize
+  alias Integrator.RungeKutta
   alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
 
   @integrator_options %{
@@ -33,7 +34,7 @@ defmodule Integrator do
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
   """
   @spec integrate(
-          ode_fn :: fun(),
+          ode_fn :: RungeKutta.ode_fn_t(),
           t_start_t_end :: Nx.t() | [float() | Nx.t()],
           x0 :: Nx.t(),
           opts :: Keyword.t()

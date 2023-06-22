@@ -4,7 +4,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   import Nx.Defn
 
-  alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, Utils}
+  alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, RungeKutta, Utils}
   alias Integrator.AdaptiveStepsize.{ArgPrecisionError, MaxErrorsExceededError}
 
   defmodule ComputedStep do
@@ -123,6 +123,12 @@ defmodule Integrator.AdaptiveStepsize do
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
 
+  # Change the output from the event function to a tuple, and then change this type:
+  # @type event_fn_output :: {status: integration_status(), value: float()}
+
+  @type event_fn_t :: (Nx.t(), Nx.t() -> any())
+  @type output_fn_t :: ([Nx.t()], [Nx.t()] -> any())
+
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
@@ -144,9 +150,9 @@ defmodule Integrator.AdaptiveStepsize do
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
   """
   @spec integrate(
-          stepper_fn :: fun(),
-          interpolate_fn :: fun(),
-          ode_fn :: fun(),
+          stepper_fn :: RungeKutta.stepper_fn_t(),
+          interpolate_fn :: RungeKutta.interpolate_fn_t(),
+          ode_fn :: RungeKutta.ode_fn_t(),
           t_start :: Nx.t(),
           t_end :: Nx.t(),
           fixed_times :: [Nx.t()] | nil,
@@ -233,7 +239,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   @spec starting_stepsize(
           order :: integer(),
-          ode_fn :: fun(),
+          ode_fn :: RungeKutta.ode_fn_t(),
           t0 :: Nx.t(),
           x0 :: Nx.t(),
           abs_tol :: Nx.t(),
@@ -335,9 +341,9 @@ defmodule Integrator.AdaptiveStepsize do
           t_old :: float(),
           t_end :: float(),
           status :: integration_status(),
-          stepper_fn :: fun(),
-          interpolate_fn :: fun(),
-          ode_fn :: fun(),
+          stepper_fn :: RungeKutta.stepper_fn_t(),
+          interpolate_fn :: RungeKutta.interpolate_fn_t(),
+          ode_fn :: RungeKutta.ode_fn_t(),
           order :: integer(),
           opts :: Keyword.t()
         ) :: t()
@@ -518,7 +524,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(t(), fun(), fun(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
+  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -539,8 +545,8 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Computes the next Runge-Kutta step and the associated error
   @spec compute_step_nx(
-          stepper_fn :: fun(),
-          ode_fn :: fun(),
+          stepper_fn :: RungeKutta.stepper_fn_t(),
+          ode_fn :: RungeKutta.ode_fn_t(),
           t_old :: Nx.t(),
           x_old :: Nx.t(),
           k_vals_old :: Nx.t(),
@@ -561,7 +567,7 @@ defmodule Integrator.AdaptiveStepsize do
     {t_next, x_next, k_vals, options_comp, error}
   end
 
-  @spec add_fixed_point(t(), fun()) :: t()
+  @spec add_fixed_point(t(), RungeKutta.interpolate_fn_t()) :: t()
   defp add_fixed_point(%{fixed_times: []} = step, _interpolate_fn) do
     step
   end
@@ -590,7 +596,7 @@ defmodule Integrator.AdaptiveStepsize do
     fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
   end
 
-  @spec interpolate(t(), fun(), refine_strategy()) :: t()
+  @spec interpolate(t(), RungeKutta.interpolate_fn_t(), refine_strategy()) :: t()
   defp interpolate(step, interpolate_fn, refine) when refine == :fixed_times do
     add_fixed_point(%{step | t_new_chunk: [], x_new_chunk: []}, interpolate_fn)
   end
@@ -609,12 +615,12 @@ defmodule Integrator.AdaptiveStepsize do
     %{step | x_new_chunk: x_out_as_cols, t_new_chunk: t_new_chunk}
   end
 
-  @spec interpolate_one_point(Nx.t(), t(), fun()) :: Nx.t()
+  @spec interpolate_one_point(Nx.t(), t(), RungeKutta.interpolate_fn_t()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
     do_interpolation(step, interpolate_fn, Nx.tensor(t_new, type: step.nx_type)) |> List.first()
   end
 
-  @spec do_interpolation(t(), fun(), Nx.t()) :: [Nx.t()]
+  @spec do_interpolation(t(), RungeKutta.interpolate_fn_t(), Nx.t()) :: [Nx.t()]
   defp do_interpolation(step, interpolate_fn, tadd) do
     tadd_length =
       case Nx.shape(tadd) do
@@ -630,7 +636,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Calls an output function (such as for plotting while the simulation is in progress)
-  @spec call_output_fn(t(), fun()) :: t()
+  @spec call_output_fn(t(), output_fn_t()) :: t()
   defp call_output_fn(step, output_fn) when is_nil(output_fn) do
     step
   end
@@ -641,7 +647,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Calls an event function (e.g., checking to see if a bouncing ball has collided with a surface)
-  @spec call_event_fn(t(), fun(), fun(), Keyword.t()) :: t()
+  @spec call_event_fn(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: t()
   defp call_event_fn(step, event_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
   end
@@ -667,7 +673,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Hones in (via interpolation) on the exact point that the event function goes to zero
-  @spec compute_new_event_fn_step(t(), fun(), fun(), Keyword.t()) :: ComputedStep.t()
+  @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: ComputedStep.t()
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       x = interpolate_one_point(t, step, interpolate_fn)
