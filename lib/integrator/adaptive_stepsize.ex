@@ -710,11 +710,10 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
-  # Sums the squares of a vector and then takes the square root (e.g., computes
-  # the norm of a vector)
+  # Sums the squares of a vector and then takes the square root (e.g., computes the norm of a vector)
   @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
-    (x * x) |> Nx.sum() |> Nx.sqrt()
+    Nx.dot(x, x) |> Nx.sqrt()
   end
 
   # Creates a zero vector that has the length of `x`
