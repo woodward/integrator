@@ -25,7 +25,7 @@ defmodule Integrator.MultiIntegratorTest do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
         answer = if value <= 0.0, do: :halt, else: :continue
-        %{status: answer, value: value}
+        {answer, value}
       end
 
       [

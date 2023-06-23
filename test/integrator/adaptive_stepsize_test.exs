@@ -201,7 +201,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
         answer = if value <= 0.0, do: :halt, else: :continue
-        %{status: answer, value: value}
+        {answer, value}
       end
 
       stepper_fn = &DormandPrince45.integrate/6
@@ -253,7 +253,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
         answer = if value <= 0.0, do: :halt, else: :continue
-        %{status: answer, value: value}
+        {answer, value}
       end
 
       stepper_fn = &DormandPrince45.integrate/6
@@ -1404,7 +1404,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
         answer = if value <= 0.0, do: :halt, else: :continue
-        %{status: answer, value: value}
+        {answer, value}
       end
 
       [event_fn: event_fn]

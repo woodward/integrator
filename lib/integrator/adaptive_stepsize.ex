@@ -123,10 +123,7 @@ defmodule Integrator.AdaptiveStepsize do
   @type integration_status :: :halt | :continue
   @type refine_strategy :: integer() | :fixed_times
 
-  # Change the output from the event function to a tuple, and then change this type:
-  # @type event_fn_output :: {status: integration_status(), value: float()}
-
-  @type event_fn_t :: (Nx.t(), Nx.t() -> any())
+  @type event_fn_t :: (Nx.t(), Nx.t() -> {integration_status(), Nx.t()})
   @type output_fn_t :: ([Nx.t()], [Nx.t()] -> any())
 
   # Base zero_tolerance on precision?
@@ -654,13 +651,11 @@ defmodule Integrator.AdaptiveStepsize do
 
   defp call_event_fn(step, event_fn, interpolate_fn, opts) do
     # Pass opts to event_fn?
-    result = event_fn.(step.t_new, step.x_new)
-
-    case result.status do
-      :continue ->
+    case event_fn.(step.t_new, step.x_new) do
+      {:continue, _value} ->
         step
 
-      :halt ->
+      {:halt, _value} ->
         new_step = step |> compute_new_event_fn_step(event_fn, interpolate_fn, opts)
 
         %{
@@ -677,7 +672,8 @@ defmodule Integrator.AdaptiveStepsize do
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       x = interpolate_one_point(t, step, interpolate_fn)
-      event_fn.(t, x) |> Map.get(:value) |> Nx.to_number()
+      {_status, value} = event_fn.(t, x)
+      value |> Nx.to_number()
     end
 
     root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
