@@ -42,6 +42,7 @@ defmodule Integrator.MixProject do
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:math, "~> 0.7"},
+      {:nimble_options, "~> 1.0"},
       {:patch, "~> 0.12.0", only: :test},
       # {:nx, "~> 0.5"}
       {:nx, path: "/Users/Greg/Development/nx/nx"}
