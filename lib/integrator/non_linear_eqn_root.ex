@@ -91,11 +91,47 @@ defmodule Integrator.NonLinearEqnRoot do
     iter_type: 1
   ]
 
-  @default_opts [
-    max_iterations: 1000,
-    max_fn_eval_count: 1000,
-    type: :f64
+  options = [
+    max_iterations: [
+      type: :integer,
+      doc: "The maximum allowed number of iterations.",
+      default: 1000
+    ],
+    max_fn_eval_count: [
+      type: :integer,
+      doc: "The maximum allowed number of function evaluations.",
+      default: 1000
+    ],
+    internal_use_only_fn_eval_count: [
+      type: :integer,
+      doc: "For internal use only. A temporary stash of the fn_eval_count.",
+      default: 0
+    ],
+    type: [
+      type: {:in, [:f32, :f64]},
+      doc: "The Nx type.",
+      default: :f64
+    ],
+    machine_eps: [
+      type: :float,
+      doc: "The machine epsilon. Defaults to Nx.constants.epsilon/1 for this Nx type."
+    ],
+    tolerance: [
+      type: :float,
+      doc: "The tolerance for the convergence. Defaults to Nx.Constants.epsilon/1 for this Nx type."
+    ],
+    nonlinear_eqn_root_output_fn: [
+      # Ideally the type for this should be set to a function with arity 2, but I could not get that to work:
+      type: :any,
+      doc: "An output function to call so intermediate results can be retrieved",
+      default: nil
+    ]
   ]
+
+  @options_schema NimbleOptions.new!(options)
+  @type options_t() :: unquote(NimbleOptions.option_typespec(@options_schema))
+
+  def get_options_schema, do: @options_schema
 
   @initial_mu 0.5
 
@@ -105,28 +141,22 @@ defmodule Integrator.NonLinearEqnRoot do
 
   ## Options
 
-    * `:max_fn_eval_count` - the maximum allowed number of function evaluations. Defaults to 1000
-
-    * `:max_iterations` - the maximum allowed number of iterations. Defaults to 1000
-
-    * `:type` - `:f32` or `:f64`. Defaults to `:f64`
-
-    * `:machine_eps` - The machine epsilon. Defaults to `Nx.Constants.epsilon/1`
-
-    * `:tolerance` - The tolerance for the convergence.  Defaults to `Nx.Constants.epsilon/1`
-
-    * `:nonlinear_eqn_root_output_fn` - An output function to call so intermediate results can be retrieved
+  #{NimbleOptions.docs(@options_schema)}
 
   """
+
+  # I can't get this to work for some unknown reason:
+  # @spec find_zero(zero_fn_t(), [float()] | float(), options_t()) :: t()
+
   @spec find_zero(zero_fn_t(), [float()] | float(), Keyword.t()) :: t()
   def find_zero(zero_fn, initial_values, opts \\ [])
 
   def find_zero(zero_fn, [a, b], opts) do
-    opts = opts |> merge_default_opts()
+    opts = opts |> NimbleOptions.validate!(@options_schema) |> merge_default_opts()
 
     fa = zero_fn.(a)
     fb = zero_fn.(b)
-    fn_eval_count = 2 + Keyword.get(opts, :fn_eval_count, 0)
+    fn_eval_count = 2 + Keyword.get(opts, :internal_use_only_fn_eval_count, 0)
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
@@ -158,7 +188,12 @@ defmodule Integrator.NonLinearEqnRoot do
 
   def find_zero(zero_fn, solo_point, opts) do
     second_point = find_2nd_starting_point(zero_fn, solo_point)
-    find_zero(zero_fn, [solo_point, second_point.b], Keyword.merge(opts, fn_eval_count: second_point.fn_eval_count))
+
+    find_zero(
+      zero_fn,
+      [solo_point, second_point.b],
+      Keyword.merge(opts, internal_use_only_fn_eval_count: second_point.fn_eval_count)
+    )
   end
 
   @spec bracket_x(t()) :: [float()]
@@ -170,6 +205,8 @@ defmodule Integrator.NonLinearEqnRoot do
   def bracket_fx(z) do
     [z.fa, z.fb]
   end
+
+  def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
 
   # ===========================================================================
   # Private functions below here:
@@ -525,6 +562,6 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @spec merge_default_opts(Keyword.t()) :: Keyword.t()
   defp merge_default_opts(opts) do
-    @default_opts |> Keyword.merge(opts) |> set_tolerance() |> set_machine_eps()
+    opts |> set_tolerance() |> set_machine_eps()
   end
 end

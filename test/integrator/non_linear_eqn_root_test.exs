@@ -350,6 +350,18 @@ defmodule Integrator.NonLinearEqnRootTest do
     end
   end
 
+  describe "option_keys" do
+    test "returns the option keys" do
+      assert NonLinearEqnRoot.option_keys() == [
+               :nonlinear_eqn_root_output_fn,
+               :type,
+               :internal_use_only_fn_eval_count,
+               :max_fn_eval_count,
+               :max_iterations
+             ]
+    end
+  end
+
   # ===========================================================================
   # Tests of private functions below here:
 
@@ -363,57 +375,74 @@ defmodule Integrator.NonLinearEqnRootTest do
     test "returns defaults if no opts are provided" do
       opts = []
 
-      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
+      {:ok, default_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+
+      assert private(NonLinearEqnRoot.merge_default_opts(default_opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
-               max_iterations: 1000,
+               nonlinear_eqn_root_output_fn: nil,
+               type: :f64,
+               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
-               type: :f64
+               max_iterations: 1000
              ]
     end
 
     test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
       opts = [type: :f64]
 
-      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+
+      assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
-               max_iterations: 1000,
+               nonlinear_eqn_root_output_fn: nil,
+               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
+               max_iterations: 1000,
                type: :f64
              ]
 
       opts = [type: :f32]
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
 
-      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 1.1920928955078125e-07,
                tolerance: 1.1920928955078125e-07,
-               max_iterations: 1000,
+               nonlinear_eqn_root_output_fn: nil,
+               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
+               max_iterations: 1000,
                type: :f32
              ]
     end
 
     test "use the value for :machine_eps if one is provided" do
       opts = [machine_eps: 1.0e-05]
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
 
-      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                tolerance: 2.220446049250313e-16,
-               max_iterations: 1000,
-               max_fn_eval_count: 1000,
+               nonlinear_eqn_root_output_fn: nil,
                type: :f64,
+               internal_use_only_fn_eval_count: 0,
+               max_fn_eval_count: 1000,
+               max_iterations: 1000,
                machine_eps: 1.0e-05
              ]
     end
 
     test "use the value for :tolerance if one is provided" do
       opts = [tolerance: 1.0e-05]
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
 
-      assert private(NonLinearEqnRoot.merge_default_opts(opts)) == [
+      assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 2.220446049250313e-16,
-               max_iterations: 1000,
-               max_fn_eval_count: 1000,
+               nonlinear_eqn_root_output_fn: nil,
                type: :f64,
+               internal_use_only_fn_eval_count: 0,
+               max_fn_eval_count: 1000,
+               max_iterations: 1000,
                tolerance: 1.0e-05
              ]
     end

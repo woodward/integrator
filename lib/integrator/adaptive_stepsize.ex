@@ -676,9 +676,15 @@ defmodule Integrator.AdaptiveStepsize do
       value |> Nx.to_number()
     end
 
-    root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], opts)
+    root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], root_opts_only(opts))
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+  end
+
+  @spec root_opts_only(Keyword.t()) :: Keyword.t()
+  defp root_opts_only(opts) do
+    non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
+    opts |> Keyword.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
   end
 
   # Originally based on
