@@ -355,7 +355,6 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert NonLinearEqnRoot.option_keys() == [
                :nonlinear_eqn_root_output_fn,
                :type,
-               :internal_use_only_fn_eval_count,
                :max_fn_eval_count,
                :max_iterations
              ]
@@ -382,7 +381,6 @@ defmodule Integrator.NonLinearEqnRootTest do
                tolerance: 2.220446049250313e-16,
                nonlinear_eqn_root_output_fn: nil,
                type: :f64,
-               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
                max_iterations: 1000
              ]
@@ -397,7 +395,6 @@ defmodule Integrator.NonLinearEqnRootTest do
                machine_eps: 2.220446049250313e-16,
                tolerance: 2.220446049250313e-16,
                nonlinear_eqn_root_output_fn: nil,
-               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
                max_iterations: 1000,
                type: :f64
@@ -410,7 +407,6 @@ defmodule Integrator.NonLinearEqnRootTest do
                machine_eps: 1.1920928955078125e-07,
                tolerance: 1.1920928955078125e-07,
                nonlinear_eqn_root_output_fn: nil,
-               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
                max_iterations: 1000,
                type: :f32
@@ -425,7 +421,6 @@ defmodule Integrator.NonLinearEqnRootTest do
                tolerance: 2.220446049250313e-16,
                nonlinear_eqn_root_output_fn: nil,
                type: :f64,
-               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
                max_iterations: 1000,
                machine_eps: 1.0e-05
@@ -440,7 +435,6 @@ defmodule Integrator.NonLinearEqnRootTest do
                machine_eps: 2.220446049250313e-16,
                nonlinear_eqn_root_output_fn: nil,
                type: :f64,
-               internal_use_only_fn_eval_count: 0,
                max_fn_eval_count: 1000,
                max_iterations: 1000,
                tolerance: 1.0e-05

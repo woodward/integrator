@@ -102,11 +102,6 @@ defmodule Integrator.NonLinearEqnRoot do
       doc: "The maximum allowed number of function evaluations.",
       default: 1000
     ],
-    internal_use_only_fn_eval_count: [
-      type: :integer,
-      doc: "For internal use only. A temporary stash of the fn_eval_count.",
-      default: 0
-    ],
     type: [
       type: {:in, [:f32, :f64]},
       doc: "The Nx type.",
@@ -148,15 +143,15 @@ defmodule Integrator.NonLinearEqnRoot do
   # I can't get this to work for some unknown reason:
   # @spec find_zero(zero_fn_t(), [float()] | float(), options_t()) :: t()
 
-  @spec find_zero(zero_fn_t(), [float()] | float(), Keyword.t()) :: t()
-  def find_zero(zero_fn, initial_values, opts \\ [])
+  @spec find_zero(zero_fn_t(), [float()] | float(), Keyword.t(), integer()) :: t()
+  def find_zero(zero_fn, initial_values, opts \\ [], fn_evals \\ 0)
 
-  def find_zero(zero_fn, [a, b], opts) do
+  def find_zero(zero_fn, [a, b], opts, fn_evals) do
     opts = opts |> NimbleOptions.validate!(@options_schema) |> merge_default_opts()
 
     fa = zero_fn.(a)
     fb = zero_fn.(b)
-    fn_eval_count = 2 + Keyword.get(opts, :internal_use_only_fn_eval_count, 0)
+    fn_eval_count = 2 + fn_evals
     {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
 
@@ -186,14 +181,10 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
-  def find_zero(zero_fn, solo_point, opts) do
+  def find_zero(zero_fn, solo_point, opts, _fn_evals) do
     second_point = find_2nd_starting_point(zero_fn, solo_point)
 
-    find_zero(
-      zero_fn,
-      [solo_point, second_point.b],
-      Keyword.merge(opts, internal_use_only_fn_eval_count: second_point.fn_eval_count)
-    )
+    find_zero(zero_fn, [solo_point, second_point.b], opts, second_point.fn_eval_count)
   end
 
   @spec bracket_x(t()) :: [float()]
