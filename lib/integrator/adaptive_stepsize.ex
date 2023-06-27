@@ -130,7 +130,12 @@ defmodule Integrator.AdaptiveStepsize do
   @zero_tolerance 1.0e-07
 
   options = [
-    abs_tol: [],
+    abs_tol: [
+      type: :any,
+      doc: """
+      The absolute tolerance used when computing the absolute relative norm. Defaults to 1.0e-06 in the Nx type that's been specified.
+      """
+    ],
     event_fn: [],
     initial_step: [],
     integrator: [],
@@ -139,8 +144,17 @@ defmodule Integrator.AdaptiveStepsize do
       doc: "The maximum number of permissible errors before the integration is halted.",
       default: 5_000
     ],
-    max_step: [],
-    norm_control: [],
+    max_step: [
+      type: :any,
+      doc: """
+      The default max time step.  The default value is determined by the start and end times.
+      """
+    ],
+    norm_control: [
+      type: :boolean,
+      doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
+      default: true
+    ],
     output_fn: [],
     refine: [
       type: {:in, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, :fixed_times]},
@@ -150,7 +164,12 @@ defmodule Integrator.AdaptiveStepsize do
       """,
       default: 4
     ],
-    rel_tol: [],
+    rel_tol: [
+      type: :any,
+      doc: """
+       The relative tolerance used when computing the absolute relative norm. Defaults to 1.0e-03 in the Nx type that's been specified.
+      """
+    ],
     speed: [
       type: :any,
       doc: """
@@ -164,10 +183,16 @@ defmodule Integrator.AdaptiveStepsize do
       doc: "Indicates whether or not to store the results of the integration.",
       default: true
     ],
-    type: []
+    type: [
+      type: {:in, [:f32, :f64]},
+      doc: "The numeric type to use for the integration.",
+      default: :f64
+    ]
   ]
 
   @options_schema NimbleOptions.new!(options)
+  def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
+
   @type options_t() :: unquote(NimbleOptions.option_typespec(@options_schema))
 
   # :no_delay means to perform the integration as fast as possible
@@ -201,8 +226,8 @@ defmodule Integrator.AdaptiveStepsize do
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
     opts = opts |> NimbleOptions.validate!(@options_schema)
     nx_type = opts[:type]
-
     opts = (abs_rel_norm_opts(nx_type) ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
+
     fixed_times = fixed_times |> drop_first_point()
 
     # The Nx types of :initial_tstep and opts[:max_step] need to be checked PRIOR to the call to Nx.min()
@@ -329,7 +354,7 @@ defmodule Integrator.AdaptiveStepsize do
   """
   @spec abs_rel_norm_opts(Nx.Type.t()) :: Keyword.t()
   def abs_rel_norm_opts(nx_type) do
-    [abs_tol: Nx.tensor(1.0e-06, type: nx_type), rel_tol: Nx.tensor(1.0e-03, type: nx_type), norm_control: true]
+    [abs_tol: Nx.tensor(1.0e-06, type: nx_type), rel_tol: Nx.tensor(1.0e-03, type: nx_type)]
   end
 
   @doc """
@@ -773,7 +798,7 @@ defmodule Integrator.AdaptiveStepsize do
     Nx.broadcast(zero, {length_of_x})
   end
 
-  # Checks that the Nx types are in line with what is expected. This avoids args with mismatched types.
+  # 4Checks that the Nx types are in line with what is expected. This avoids args with mismatched types.
   @spec check_nx_type(Keyword.t(), Nx.Type.t()) :: atom()
   defp check_nx_type(args, expected_nx_type) do
     args
