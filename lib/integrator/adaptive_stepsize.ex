@@ -129,19 +129,59 @@ defmodule Integrator.AdaptiveStepsize do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @default_opts [
-    max_number_of_errors: 5_000,
-    refine: 4,
-    store_results?: true,
-    speed: :no_delay
+  options = [
+    abs_tol: [],
+    event_fn: [],
+    initial_step: [],
+    integrator: [],
+    max_number_of_errors: [
+      type: :integer,
+      doc: "The maximum number of permissible errors before the integration is halted.",
+      default: 5_000
+    ],
+    max_step: [],
+    norm_control: [],
+    output_fn: [],
+    refine: [
+      type: {:in, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, :fixed_times]},
+      doc: """
+      Indicates the number of additional interpolated points. 1 means no interpolation; 2 means one
+      additional interpolated point; etc. `:fixed_times` means that the output times are fixed.
+      """,
+      default: 4
+    ],
+    rel_tol: [],
+    speed: [
+      type: :any,
+      doc: """
+      `:no_delay` means to simulate as fast as possible. 1.0 means real time, 2.0 means twice as fast as real time,
+      0.5 means half as fast as real time, etc.
+      """,
+      default: :no_delay
+    ],
+    store_results?: [
+      type: :boolean,
+      doc: "Indicates whether or not to store the results of the integration.",
+      default: true
+    ],
+    type: []
   ]
+
+  @options_schema NimbleOptions.new!(options)
+  @type options_t() :: unquote(NimbleOptions.option_typespec(@options_schema))
 
   # :no_delay means to perform the integration as fast as possible
   # For float values, 1.0 means to integrate in real-time, 0.5 means half of real-time, 2.0 means twice as fast as real time, etc.
   @type speed :: :no_delay | float()
 
   @doc """
-  Integrates a set of ODEs. Originally adapted from the Octave
+  Integrates a set of ODEs.
+
+  ## Options
+
+  #{NimbleOptions.docs(@options_schema)}
+
+  Originally adapted from the Octave
   [integrate_adaptive.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/integrate_adaptive.m)
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Adaptive_stepsize)
@@ -159,8 +199,10 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
+    opts = opts |> NimbleOptions.validate!(@options_schema)
     nx_type = opts[:type]
-    opts = (@default_opts ++ abs_rel_norm_opts(nx_type) ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
+
+    opts = (abs_rel_norm_opts(nx_type) ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
     fixed_times = fixed_times |> drop_first_point()
 
     # The Nx types of :initial_tstep and opts[:max_step] need to be checked PRIOR to the call to Nx.min()
