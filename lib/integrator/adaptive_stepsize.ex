@@ -136,9 +136,18 @@ defmodule Integrator.AdaptiveStepsize do
       The absolute tolerance used when computing the absolute relative norm. Defaults to 1.0e-06 in the Nx type that's been specified.
       """
     ],
-    event_fn: [],
+    event_fn: [
+      type: {:or, [{:fun, 2}, nil]},
+      doc: "A 2 arity function which determines whether an event has occured.  If so, the integration is halted.",
+      default: nil
+    ],
     initial_step: [],
-    integrator: [],
+    # I should be able to delete option :integrator
+    integrator: [
+      #   type: {:in, [DormandPrince45, BogackiShampine23]},
+      #   doc: "The type of integrator to use.",
+      #   default: DormandPrince45
+    ],
     max_number_of_errors: [
       type: :integer,
       doc: "The maximum number of permissible errors before the integration is halted.",
@@ -155,9 +164,13 @@ defmodule Integrator.AdaptiveStepsize do
       doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
       default: true
     ],
-    output_fn: [],
+    output_fn: [
+      type: {:or, [{:fun, 2}, nil]},
+      doc: "A 2 arity function which is called at each output point.",
+      default: nil
+    ],
     refine: [
-      type: {:in, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, :fixed_times]},
+      type: {:or, [:atom, :integer]},
       doc: """
       Indicates the number of additional interpolated points. 1 means no interpolation; 2 means one
       additional interpolated point; etc. `:fixed_times` means that the output times are fixed.
@@ -171,7 +184,7 @@ defmodule Integrator.AdaptiveStepsize do
       """
     ],
     speed: [
-      type: :any,
+      type: {:or, [:atom, :float]},
       doc: """
       `:no_delay` means to simulate as fast as possible. 1.0 means real time, 2.0 means twice as fast as real time,
       0.5 means half as fast as real time, etc.
