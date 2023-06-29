@@ -141,13 +141,6 @@ defmodule Integrator.AdaptiveStepsize do
       doc: "A 2 arity function which determines whether an event has occured.  If so, the integration is halted.",
       default: nil
     ],
-    initial_step: [],
-    # I should be able to delete option :integrator
-    integrator: [
-      #   type: {:in, [DormandPrince45, BogackiShampine23]},
-      #   doc: "The type of integrator to use.",
-      #   default: DormandPrince45
-    ],
     max_number_of_errors: [
       type: :integer,
       doc: "The maximum number of permissible errors before the integration is halted.",
@@ -170,7 +163,7 @@ defmodule Integrator.AdaptiveStepsize do
       default: nil
     ],
     refine: [
-      type: {:or, [:atom, :integer]},
+      type: {:or, [:atom, :pos_integer]},
       doc: """
       Indicates the number of additional interpolated points. 1 means no interpolation; 2 means one
       additional interpolated point; etc. `:fixed_times` means that the output times are fixed.
@@ -204,7 +197,8 @@ defmodule Integrator.AdaptiveStepsize do
   ]
 
   @options_schema NimbleOptions.new!(options)
-  def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
+  @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
+  def option_keys, do: NimbleOptions.validate!(@options_currently_without_nimble_defaults, @options_schema) |> Keyword.keys()
 
   @type options_t() :: unquote(NimbleOptions.option_typespec(@options_schema))
 

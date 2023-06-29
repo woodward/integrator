@@ -66,13 +66,12 @@ defmodule Integrator do
       initial_step,
       x0,
       order,
-      opts
-      # adaptive_stepsize_opts_only(opts)
+      filter_only_adaptive_stepsize_opts(opts)
     )
   end
 
-  @spec adaptive_stepsize_opts_only(Keyword.t()) :: Keyword.t()
-  defp adaptive_stepsize_opts_only(opts) do
+  @spec filter_only_adaptive_stepsize_opts(Keyword.t()) :: Keyword.t()
+  defp filter_only_adaptive_stepsize_opts(opts) do
     adaptive_stepsize_opts_keys = AdaptiveStepsize.option_keys()
     opts |> Keyword.filter(fn {key, _value} -> key in adaptive_stepsize_opts_keys end)
   end
