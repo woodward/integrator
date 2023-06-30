@@ -128,7 +128,7 @@ defmodule IntegratorTest do
     test "raises an exception for an undefined integrator", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       opts = [integrator: :undefined_integrator!]
 
-      assert_raise RuntimeError, fn ->
+      assert_raise NimbleOptions.ValidationError, fn ->
         Integrator.integrate(&van_der_pol_fn/2, [t_initial, t_final], initial_x, opts)
       end
     end

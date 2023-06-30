@@ -26,9 +26,22 @@ defmodule Integrator do
     ode23: 1
   }
 
-  @default_opts [
-    integrator: :ode45
+  options = [
+    abs_tol: [],
+    event_fn: [],
+    initial_step: [],
+    integrator: [
+      type: {:in, [:ode45, :ode23]},
+      default: :ode45
+    ],
+    max_step: [],
+    norm_control: [],
+    refine: [],
+    rel_tol: [],
+    type: []
   ]
+
+  @options_schema NimbleOptions.new!(options)
 
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
@@ -40,8 +53,12 @@ defmodule Integrator do
           opts :: Keyword.t()
         ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start_t_end, x0, opts \\ []) do
-    opts = opts |> Keyword.put_new_lazy(:type, fn -> Nx.type(x0) |> Nx.Type.to_string() |> String.to_atom() end)
-    opts = (@default_opts ++ AdaptiveStepsize.abs_rel_norm_opts(opts[:type])) |> Keyword.merge(opts) |> set_default_refine_opt()
+    opts =
+      opts
+      |> NimbleOptions.validate!(@options_schema)
+      |> Keyword.put_new_lazy(:type, fn -> Nx.type(x0) |> Nx.Type.to_string() |> String.to_atom() end)
+
+    opts = AdaptiveStepsize.abs_rel_norm_opts(opts[:type]) |> Keyword.merge(opts) |> set_default_refine_opt()
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->
