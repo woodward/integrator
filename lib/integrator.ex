@@ -27,8 +27,18 @@ defmodule Integrator do
   }
 
   options = [
-    initial_step: [],
+    initial_step: [
+      doc: """
+      The initial stepsize. If not provided, a stepsize will be chosen automatically. Can be a float
+      or a Nx tensor.
+      """,
+      type: {:or, [:float, :any]}
+    ],
     integrator: [
+      doc: """
+      The integrator to use. Currently only :ode45 and :ode23 are supported, which correspond to
+      DormandPrince45 and BogackiShampine23, respectively.
+      """,
       type: {:in, [:ode45, :ode23]},
       default: :ode45
     ]
@@ -37,7 +47,11 @@ defmodule Integrator do
   @options_schema NimbleOptions.new!(AdaptiveStepsize.options_schema().schema |> Keyword.merge(options))
 
   @doc """
-  Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method
+  Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method.
+
+  ## Options
+
+  #{NimbleOptions.docs(@options_schema)}
   """
   @spec integrate(
           ode_fn :: RungeKutta.ode_fn_t(),
