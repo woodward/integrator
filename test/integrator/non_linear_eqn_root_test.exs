@@ -374,7 +374,7 @@ defmodule Integrator.NonLinearEqnRootTest do
     test "returns defaults if no opts are provided" do
       opts = []
 
-      {:ok, default_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+      {:ok, default_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(default_opts)) == [
                machine_eps: 2.220446049250313e-16,
@@ -389,7 +389,7 @@ defmodule Integrator.NonLinearEqnRootTest do
     test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
       opts = [type: :f64]
 
-      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 2.220446049250313e-16,
@@ -401,7 +401,7 @@ defmodule Integrator.NonLinearEqnRootTest do
              ]
 
       opts = [type: :f32]
-      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 1.1920928955078125e-07,
@@ -415,7 +415,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
     test "use the value for :machine_eps if one is provided" do
       opts = [machine_eps: 1.0e-05]
-      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                tolerance: 2.220446049250313e-16,
@@ -429,7 +429,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
     test "use the value for :tolerance if one is provided" do
       opts = [tolerance: 1.0e-05]
-      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.get_options_schema())
+      {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
                machine_eps: 2.220446049250313e-16,

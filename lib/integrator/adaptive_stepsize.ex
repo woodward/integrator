@@ -188,15 +188,10 @@ defmodule Integrator.AdaptiveStepsize do
       type: :boolean,
       doc: "Indicates whether or not to store the results of the integration.",
       default: true
-    ],
-    type: [
-      type: {:in, [:f32, :f64]},
-      doc: "The numeric type to use for the integration.",
-      default: :f64
     ]
   ]
 
-  @options_schema NimbleOptions.new!(options)
+  @options_schema NimbleOptions.new!(NonLinearEqnRoot.options_schema().schema |> Keyword.merge(options))
   @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
   def option_keys, do: NimbleOptions.validate!(@options_currently_without_nimble_defaults, @options_schema) |> Keyword.keys()
 
@@ -757,13 +752,19 @@ defmodule Integrator.AdaptiveStepsize do
       value |> Nx.to_number()
     end
 
-    root = NonLinearEqnRoot.find_zero(zero_fn, [Nx.to_number(step.t_old), Nx.to_number(step.t_new)], root_opts_only(opts))
+    root =
+      NonLinearEqnRoot.find_zero(
+        zero_fn,
+        [Nx.to_number(step.t_old), Nx.to_number(step.t_new)],
+        only_non_linear_eqn_root_opts(opts)
+      )
+
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
     %ComputedStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
 
-  @spec root_opts_only(Keyword.t()) :: Keyword.t()
-  defp root_opts_only(opts) do
+  @spec only_non_linear_eqn_root_opts(Keyword.t()) :: Keyword.t()
+  defp only_non_linear_eqn_root_opts(opts) do
     non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
     opts |> Keyword.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
   end

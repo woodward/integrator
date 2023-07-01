@@ -94,12 +94,12 @@ defmodule Integrator.NonLinearEqnRoot do
   options = [
     max_iterations: [
       type: :integer,
-      doc: "The maximum allowed number of iterations.",
+      doc: "The maximum allowed number of iterations when finding a root.",
       default: 1000
     ],
     max_fn_eval_count: [
       type: :integer,
-      doc: "The maximum allowed number of function evaluations.",
+      doc: "The maximum allowed number of function evaluations when finding a root.",
       default: 1000
     ],
     type: [
@@ -113,12 +113,12 @@ defmodule Integrator.NonLinearEqnRoot do
     ],
     tolerance: [
       type: :float,
-      doc: "The tolerance for the convergence. Defaults to Nx.Constants.epsilon/1 for this Nx type."
+      doc: "The tolerance for the convergence when finding a root. Defaults to Nx.Constants.epsilon/1 for this Nx type."
     ],
     nonlinear_eqn_root_output_fn: [
       # Ideally the type for this should be set to a function with arity 2, but I could not get that to work:
       type: :any,
-      doc: "An output function to call so intermediate results can be retrieved",
+      doc: "An output function to call so intermediate results can be retrieved when finding a root.",
       default: nil
     ]
   ]
@@ -126,7 +126,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @options_schema NimbleOptions.new!(options)
   @type options_t() :: unquote(NimbleOptions.option_typespec(@options_schema))
 
-  def get_options_schema, do: @options_schema
+  def options_schema, do: @options_schema
 
   @initial_mu 0.5
 
