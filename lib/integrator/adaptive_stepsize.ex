@@ -165,7 +165,7 @@ defmodule Integrator.AdaptiveStepsize do
     refine: [
       type: {:or, [:atom, :pos_integer]},
       doc: """
-      Indicates the number of additional interpolated points. 1 means no interpolation; 2 means one
+      Indicates the number of additional interpolated points. `1` means no interpolation; `2` means one
       additional interpolated point; etc. `:fixed_times` means that the output times are fixed.
       """,
       default: 4
@@ -179,8 +179,8 @@ defmodule Integrator.AdaptiveStepsize do
     speed: [
       type: {:or, [:atom, :float]},
       doc: """
-      `:no_delay` means to simulate as fast as possible. 1.0 means real time, 2.0 means twice as fast as real time,
-      0.5 means half as fast as real time, etc.
+      `:no_delay` means to simulate as fast as possible. `1.0` means real time, `2.0` means twice as fast as real time,
+      `0.5` means half as fast as real time, etc.
       """,
       default: :no_delay
     ],
@@ -191,8 +191,12 @@ defmodule Integrator.AdaptiveStepsize do
     ]
   ]
 
+  @options_schema_adaptive_stepsize_only NimbleOptions.new!(options)
+  def options_schema_adaptive_stepsize_only, do: @options_schema_adaptive_stepsize_only
+
   @options_schema NimbleOptions.new!(NonLinearEqnRoot.options_schema().schema |> Keyword.merge(options))
   def options_schema, do: @options_schema
+
   @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
   def option_keys, do: NimbleOptions.validate!(@options_currently_without_nimble_defaults, @options_schema) |> Keyword.keys()
 
@@ -207,7 +211,12 @@ defmodule Integrator.AdaptiveStepsize do
 
   ## Options
 
-  #{NimbleOptions.docs(@options_schema)}
+  #{NimbleOptions.docs(@options_schema_adaptive_stepsize_only)}
+
+  ### Additional Options
+
+  Also see the options for the `Integrator.NonLinearEqnRoot.find_zero/4` which are passed
+  into `integrate/10`.
 
   Originally adapted from the Octave
   [integrate_adaptive.m](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/integrate_adaptive.m)

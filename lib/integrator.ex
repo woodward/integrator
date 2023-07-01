@@ -37,13 +37,14 @@ defmodule Integrator do
     integrator: [
       doc: """
       The integrator to use. Currently only :ode45 and :ode23 are supported, which correspond to
-      DormandPrince45 and BogackiShampine23, respectively.
+      `Integrator.RungeKutta.DormandPrince45` and `Integrator.RungeKutta.BogackiShampine23`, respectively.
       """,
       type: {:in, [:ode45, :ode23]},
       default: :ode45
     ]
   ]
 
+  @options_schema_integrator_only NimbleOptions.new!(options)
   @options_schema NimbleOptions.new!(AdaptiveStepsize.options_schema().schema |> Keyword.merge(options))
 
   @doc """
@@ -51,7 +52,15 @@ defmodule Integrator do
 
   ## Options
 
-  #{NimbleOptions.docs(@options_schema)}
+  #{NimbleOptions.docs(@options_schema_integrator_only)}
+
+  ### Additional Options
+
+  Also see the options for these functions which are passed through:
+
+  * `Integrator.NonLinearEqnRoot.find_zero/4`
+  * `Integrator.AdaptiveStepsize.integrate/10`
+
   """
   @spec integrate(
           ode_fn :: RungeKutta.ode_fn_t(),
