@@ -4,7 +4,7 @@ defmodule Integrator.MultiIntegrator do
   in the `ballode.m` example.
   """
 
-  alias Integrator.{AdaptiveStepsize, RungeKutta}
+  alias Integrator.{AdaptiveStepsize, NonLinearEqnRoot, RungeKutta}
 
   @type integration_status :: :halt | :continue | :completed
   @zero_tolerance 1.0e-07
@@ -30,8 +30,23 @@ defmodule Integrator.MultiIntegrator do
     integration_status: :continue
   ]
 
+  all_options =
+    NonLinearEqnRoot.options_schema().schema
+    |> Keyword.merge(AdaptiveStepsize.options_schema_adaptive_stepsize_only().schema)
+    |> Keyword.merge(Integrator.options_schema_integrator_only().schema)
+
+  @options_schema NimbleOptions.new!(all_options)
+
   @doc """
   Integrates multiple times, with a transition function handling the junction between integrations
+
+  ## Options
+  See the options for these functions which are passed through:
+
+  * `Integrator.NonLinearEqnRoot.find_zero/4`
+  * `Integrator.AdaptiveStepsize.integrate/10`
+  * `Integrator.integrate/4`
+
   """
   @spec integrate(
           ode_fn :: RungeKutta.ode_fn_t(),
@@ -43,6 +58,7 @@ defmodule Integrator.MultiIntegrator do
           opts :: Keyword.t()
         ) :: t()
   def integrate(ode_fn, event_fn, transition_fn, t_start, t_end, x0, opts) do
+    opts = opts |> NimbleOptions.validate!(@options_schema)
     multi = %__MODULE__{t_start: t_start, t_end: t_end}
     opts = opts |> Keyword.merge(event_fn: event_fn)
     integrate_next_segment(multi, :continue, ode_fn, transition_fn, Nx.to_number(t_start), Nx.to_number(t_end), x0, opts)

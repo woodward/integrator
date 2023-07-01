@@ -45,6 +45,8 @@ defmodule Integrator do
   ]
 
   @options_schema_integrator_only NimbleOptions.new!(options)
+  def options_schema_integrator_only, do: @options_schema_integrator_only
+
   @options_schema NimbleOptions.new!(AdaptiveStepsize.options_schema().schema |> Keyword.merge(options))
 
   @doc """
