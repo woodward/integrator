@@ -214,39 +214,6 @@ defmodule IntegratorTest do
   # ===========================================================================
   # Tests of private functions below here:
 
-  describe "set_default_refine_opt/1" do
-    setup do
-      expose(Integrator, set_default_refine_opt: 1)
-    end
-
-    test "sets the default refine based on the integrator" do
-      opts = [integrator: :ode45]
-
-      assert private(Integrator.set_default_refine_opt(opts)) == [
-               integrator: :ode45,
-               refine: 4
-             ]
-    end
-
-    test "uses the user-specified refine value if one is provided" do
-      opts = [integrator: :ode45, refine: 3]
-
-      assert private(Integrator.set_default_refine_opt(opts)) == [
-               integrator: :ode45,
-               refine: 3
-             ]
-    end
-
-    test "uses the default :refine for :ode23" do
-      opts = [integrator: :ode23]
-
-      assert private(Integrator.set_default_refine_opt(opts)) == [
-               integrator: :ode23,
-               refine: 1
-             ]
-    end
-  end
-
   describe "parse_start_end/1" do
     setup do
       expose(Integrator, parse_start_end: 1)

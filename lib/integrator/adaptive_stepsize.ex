@@ -231,14 +231,17 @@ defmodule Integrator.AdaptiveStepsize do
           opts :: Keyword.t()
         ) :: t()
   def integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, fixed_times, initial_tstep, x0, order, opts \\ []) do
-    opts = opts |> NimbleOptions.validate!(@options_schema)
-    nx_type = opts[:type]
-    opts = (abs_rel_norm_opts(nx_type) ++ [max_step: default_max_step(t_start, t_end)]) |> Keyword.merge(opts)
+    opts =
+      opts
+      |> NimbleOptions.validate!(@options_schema)
+      |> abs_rel_norm_opts()
+      |> Keyword.put_new_lazy(:max_step, fn -> default_max_step(t_start, t_end) end)
 
     fixed_times = fixed_times |> drop_first_point()
 
     # The Nx types of :initial_tstep and opts[:max_step] need to be checked PRIOR to the call to Nx.min()
     # as Nx.min() will convert :f32's to :f64's:
+    nx_type = opts[:type]
     check_nx_type([initial_tstep: initial_tstep, max_step: opts[:max_step]], nx_type)
     initial_tstep = Nx.min(Nx.abs(initial_tstep), opts[:max_step])
 
@@ -359,9 +362,13 @@ defmodule Integrator.AdaptiveStepsize do
   Gets the default values used by the absolute-relative norm; e.g., `abs_tol`, `rel_tol`, and
   `norm_control`
   """
-  @spec abs_rel_norm_opts(Nx.Type.t()) :: Keyword.t()
-  def abs_rel_norm_opts(nx_type) do
-    [abs_tol: Nx.tensor(1.0e-06, type: nx_type), rel_tol: Nx.tensor(1.0e-03, type: nx_type)]
+  @spec abs_rel_norm_opts(Keyword.t()) :: Keyword.t()
+  def abs_rel_norm_opts(opts) do
+    nx_type = Keyword.get(opts, :type, :f64)
+
+    opts
+    |> Keyword.put_new_lazy(:abs_tol, fn -> Nx.tensor(1.0e-06, type: nx_type) end)
+    |> Keyword.put_new_lazy(:rel_tol, fn -> Nx.tensor(1.0e-03, type: nx_type) end)
   end
 
   @doc """

@@ -57,8 +57,9 @@ defmodule Integrator do
       opts
       |> NimbleOptions.validate!(@options_schema)
       |> Keyword.put_new_lazy(:type, fn -> Nx.type(x0) |> Nx.Type.to_string() |> String.to_atom() end)
+      |> AdaptiveStepsize.abs_rel_norm_opts()
 
-    opts = AdaptiveStepsize.abs_rel_norm_opts(opts[:type]) |> Keyword.merge(opts) |> set_default_refine_opt()
+    opts = opts |> Keyword.put_new_lazy(:refine, fn -> Map.get(@default_refine_opts, opts[:integrator]) end)
 
     integrator_mod =
       Map.get_lazy(@integrator_options, opts[:integrator], fn ->
@@ -83,12 +84,12 @@ defmodule Integrator do
       initial_step,
       x0,
       order,
-      filter_only_adaptive_stepsize_opts(opts)
+      only_adaptive_stepsize_opts(opts)
     )
   end
 
-  @spec filter_only_adaptive_stepsize_opts(Keyword.t()) :: Keyword.t()
-  defp filter_only_adaptive_stepsize_opts(opts) do
+  @spec only_adaptive_stepsize_opts(Keyword.t()) :: Keyword.t()
+  defp only_adaptive_stepsize_opts(opts) do
     adaptive_stepsize_opts_keys = AdaptiveStepsize.option_keys()
     opts |> Keyword.filter(fn {key, _value} -> key in adaptive_stepsize_opts_keys end)
   end
@@ -111,15 +112,5 @@ defmodule Integrator do
       |> Enum.reverse()
 
     {t_start, t_end, fixed_times}
-  end
-
-  @spec set_default_refine_opt(Keyword.t()) :: Keyword.t()
-  defp set_default_refine_opt(opts) do
-    if opts[:refine] do
-      opts
-    else
-      default_refine_for_integrator = Map.get(@default_refine_opts, opts[:integrator])
-      opts |> Keyword.merge(refine: default_refine_for_integrator)
-    end
   end
 end
