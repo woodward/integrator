@@ -27,21 +27,14 @@ defmodule Integrator do
   }
 
   options = [
-    abs_tol: [],
-    event_fn: [],
     initial_step: [],
     integrator: [
       type: {:in, [:ode45, :ode23]},
       default: :ode45
-    ],
-    max_step: [],
-    norm_control: [],
-    refine: [],
-    rel_tol: [],
-    type: []
+    ]
   ]
 
-  @options_schema NimbleOptions.new!(options)
+  @options_schema NimbleOptions.new!(AdaptiveStepsize.options_schema().schema |> Keyword.merge(options))
 
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method

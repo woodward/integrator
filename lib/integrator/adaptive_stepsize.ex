@@ -192,6 +192,7 @@ defmodule Integrator.AdaptiveStepsize do
   ]
 
   @options_schema NimbleOptions.new!(NonLinearEqnRoot.options_schema().schema |> Keyword.merge(options))
+  def options_schema, do: @options_schema
   @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
   def option_keys, do: NimbleOptions.validate!(@options_currently_without_nimble_defaults, @options_schema) |> Keyword.keys()
 
