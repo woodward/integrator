@@ -59,14 +59,14 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     k1 = ode_fn.(s[1], x + k0 * aa[1][0])
     k2 = ode_fn.(s[2], x + k1 * aa[2][1])
 
-    k_0_2 = Nx.stack([k0, k1, k2]) |> Nx.transpose()
+    k_0_2 = Nx.stack([k0, k1, k2], axis: 1)
 
     # 3rd order approximation
     x_next = x + Nx.dot(k_0_2, cc)
 
     k3 = ode_fn.(t_next, x_next)
     cc_prime = dt * c_prime
-    k_new = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
+    k_new = Nx.stack([k0, k1, k2, k3], axis: 1)
     x_error_est = x + Nx.dot(k_new, cc_prime)
 
     {x_next, x_error_est, k_new}

@@ -77,6 +77,40 @@ defmodule Integrator.NxTest do
     end
   end
 
+  describe "stack along different axis" do
+    setup do
+      k1 = Nx.tensor([1, 2])
+      k2 = Nx.tensor([3, 4])
+      k3 = Nx.tensor([5, 6])
+      %{k1: k1, k2: k2, k3: k3}
+    end
+
+    test "works - old way", %{k1: k1, k2: k2, k3: k3} do
+      old_way = stack_old_way(k1, k2, k3)
+      expected = ~M[
+        1 3 5
+        2 4 6 ]s64
+      assert_all_close(old_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
+    end
+
+    test "works - new way", %{k1: k1, k2: k2, k3: k3} do
+      new_way = stack_new_way(k1, k2, k3)
+      # IO.inspect(new_way)
+      expected = ~M[
+        1 3 5
+        2 4 6 ]s64
+      assert_all_close(new_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
+    end
+  end
+
+  defn stack_new_way(k1, k2, k3) do
+    Nx.stack([k1, k2, k3], axis: 1)
+  end
+
+  defn stack_old_way(k1, k2, k3) do
+    Nx.stack([k1, k2, k3]) |> Nx.transpose()
+  end
+
   defn try_to_stack(k1, k2) do
     Nx.stack([k1, k2]) |> Nx.transpose()
   end
