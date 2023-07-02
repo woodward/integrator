@@ -84,16 +84,20 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     k1 = ode_fn.(s[1], x + k0 * aa_1)
 
     k_0_1 = Nx.stack([k0, k1]) |> Nx.transpose()
-    k2 = ode_fn.(s[2], x + Nx.dot(k_0_1, Nx.transpose(aa_2)))
+    # k2 = ode_fn.(s[2], x + Nx.dot(k_0_1, Nx.transpose(aa_2)))
+    k2 = ode_fn.(s[2], x + Nx.dot(k_0_1, [1], aa_2, [0]))
 
     k_0_2 = Nx.stack([k0, k1, k2]) |> Nx.transpose()
-    k3 = ode_fn.(s[3], x + Nx.dot(k_0_2, Nx.transpose(aa_3)))
+    # k3 = ode_fn.(s[3], x + Nx.dot(k_0_2, Nx.transpose(aa_3)))
+    k3 = ode_fn.(s[3], x + Nx.dot(k_0_2, [1], aa_3, [0]))
 
     k_0_3 = Nx.stack([k0, k1, k2, k3]) |> Nx.transpose()
-    k4 = ode_fn.(s[4], x + Nx.dot(k_0_3, Nx.transpose(aa_4)))
+    # k4 = ode_fn.(s[4], x + Nx.dot(k_0_3, Nx.transpose(aa_4)))
+    k4 = ode_fn.(s[4], x + Nx.dot(k_0_3, [1], aa_4, [0]))
 
     k_0_4 = Nx.stack([k0, k1, k2, k3, k4]) |> Nx.transpose()
-    k5 = ode_fn.(s[5], x + Nx.dot(k_0_4, Nx.transpose(aa_5)))
+    # k5 = ode_fn.(s[5], x + Nx.dot(k_0_4, Nx.transpose(aa_5)))
+    k5 = ode_fn.(s[5], x + Nx.dot(k_0_4, [1], aa_5, [0]))
 
     k_0_5 = Nx.stack([k0, k1, k2, k3, k4, k5]) |> Nx.transpose()
     x_next = x + Nx.dot(k_0_5, cc)

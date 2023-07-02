@@ -3,6 +3,8 @@ defmodule Integrator.NxTest do
   use Integrator.TestCase
   import Nx.Defn
 
+  import Nx, only: :sigils
+
   describe "getting a column" do
     test "can get a column from a matrix" do
       # full_matrix = Nx.iota({3, 4})
@@ -122,6 +124,46 @@ defmodule Integrator.NxTest do
       vec = Nx.tensor([1, 2, 3, 4, 5])
       _sliced = Nx.slice_along_axis(vec, 1, 4, axis: 0)
       # IO.inspect(sliced)
+    end
+  end
+
+  describe "Nx.dot/4" do
+    test "works better than dot, transpose" do
+      k_0_4 = ~M[
+        0.09819789615529644 0.09728161794756425 0.09682469517700483 0.09454141156537164 0.09413618004462349
+       -2.303556017851066  -2.3008378798836384 -2.299481814584658  -2.2927038466248972 -2.2915004503322134  ]f64
+
+      aa_5 = ~V[ 0.00566076962506267  -0.021395034803386472  0.017713398289163906  5.53709527482009e-4  -5.440084171622433e-4]f64
+
+      expected = ~V[ 1.907640620018197e-4 -0.004567927089507702]f64
+
+      old_way = Nx.dot(k_0_4, Nx.transpose(aa_5))
+      assert_all_close(old_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
+
+      # Examples from docs:
+      # t1 = Nx.tensor([[1, 2], [3, 4]], names: [:x, :y])
+      # t1 = [1, 2]
+      #      [3, 4]
+      # t2 = Nx.tensor([[10, 20], [30, 40]], names: [:height, :width])
+      # t2 = [10, 20]
+      #      [30, 40]
+      # result = Nx.dot(t1, [0], t2, [0])
+      # IO.inspect(result)
+
+      # t1 = Nx.tensor([[0.0, 1.0, 2.0], [3.0, 4.0, 5.0]])
+      # t1 = [0.0, 1.0, 2.0]
+      #      [3.0, 4.0, 5.0]
+      #
+      # t2 = Nx.tensor([[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]])
+      # t2 = [0.0, 1.0]
+      #      [2.0, 3.0]
+      #      [4.0, 5.0]
+      # result2 = Nx.dot(t1, [0, 1], t2, [1, 0])
+      # IO.inspect(result2)
+      # result2 = 50
+
+      new_way = Nx.dot(k_0_4, [1], aa_5, [0])
+      assert_all_close(new_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
 end
