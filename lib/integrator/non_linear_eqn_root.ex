@@ -332,19 +332,19 @@ defmodule Integrator.NonLinearEqnRoot do
     x = %{a: a, fa: fa, b: nil, fb: nil, fn_eval_count: 1}
 
     # Search in an ever-widening range around the initial point:
-    searching_for_point(:continue, zero_fn, x, @search_values)
+    searching_for_2nd_point(:continue, zero_fn, x, @search_values)
   end
 
-  @spec searching_for_point(atom(), zero_fn_t(), map(), [float()]) :: map()
-  defp searching_for_point(:found, _zero_fn, x, _search_values), do: x
+  @spec searching_for_2nd_point(atom(), zero_fn_t(), map(), [float()]) :: map()
+  defp searching_for_2nd_point(:found, _zero_fn, x, _search_values), do: x
 
-  defp searching_for_point(:continue, zero_fn, x, search_values) do
+  defp searching_for_2nd_point(:continue, zero_fn, x, search_values) do
     [search | rest_of_search_values] = search_values
     b = x.a + x.a * search
     fb = zero_fn.(b)
     x = %{x | b: b, fb: fb, fn_eval_count: x.fn_eval_count + 1}
     status = if sign(x.fa) * sign(fb) <= 0, do: :found, else: :continue
-    searching_for_point(status, zero_fn, x, rest_of_search_values)
+    searching_for_2nd_point(status, zero_fn, x, rest_of_search_values)
   end
 
   @spec interpolate(t(), interpolation_type()) :: float()
