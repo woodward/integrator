@@ -3,7 +3,7 @@ defmodule Integrator.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/woodward/integrator"
-  @version "0.1.1"
+  @version "0.1.2"
 
   def project do
     [
@@ -45,8 +45,7 @@ defmodule Integrator.MixProject do
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.0"},
       {:patch, "~> 0.12.0", only: :test},
-      # {:nx, "~> 0.5"}
-      {:nx, "~> 0.5.3"}
+      {:nx, "~> 0.5"}
       # {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
@@ -56,13 +55,14 @@ defmodule Integrator.MixProject do
       maintainers: ["Greg Woodward"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files: ~w(README.md lib)
+      files: ~w(README.md lib mix.exs LICENSE.md)
     ]
   end
 
   defp docs() do
     [
       main: "readme",
+      source_ref: "v#{@version}",
       source_url: @source_url,
       extras: [
         "README.md",
@@ -70,9 +70,7 @@ defmodule Integrator.MixProject do
         "guides/interpolation_and_fixed_times.livemd",
         "guides/output_functions.livemd",
         "guides/event_functions.livemd",
-        "guides/nonlinear_eqn_root.livemd",
-        "guides/dormand_prince_45.livemd",
-        "guides/bogacki_shampine_23.livemd"
+        "guides/nonlinear_eqn_root.livemd"
       ],
       before_closing_head_tag: &before_closing_head_tag/1,
       javascript_config_path: nil
