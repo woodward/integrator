@@ -404,8 +404,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
 
       assert private(NonLinearEqnRoot.merge_default_opts(merged_opts)) == [
-               machine_eps: 1.1920928955078125e-07,
-               tolerance: 1.1920928955078125e-07,
+               machine_eps: 1.1920929e-7,
+               tolerance: 1.1920929e-7,
                nonlinear_eqn_root_output_fn: nil,
                max_fn_eval_count: 1000,
                max_iterations: 1000,

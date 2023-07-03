@@ -559,12 +559,14 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @spec set_tolerance(Keyword.t()) :: Keyword.t()
   defp set_tolerance(opts) do
-    Keyword.put_new_lazy(opts, :tolerance, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+    # Keyword.put_new_lazy(opts, :tolerance, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+    Keyword.put_new_lazy(opts, :tolerance, fn -> Utils.epsilon(opts[:type]) end)
   end
 
   @spec set_machine_eps(Keyword.t()) :: Keyword.t()
   defp set_machine_eps(opts) do
-    Keyword.put_new_lazy(opts, :machine_eps, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+    # Keyword.put_new_lazy(opts, :machine_eps, fn -> Nx.to_number(Nx.Constants.epsilon(opts[:type])) end)
+    Keyword.put_new_lazy(opts, :machine_eps, fn -> Utils.epsilon(opts[:type]) end)
   end
 
   @spec merge_default_opts(Keyword.t()) :: Keyword.t()
