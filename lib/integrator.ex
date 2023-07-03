@@ -1,15 +1,11 @@
 defmodule Integrator do
   @moduledoc """
-  $$  F = M A $$
+  A library for solving non-stiff ordinary differential equations (ODEs).
 
-  or an inline equation via a single dollar sign, such as $ F = M A $
-
-  Some more equations:
-
-  $$ f(x) =  \\int_{-\\infty}^\\infty
-    f\\hat(\\xi)\\,e^{2 \\pi i \\xi x}
-    \\,d\\xi $$
-
+  `Integrator` uses either the Dormand-Prince 4/5 Runge Kutta algorithm, or the Bogacki-Shampine 2/3
+  Runge Kutta algorithm.  It is intended that the user only needs to call `Integrator.integrate/4`, and
+  the `Integrator.AdaptiveStepsize` and `Integrator.RungeKutta` modules are only exposed for advanced
+  users who want to use the underlying algorithms directly.
   """
 
   alias Integrator.AdaptiveStepsize

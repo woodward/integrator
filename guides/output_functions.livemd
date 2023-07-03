@@ -65,5 +65,6 @@ end
 
 opts = [output_fn: output_fn]
 
-solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+solution =
+  Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
 ```

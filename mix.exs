@@ -40,7 +40,7 @@ defmodule Integrator.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.0", only: :test},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:ex_doc, github: "elixir-lang/ex_doc", commit: "e3ef9c6b3c39bb8fa02effacd8c3334a9ef3961e"},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.0"},
       {:patch, "~> 0.12.0", only: :test},
