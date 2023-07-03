@@ -64,16 +64,11 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     cc = dt * c
     aa = dt * a
 
-    slice = fn aa, row ->
-      Nx.slice_along_axis(aa, row, 1) |> Nx.flatten() |> Nx.slice_along_axis(0, row)
-    end
-
-    aa_1 = slice.(aa, 1)
-    # Note that aa_1 is the same as aa[1][0]
-    aa_2 = slice.(aa, 2)
-    aa_3 = slice.(aa, 3)
-    aa_4 = slice.(aa, 4)
-    aa_5 = slice.(aa, 5)
+    aa_1 = aa[[1, 0]]
+    aa_2 = aa[[2, 0..1]]
+    aa_3 = aa[[3, 0..2]]
+    aa_4 = aa[[4, 0..3]]
+    aa_5 = aa[[5, 0..4]]
 
     last_k_vals_col = Nx.slice_along_axis(k_vals, 6, 1, axis: 1) |> Nx.flatten()
     zero_tolerance = 1.0e-04
