@@ -1,14 +1,10 @@
 # Output Functions
 
 ```elixir
-Mix.install(
-  [
-    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
-    {:kino_vega_lite, "~> 0.1.7"}
-  ],
-  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
-  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
-)
+Mix.install([
+  {:integrator, "~> 0.1.2"},
+  {:kino_vega_lite, "~> 0.1.7"}
+])
 ```
 
 ## Usage
@@ -40,9 +36,9 @@ Now, let's connect an output function to the simulation, and we'll inject a `Pro
 ```elixir
 alias Integrator.SampleEqns
 
-t_initial = 0.0
-t_final = 20.0
-x_initial = Nx.tensor([2.0, 0.0])
+t_initial = Nx.tensor(0.0, type: :f64)
+t_final = Nx.tensor(20.0, type: :f64)
+x_initial = Nx.tensor([2.0, 0.0], type: :f64)
 
 output_fn = fn t, x ->
   # t and x are lists of Nx tensors
@@ -63,7 +59,7 @@ output_fn = fn t, x ->
   end)
 end
 
-opts = [output_fn: output_fn]
+opts = [output_fn: output_fn, type: :f64]
 
 solution =
   Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)

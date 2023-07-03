@@ -1,14 +1,10 @@
 # Event Functions
 
 ```elixir
-Mix.install(
-  [
-    {:integrator, path: "/Users/Greg/Dynamics/Development/integrator/", env: :dev},
-    {:kino_vega_lite, "~> 0.1.7"}
-  ],
-  # config_path: Path.join("/Users/Greg/Dynamics/Development/integrator/", "config/config.exs"),
-  lockfile: Path.join("/Users/Greg/Dynamics/Development/integrator/", "mix.lock")
-)
+Mix.install([
+  {:integrator, "~> 0.1.2"},
+  {:kino_vega_lite, "~> 0.1.7"}
+])
 ```
 
 ## Usage
