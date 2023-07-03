@@ -26,6 +26,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
 
   @c_prime [7 / 24, 1 / 4, 1 / 3, 1 / 8]
 
+  # Should this be based on precision?
+  @zero_tolerance 1.0e-04
+
   @doc """
   Solves a set of non-stiff Ordinary Differential Equations (non-stiff ODEs) with the well-known
   explicit Bogacki-Shampine method of order 3.
@@ -47,9 +50,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     aa = dt * a
 
     last_k_vals_col = k_vals[[.., 3]]
-    # Turn this into a module variable? based on precision?
-    zero_tolerance = 1.0e-04
-    last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
+    last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < @zero_tolerance
 
     k0 = if last_col_empty?, do: ode_fn.(t, x), else: last_k_vals_col
 

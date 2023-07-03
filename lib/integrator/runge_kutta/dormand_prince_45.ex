@@ -44,6 +44,8 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   @impl RungeKutta
   def order, do: 5
 
+  @zero_tolerance 1.0e-04
+
   @doc """
   Integrates a system of ODEs with
   [Dormand-Prince]](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method).
@@ -71,8 +73,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     aa_5 = aa[[5, 0..4]]
 
     last_k_vals_col = k_vals[[.., 6]]
-    zero_tolerance = 1.0e-04
-    last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
+    last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < @zero_tolerance
 
     k0 = if last_col_empty?, do: ode_fn.(t, x), else: last_k_vals_col
 
