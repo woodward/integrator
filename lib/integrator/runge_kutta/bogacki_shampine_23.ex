@@ -45,8 +45,6 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     s = t + dt * b
     cc = dt * c
     aa = dt * a
-    # k = zeros (rows (x), 4);
-    # k = Nx.broadcast(0.0, {length_of_x, 4})
 
     last_k_vals_col = k_vals[[.., 3]]
     # Turn this into a module variable? based on precision?
