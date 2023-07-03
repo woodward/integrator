@@ -70,7 +70,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
     aa_4 = aa[[4, 0..3]]
     aa_5 = aa[[5, 0..4]]
 
-    last_k_vals_col = Nx.slice_along_axis(k_vals, 6, 1, axis: 1) |> Nx.flatten()
+    last_k_vals_col = k_vals[[.., 6]]
     zero_tolerance = 1.0e-04
     last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
 

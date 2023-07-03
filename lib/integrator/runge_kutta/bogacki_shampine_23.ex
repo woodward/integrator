@@ -48,10 +48,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
     # k = zeros (rows (x), 4);
     # k = Nx.broadcast(0.0, {length_of_x, 4})
 
+    last_k_vals_col = k_vals[[.., 3]]
     # Turn this into a module variable? based on precision?
     zero_tolerance = 1.0e-04
-
-    last_k_vals_col = Nx.slice_along_axis(k_vals, 3, 1, axis: 1) |> Nx.flatten()
     last_col_empty? = last_k_vals_col |> Nx.abs() |> Nx.sum() < zero_tolerance
 
     k0 = if last_col_empty?, do: ode_fn.(t, x), else: last_k_vals_col
