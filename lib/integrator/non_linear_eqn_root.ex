@@ -318,6 +318,22 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
 
+  defmodule SearchFor2ndPoint do
+    @moduledoc false
+    defstruct [:a, :fa, :b, :fb, :fn_eval_count]
+  end
+
+  @type search_for_2nd_point_t :: %SearchFor2ndPoint{
+          a: float() | nil,
+          b: float() | nil,
+          #
+          # Function evaluations; e.g., fb is fn(b):
+          fa: float() | nil,
+          fb: float() | nil,
+          #
+          fn_eval_count: integer()
+        }
+
   @spec find_2nd_starting_point(zero_fn_t(), float()) :: map()
   defp find_2nd_starting_point(zero_fn, a) do
     # For very small values, switch to absolute rather than relative search:
@@ -329,13 +345,13 @@ defmodule Integrator.NonLinearEqnRoot do
       end
 
     fa = zero_fn.(a)
-    x = %{a: a, fa: fa, b: nil, fb: nil, fn_eval_count: 1}
+    x = %SearchFor2ndPoint{a: a, fa: fa, b: nil, fb: nil, fn_eval_count: 1}
 
     # Search in an ever-widening range around the initial point:
     searching_for_2nd_point(:continue, zero_fn, x, @search_values)
   end
 
-  @spec searching_for_2nd_point(atom(), zero_fn_t(), map(), [float()]) :: map()
+  @spec searching_for_2nd_point(atom(), zero_fn_t(), search_for_2nd_point_t(), [float()]) :: map()
   defp searching_for_2nd_point(:found, _zero_fn, x, _search_values), do: x
 
   defp searching_for_2nd_point(:continue, zero_fn, x, search_values) do
