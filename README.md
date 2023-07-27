@@ -72,3 +72,29 @@ Hermite interpolation (for `ode23`)
   relative tolerance settings
 
 
+## So why whould I care??? A tool to solve ODEs? WTF??? 
+
+The basic gist of the project is that it is a tool in Elixir (that leverages [Nx](https://github.com/elixir-nx)) 
+to numerically solve sets of ordinary differential equations (ODEs).  Science and engineering 
+problems typically generate either sets of ODEs or partial differential equations (PDEs). So basically 
+`integrator` lets you solve any scientific or engineering problem which generates ODEs, which is a 
+HUGE class of problems (FYI, finite element methods are used to solve sets of PDEs).
+
+Fun fact: hundreds (or even thousands) of scientific problems had been formulated in the form of ODEs 
+since the time that Isaac Newton first invented calculus in the 1600's, but these problems remained 
+intractable & unsolvable for over three centuries other than a very small handful that were amenable 
+to a "closed form solution"; i.e., the ODEs could be solved analytically (i.e., via mathematical 
+manipulations). So there was this tragic dilemma; we could formulate these problems mathematically 
+since the 1600's - 1800's, but couldn't actually solve them. SAD! :disappointed:
+
+So one of the primary drivers to create the first digital computers in the 1940's - 1960's was 
+to solve ODEs. The space program, for example, would have been impossible without the numerical 
+solution of ODEs which represented the space flight trajectories, attitude, & control.  And before 
+the first digital computers, analog computers were used to solve ODEs back in the 1920's - 1940's.
+
+So believe it or not, the first computers were developed and used to solve ODEs, not play League of 
+Legends. :wink:
+
+These algorithms are battle-tested and in some cases have been around for decades; Matlab and Octave 
+are just relatively clean implementations of some of these algorithms, so I used them as the basis 
+for my Elixir versions.  
