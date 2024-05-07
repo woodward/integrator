@@ -38,14 +38,13 @@ defmodule Integrator.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:csv, "~> 3.0", only: :test},
-      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.30"},
-      # {:ex_doc, github: "elixir-lang/ex_doc", commit: "e3ef9c6b3c39bb8fa02effacd8c3334a9ef3961e"},
+      {:csv, "~> 3.2", only: :test},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.32", only: :dev},
       {:math, "~> 0.7"},
-      {:nimble_options, "~> 1.0"},
-      {:patch, "~> 0.12.0", only: :test},
-      {:nx, "~> 0.6"}
+      {:nimble_options, "~> 1.1"},
+      {:patch, "~> 0.13", only: :test},
+      {:nx, "~> 0.7"}
       # {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
