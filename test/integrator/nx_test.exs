@@ -1,8 +1,9 @@
 defmodule Integrator.NxTest do
   @moduledoc false
-  use Integrator.TestCase
-  import Nx.Defn
 
+  use Integrator.TestCase
+
+  import Nx.Defn
   import Nx, only: :sigils
 
   describe "getting a column" do

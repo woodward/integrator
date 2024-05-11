@@ -4,15 +4,14 @@ defmodule Integrator.NonLinearEqnRootTest do
   use Patch
   import Nx, only: :sigils
 
-  alias Integrator.NonLinearEqnRoot.{
-    BracketingFailureError,
-    InvalidInitialBracketError,
-    MaxFnEvalsExceededError,
-    MaxIterationsExceededError
-  }
 
+  alias Integrator.DummyOutput
+  alias Integrator.NonLinearEqnRoot
+  alias Integrator.NonLinearEqnRoot.BracketingFailureError
+  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.RungeKutta.DormandPrince45
-  alias Integrator.{DummyOutput, NonLinearEqnRoot}
 
   describe "find_zero" do
     test "sine function" do

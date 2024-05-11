@@ -12,14 +12,13 @@ defmodule Integrator.NonLinearEqnRoot do
   """
 
   import Integrator.Utils, only: [sign: 1]
-  alias Integrator.Utils
 
-  alias Integrator.NonLinearEqnRoot.{
-    BracketingFailureError,
-    InvalidInitialBracketError,
-    MaxFnEvalsExceededError,
-    MaxIterationsExceededError
-  }
+  alias Integrator.NonLinearEqnRoot.BracketingFailureError
+  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
+
+  alias Integrator.Utils
 
   @type zero_fn_t :: (float() -> float())
   @type output_fn_t :: (float(), float() -> any())

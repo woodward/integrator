@@ -5,7 +5,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
 
   Originally based on Octave [`runge_kutta_23.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_23.m)
   """
-  alias Integrator.{RungeKutta, Utils}
+  alias Integrator.RungeKutta
+  alias Integrator.Utils
+
   @behaviour RungeKutta
 
   import Nx.Defn

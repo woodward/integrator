@@ -20,7 +20,9 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   See the [Octave docs for ode45](https://docs.octave.org/interpreter/Matlab_002dcompatible-solvers.html#XREFode45)
   """
 
-  alias Integrator.{RungeKutta, Utils}
+  alias Integrator.RungeKutta
+  alias Integrator.Utils
+
   @behaviour RungeKutta
 
   import Nx.Defn

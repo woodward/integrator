@@ -4,7 +4,9 @@ defmodule Integrator.MultiIntegrator do
   in the `ballode.m` example.
   """
 
-  alias Integrator.{AdaptiveStepsize, NonLinearEqnRoot, RungeKutta}
+  alias Integrator.AdaptiveStepsize
+  alias Integrator.NonLinearEqnRoot
+  alias Integrator.RungeKutta
 
   @type integration_status :: :halt | :continue | :completed
   @zero_tolerance 1.0e-07

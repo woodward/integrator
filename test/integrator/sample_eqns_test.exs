@@ -1,7 +1,9 @@
 defmodule Integrator.SampleEqnsTest do
   @moduledoc false
   use Integrator.TestCase
+
   import Nx, only: :sigils
+
   alias Integrator.SampleEqns
 
   describe "van_der_pol_fn/2" do

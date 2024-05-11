@@ -4,8 +4,12 @@ defmodule Integrator.AdaptiveStepsize do
   """
   import Nx.Defn
 
-  alias Integrator.{MaxErrorsExceededError, NonLinearEqnRoot, RungeKutta, Utils}
-  alias Integrator.AdaptiveStepsize.{ArgPrecisionError, MaxErrorsExceededError}
+  alias Integrator.AdaptiveStepsize.ArgPrecisionError
+  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
+  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
+  alias Integrator.NonLinearEqnRoot
+  alias Integrator.RungeKutta
+  alias Integrator.Utils
 
   defmodule ComputedStep do
     @moduledoc """

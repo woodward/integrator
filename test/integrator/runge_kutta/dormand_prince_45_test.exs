@@ -3,6 +3,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
   use Integrator.TestCase
 
   import Nx, only: :sigils
+
   alias Integrator.SampleEqns
   alias Integrator.RungeKutta.DormandPrince45
 

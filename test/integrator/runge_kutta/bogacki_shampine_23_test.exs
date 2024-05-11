@@ -3,6 +3,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
   use Integrator.TestCase
 
   import Nx, only: :sigils
+
   alias Integrator.Utils
   alias Integrator.RungeKutta.BogackiShampine23
 

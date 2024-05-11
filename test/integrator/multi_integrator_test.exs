@@ -2,7 +2,9 @@ defmodule Integrator.MultiIntegratorTest do
   @moduledoc false
   use Integrator.TestCase
 
-  alias Integrator.{AdaptiveStepsize, SampleEqns, MultiIntegrator}
+  alias Integrator.AdaptiveStepsize
+  alias Integrator.MultiIntegrator
+  alias Integrator.SampleEqns
 
   describe "ballode.m" do
     setup do

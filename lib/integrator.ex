@@ -10,7 +10,8 @@ defmodule Integrator do
 
   alias Integrator.AdaptiveStepsize
   alias Integrator.RungeKutta
-  alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
+  alias Integrator.RungeKutta.BogackiShampine23
+  alias Integrator.RungeKutta.DormandPrince45
 
   @integrator_options %{
     ode45: DormandPrince45,

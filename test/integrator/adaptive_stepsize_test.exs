@@ -7,9 +7,12 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
   import Nx.Defn
 
-  alias Integrator.{AdaptiveStepsize, SampleEqns, DummyOutput}
+  alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
-  alias Integrator.RungeKutta.{BogackiShampine23, DormandPrince45}
+  alias Integrator.DummyOutput
+  alias Integrator.RungeKutta.BogackiShampine23
+  alias Integrator.RungeKutta.DormandPrince45
+  alias Integrator.SampleEqns
 
   describe "integrate" do
     test "works" do
