@@ -1,11 +1,9 @@
 # NonLinearEqnRoot Usage
 
 ```elixir
-  Mix.install(
-  [
-    {:integrator, "~> 0.1"}
-  ]
-  )
+Mix.install([
+  {:integrator, "~> 0.1"}
+])
 ```
 
 ## Finding a root

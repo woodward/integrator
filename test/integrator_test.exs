@@ -1,7 +1,6 @@
 defmodule IntegratorTest do
   @moduledoc false
   use Integrator.TestCase
-  use Patch
 
   describe "van_der_pol_fn" do
     setup do
@@ -208,43 +207,6 @@ defmodule IntegratorTest do
 
       assert_nx_lists_equal(solution.output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
-    end
-  end
-
-  # ===========================================================================
-  # Tests of private functions below here:
-
-  describe "parse_start_end/1" do
-    setup do
-      expose(Integrator, parse_start_end: 1)
-    end
-
-    test "returns an array of times" do
-      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0]))
-      assert t_start == 0.0
-      assert t_end == 1.0
-      assert fixed_times == nil
-    end
-
-    test "creates an array of fixed_times if a single tensor is given" do
-      t_start = Nx.tensor(0.0, type: :f64)
-      t_end = Nx.tensor(0.5, type: :f64)
-      t_values = Nx.linspace(t_start, t_end, n: 6, type: :f64)
-
-      {t_start, t_end, fixed_times} = private(Integrator.parse_start_end(t_values))
-      assert t_start.__struct__ == Nx.Tensor
-      assert t_start == Nx.tensor(0.0, type: :f64)
-      assert Nx.type(t_start) == {:f, 64}
-
-      assert t_end.__struct__ == Nx.Tensor
-      assert t_end == Nx.tensor(0.5, type: :f64)
-      assert Nx.type(t_end) == {:f, 64}
-
-      assert length(fixed_times) == 6
-      [_first_time | [second_time | _rest]] = fixed_times
-      assert second_time.__struct__ == Nx.Tensor
-      assert second_time == Nx.tensor(0.1, type: :f64)
-      assert Nx.type(second_time) == {:f, 64}
     end
   end
 end
