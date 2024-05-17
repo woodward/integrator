@@ -213,32 +213,4 @@ defmodule Integrator.Utils do
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
-
-  # Delete these and use Nx.Constants.episilon/1 instead once Nx 0.5.4 is published
-  # (it is currently in main)
-  @epislon_f32 1.1920929e-07
-  @epislon_f64 2.220446049250313e-16
-
-  @doc """
-  Gets the epsilon for a particular Nx type
-  """
-  @spec epsilon(Nx.Type.t()) :: float()
-  def epsilon(nx_type) do
-    case nx_type do
-      :f32 -> @epislon_f32
-      {:f, 32} -> @epislon_f32
-      :f64 -> @epislon_f64
-      {:f, 64} -> @epislon_f64
-    end
-  end
-
-  @spec epsilon(Nx.Type.t()) :: float()
-  defn epsilon_nx(nx_type) do
-    case nx_type do
-      :f32 -> @epislon_f32
-      {:f, 32} -> @epislon_f32
-      :f64 -> @epislon_f64
-      {:f, 64} -> @epislon_f64
-    end
-  end
 end

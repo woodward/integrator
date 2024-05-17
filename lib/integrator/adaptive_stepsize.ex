@@ -533,7 +533,7 @@ defmodule Integrator.AdaptiveStepsize do
 
     # Avoid divisions by zero:
     # error = error + Nx.Constants.epsilon(nx_type)
-    error = error + Utils.epsilon_nx(nx_type)
+    error = error + Nx.Constants.epsilon(nx_type)
 
     # Octave:
     #   dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
