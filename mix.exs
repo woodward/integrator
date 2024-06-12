@@ -40,7 +40,7 @@ defmodule Integrator.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.2", only: :test},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.32", only: :dev},
+      {:ex_doc, "~> 0.34", only: :dev},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
       {:patch, "~> 0.13", only: :test},
