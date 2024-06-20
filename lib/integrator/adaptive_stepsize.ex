@@ -445,9 +445,12 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   defp step_forward(step, _t_old, t_end, _status, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+    # wrapper around compute_step_nx:
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
+
     step = step |> increment_compute_counter()
 
+    # could easily be made into Nx:
     step =
       if less_than_one?(error_est) do
         step
@@ -461,10 +464,14 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
+    # This is Nx:
     dt = compute_next_timestep(step.dt, error_est, order, step.t_new, t_end, opts)
+
+    # Needs to be converted to Nx:
     step = %{step | dt: dt} |> delay_simulation(opts[:speed])
 
     step
+    # recursive call:
     |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
