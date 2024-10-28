@@ -22,7 +22,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test "works" do
       # Expected values were obtained from Octave:
-      k_vals = ~M[
+      k_vals = ~MAT[
         -0.123176646786029  -0.156456392653781  -0.170792108688503  -0.242396950166743  -0.256398564600740  -0.270123280961810  -0.266528851971234
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
       ]f64
@@ -44,7 +44,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         -0.266528851971234  -0.303376255443000  -0.318166975994861  -0.394383609924488  -0.412602091137911  -0.426290366186482  -0.416811343851152
         -1.201879818436319  -1.096546739499175  -1.055438526511377  -0.852388604155395  -0.804214989044028  -0.771328619755717  -0.798944990281621
       ]f64
@@ -61,7 +61,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test "works - bug fix for Bogacki-Shampine23" do
       # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
-      k_vals = ~M[
+      k_vals = ~MAT[
         -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
@@ -89,7 +89,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         -6.903933604135114e-04  -7.950996330065260e-04  -8.474280732402655e-04  -8.997729805855904e-04
         -1.997928701004975e+00  -1.997614546170481e+00  -1.997457534649594e+00  -1.997300479207187e+00
       ]f64
@@ -109,7 +109,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt" do
       # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
-      k_vals = ~M[
+      k_vals = ~MAT[
         -2.585758248155079e-04  -3.687257174741470e-04  -4.237733527882678e-04  -4.788391990136420e-04
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
       ]f64
@@ -139,7 +139,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
       #                  Elixir:  [1.9999998807569168 -6.903933604135114e-4]
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
@@ -166,7 +166,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
       # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
       # Expected values are from Octave
-      k_vals = ~M[
+      k_vals = ~MAT[
         -2.585758248155079e-4  -3.687257174741469e-4  -4.2377335278826774e-4  -4.78839199013642e-4
         -1.999224255823159     -1.9988937919269867    -1.9987286328288005     -1.9985634251635955
       ]f64
@@ -198,7 +198,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
       #                  Elixir:  [1.9999998807569193 -6.903933 539856063e-4]
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
@@ -236,7 +236,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test ":continue event", %{event_fn: event_fn} do
       t_new = Nx.tensor(0.553549806109594, type: :f64)
-      x_new = ~V[ 1.808299104387025  -0.563813853847242 ]f64
+      x_new = ~VEC[ 1.808299104387025  -0.563813853847242 ]f64
       opts = []
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new}
       interpolate_fn_does_not_matter = & &1
@@ -250,10 +250,10 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_old = Nx.tensor(2.155396117711071, type: :f64)
       t_new = Nx.tensor(2.742956500140625, type: :f64)
 
-      x_old = ~V[  1.283429405203074e-02  -2.160506093425276 ]f64
-      x_new = ~V[ -1.452959132853812      -2.187778875125423 ]f64
+      x_old = ~VEC[  1.283429405203074e-02  -2.160506093425276 ]f64
+      x_new = ~VEC[ -1.452959132853812      -2.187778875125423 ]f64
 
-      k_vals = ~M[
+      k_vals = ~MAT[
           -2.160506093425276  -2.415858015466959  -2.525217131637079  -2.530906930089893  -2.373278736970216  -2.143782883869835  -2.187778875125423
           -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
         ]f64
@@ -302,12 +302,12 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "works" do
-      t_old = ~V[ 2.155396117711071 ]f64
-      t_new = ~V[ 2.742956500140625 ]f64
-      x_old = ~V[  1.283429405203074e-02  -2.160506093425276 ]f64
-      x_new = ~V[ -1.452959132853812      -2.187778875125423 ]f64
+      t_old = ~VEC[ 2.155396117711071 ]f64
+      t_new = ~VEC[ 2.742956500140625 ]f64
+      x_old = ~VEC[  1.283429405203074e-02  -2.160506093425276 ]f64
+      x_new = ~VEC[ -1.452959132853812      -2.187778875125423 ]f64
 
-      k_vals = ~M[
+      k_vals = ~MAT[
             -2.160506093425276  -2.415858015466959  -2.525217131637079  -2.530906930089893  -2.373278736970216  -2.143782883869835  -2.187778875125423
             -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
           ]f64
@@ -325,11 +325,11 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         nx_type: :f64
       }
 
-      t = ~V[ 2.161317515510217 ]f64
+      t = ~VEC[ 2.161317515510217 ]f64
       x_interpolated = private(AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn))
 
       # From Octave:
-      expected_x_interpolated = ~V[ 2.473525941362742e-15 -2.173424479824061  ]f64
+      expected_x_interpolated = ~VEC[ 2.473525941362742e-15 -2.173424479824061  ]f64
 
       # Why is this not closer to tighter tolerances?
       assert_all_close(x_interpolated, expected_x_interpolated, atol: 1.0e-07, rtol: 1.0e-07)
@@ -476,10 +476,10 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test "returns a tensor with zeros that's the correct size" do
       order = 5
-      x = ~V[ 1.0 2.0 3.0 ]f64
+      x = ~VEC[ 1.0 2.0 3.0 ]f64
       k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -497,7 +497,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x = Nx.tensor([1.0, 2.0, 3.0], type: type)
       k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
 
-      expected_k_vals = ~M[
+      expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0
         0.0 0.0 0.0 0.0 0.0
         0.0 0.0 0.0 0.0 0.0
@@ -531,7 +531,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "when norm_control: false - :f64 - starting_stepsize for high-fidelity ballode" do
-      x0 = ~V[  0.0 20.0  ]f64
+      x0 = ~VEC[  0.0 20.0  ]f64
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
       rel_tol = Nx.tensor(1.0e-14, type: :f64)
       opts = [norm_control: false]
@@ -544,18 +544,18 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
     test "when norm_control: false - :f64 - for high-fidelity Bogacki-Shampine" do
       # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
-      x_old = ~V[ 1.999999880756917  -6.903933604135114e-04 ]f64
+      x_old = ~VEC[ 1.999999880756917  -6.903933604135114e-04 ]f64
       #         [ 1.999999880756917, -6.903933604135114e-04 ]  Elixir values agree exactly
 
-      x_next = ~V[ 1.999999797419839   -8.997729805855904e-04  ]f64
+      x_next = ~VEC[ 1.999999797419839   -8.997729805855904e-04  ]f64
       #          [ 1.9999997974198394, -8.997729805855904e-4]  Elixir values agree exactly
 
       # This works (from Octave):
-      x_est = ~V[ 1.999999797419983  -8.997729809694310e-04 ]f64
+      x_est = ~VEC[ 1.999999797419983  -8.997729809694310e-04 ]f64
 
       # This doesn't work (from Elixir); note the _very_ small differences in x[1]:
-      # x_est = ~V[ 1.9999997974199832 -8.997729809694309e-04 ]f64
-      # x_est = ~V[ 1.999999797419983  -8.997729809694310e-04 ]f64  Octave values from above
+      # x_est = ~VEC[ 1.9999997974199832 -8.997729809694309e-04 ]f64
+      # x_est = ~VEC[ 1.999999797419983  -8.997729809694310e-04 ]f64  Octave values from above
 
       # From Octave:
       expected_error = Nx.tensor(0.383840528805912, type: :f64)
@@ -581,21 +581,21 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
 
       # Values for t = 0.005054072392284442:
-      x_next = ~V[ 1.9998466100062002  -0.024463877616688966 ]f64
+      x_next = ~VEC[ 1.9998466100062002  -0.024463877616688966 ]f64
       # Elixir:
-      # x_next = ~V[ 1.999846610006200 2  -0.0244638776166889 66 ]f64
+      # x_next = ~VEC[ 1.999846610006200 2  -0.0244638776166889 66 ]f64
       # Octave:
-      # x_next = ~V[ 1.999846610006200    -0.0244638776166889 7 ]f64
+      # x_next = ~VEC[ 1.999846610006200    -0.0244638776166889 7 ]f64
 
-      x_old = ~V[  1.9999745850165596  -0.010031858255616163 ]f64
+      x_old = ~VEC[  1.9999745850165596  -0.010031858255616163 ]f64
       # Octave:
-      # x_old = ~V[  1.999974585016560   -0.01003185825561616 ]f64
+      # x_old = ~VEC[  1.999974585016560   -0.01003185825561616 ]f64
 
-      x_est = ~V[  1.9998466100068684  -0.024463877619281038 ]f64
+      x_est = ~VEC[  1.9998466100068684  -0.024463877619281038 ]f64
       # Elixir:
-      # x_est = ~V[  1.999846610006868 4  -0.0244638776192810 38 ]f64
+      # x_est = ~VEC[  1.999846610006868 4  -0.0244638776192810 38 ]f64
       # Octave:
-      # x_est = ~V[  1.999846610006868    -0.0244638776192810 4 ]f64
+      # x_est = ~VEC[  1.999846610006868    -0.0244638776192810 4 ]f64
 
       # Octave:
 
@@ -676,18 +676,18 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11);
       #   [t,x] = ode45 (fvdp, [0, 0.1], [2, 0], opts);
 
-      x_old = ~V[ 1.999974585016560   -0.01003185825561616  ]f64
-      # xoe = ~V[ 1.9999745850165596  -0.010031858255616163 ]f64  Elixir values agree exactly
+      x_old = ~VEC[ 1.999974585016560   -0.01003185825561616  ]f64
+      # xoe = ~VEC[ 1.9999745850165596  -0.010031858255616163 ]f64  Elixir values agree exactly
 
-      x_next = ~V[ 1.999846610006200   -0.02446387761668897 ]f64
-      # xne = ~V[  1.9998466100062002  -0.024463877616688966 ]f64  Elixir values agree exactly
+      x_next = ~VEC[ 1.999846610006200   -0.02446387761668897 ]f64
+      # xne = ~VEC[  1.9998466100062002  -0.024463877616688966 ]f64  Elixir values agree exactly
 
       # This works (from Octave):
-      x_est = ~V[ 1.999846610006868   -0.02446387761928104  ]f64
+      x_est = ~VEC[ 1.999846610006868   -0.02446387761928104  ]f64
 
       # This doesn't work (from Elixir); note the _very_ small differences in x[1]:
-      # x_est = ~V[ 1.9998466100068684  -0.024463877619281038 ]f64
-      # x_est = ~V[ 1.999846610006868   -0.02446387761928104  ]f64  Octave values from above to compare
+      # x_est = ~VEC[ 1.9998466100068684  -0.024463877619281038 ]f64
+      # x_est = ~VEC[ 1.999846610006868   -0.02446387761928104  ]f64  Octave values from above to compare
 
       # From Octave:
       expected_error = Nx.tensor(0.259206892061492, type: :f64)
@@ -761,7 +761,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "checks one arg" do
-      x0 = ~V[ 2.0  3.0 ]f64
+      x0 = ~VEC[ 2.0  3.0 ]f64
       assert private(AdaptiveStepsize.check_nx_type([x0: x0], :f64)) == :ok
     end
 
@@ -774,7 +774,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "raises an exception if the arg is not of the correct precision - :f64 required" do
-      x0 = ~V[ 2.0  3.0 ]f32
+      x0 = ~VEC[ 2.0  3.0 ]f32
 
       assert_raise(ArgPrecisionError, fn ->
         private(AdaptiveStepsize.check_nx_type([x0: x0], :f64))
@@ -782,7 +782,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "raises an exception if the arg is not of the correct precision - :f32 required" do
-      x0 = ~V[ 2.0  3.0 ]f64
+      x0 = ~VEC[ 2.0  3.0 ]f64
 
       assert_raise(ArgPrecisionError, fn ->
         private(AdaptiveStepsize.check_nx_type([x0: x0], :f32))
@@ -790,8 +790,8 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
 
     test "can check multiple args" do
-      x0 = ~V[ 2.0  3.0 ]f64
-      x1 = ~V[ 2.0  3.0 ]f32
+      x0 = ~VEC[ 2.0  3.0 ]f64
+      x1 = ~VEC[ 2.0  3.0 ]f32
 
       assert_raise(ArgPrecisionError, fn ->
         private(AdaptiveStepsize.check_nx_type([x0: x0, x1: x1], :f64))

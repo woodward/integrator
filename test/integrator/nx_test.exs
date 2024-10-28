@@ -88,7 +88,7 @@ defmodule Integrator.NxTest do
 
     test "works - old way", %{k1: k1, k2: k2, k3: k3} do
       old_way = stack_old_way(k1, k2, k3)
-      expected = ~M[
+      expected = ~MAT[
         1 3 5
         2 4 6 ]s64
       assert_all_close(old_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
@@ -97,7 +97,7 @@ defmodule Integrator.NxTest do
     test "works - new way", %{k1: k1, k2: k2, k3: k3} do
       new_way = stack_new_way(k1, k2, k3)
       # IO.inspect(new_way)
-      expected = ~M[
+      expected = ~MAT[
         1 3 5
         2 4 6 ]s64
       assert_all_close(new_way, expected, atol: 1.0e-15, rtol: 1.0e-15)
@@ -164,13 +164,14 @@ defmodule Integrator.NxTest do
 
   describe "Nx.dot/4" do
     test "works better than dot, transpose" do
-      k_0_4 = ~M[
+      k_0_4 = ~MAT[
         0.09819789615529644 0.09728161794756425 0.09682469517700483 0.09454141156537164 0.09413618004462349
        -2.303556017851066  -2.3008378798836384 -2.299481814584658  -2.2927038466248972 -2.2915004503322134  ]f64
 
-      aa_5 = ~V[ 0.00566076962506267  -0.021395034803386472  0.017713398289163906  5.53709527482009e-4  -5.440084171622433e-4]f64
+      aa_5 =
+        ~VEC[ 0.00566076962506267  -0.021395034803386472  0.017713398289163906  5.53709527482009e-4  -5.440084171622433e-4]f64
 
-      expected = ~V[ 1.907640620018197e-4 -0.004567927089507702]f64
+      expected = ~VEC[ 1.907640620018197e-4 -0.004567927089507702]f64
 
       old_way = Nx.dot(k_0_4, Nx.transpose(aa_5))
       assert_all_close(old_way, expected, atol: 1.0e-15, rtol: 1.0e-15)

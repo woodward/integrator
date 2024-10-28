@@ -924,7 +924,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     test "works" do
       order = 5
       t0 = 0.0
-      x0 = ~V[2.0 0.0]f64
+      x0 = ~VEC[2.0 0.0]f64
       abs_tol = 1.0e-06
       rel_tol = 1.0e-03
 
@@ -936,8 +936,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
     test "works - high fidelity ballode example to double precision accuracy (works!!!)" do
       order = 5
-      t0 = ~V[  0.0  ]f64
-      x0 = ~V[  0.0 20.0  ]f64
+      t0 = ~VEC[  0.0  ]f64
+      x0 = ~VEC[  0.0 20.0  ]f64
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
       rel_tol = Nx.tensor(1.0e-14, type: :f64)
       opts = [norm_control: false]
@@ -949,8 +949,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
     test "does NOT work for precision :f16" do
       order = 5
-      t0 = ~V[  0.0  ]f16
-      x0 = ~V[  2.0  0.0  ]f16
+      t0 = ~VEC[  0.0  ]f16
+      x0 = ~VEC[  2.0  0.0  ]f16
       abs_tol = Nx.tensor(1.0e-06, type: :f16)
       rel_tol = Nx.tensor(1.0e-03, type: :f16)
       opts = [norm_control: false]

@@ -148,7 +148,7 @@ defmodule Integrator.Utils do
 
   E.g., a tensor of the form:
 
-      ~M[
+       ~MAT[
         1  2  3  4
         5  6  7  8
         9 10 11 12
@@ -157,10 +157,10 @@ defmodule Integrator.Utils do
   will return
 
     [
-      ~V[ 1  5   9 ]s8,
-      ~V[ 2  6  10 ]s8,
-      ~V[ 3  7  11 ]s8,
-      ~V[ 4  8  12 ]s8
+      ~VEC[ 1  5   9 ]s8,
+      ~VEC[ 2  6  10 ]s8,
+      ~VEC[ 3  7  11 ]s8,
+      ~VEC[ 4  8  12 ]s8
     ]
 
   """
