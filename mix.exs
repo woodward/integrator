@@ -43,8 +43,8 @@ defmodule Integrator.MixProject do
       {:ex_doc, "~> 0.34", only: :dev},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
-      {:patch, "~> 0.13", only: :test},
-      {:nx, "~> 0.7"}
+      {:patch, "~> 0.14", only: :test},
+      {:nx, "~> 0.9"}
       # {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
