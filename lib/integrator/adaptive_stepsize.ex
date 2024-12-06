@@ -277,7 +277,7 @@ defmodule Integrator.AdaptiveStepsize do
       timestamp_start_ms: timestamp_now
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
-    |> step_forward(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
     # Capture end timestamp:
     |> Map.put(:timestamp_ms, timestamp_ms())
@@ -404,7 +404,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   #  The main integration loop
-  @spec step_forward(
+  @spec step(
           step :: t(),
           t_old :: float(),
           t_end :: float(),
@@ -415,17 +415,17 @@ defmodule Integrator.AdaptiveStepsize do
           order :: integer(),
           opts :: Keyword.t()
         ) :: t()
-  defp step_forward(step, t_old, t_end, _status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+  defp step(step, t_old, t_end, _status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
        when abs(t_old - t_end) < @zero_tolerance or t_old > t_end do
     step
   end
 
-  defp step_forward(step, _t_old, _t_end, status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
+  defp step(step, _t_old, _t_end, status, _stepper_fn, _interpolate_fn, _ode_fn, _order, _opts)
        when status == :halt do
     step
   end
 
-  defp step_forward(step, _t_old, t_end, _status, stepper_fn, interpolate_fn, ode_fn, order, opts) do
+  defp step(step, _t_old, t_end, _status, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     # wrapper around compute_step_nx:
     {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
 
@@ -453,7 +453,7 @@ defmodule Integrator.AdaptiveStepsize do
 
     step
     # recursive call:
-    |> step_forward(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
+    |> step(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
   @spec less_than_one?(Nx.t()) :: boolean()
