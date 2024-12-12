@@ -7,13 +7,15 @@ defmodule Integrator.ComputedStep do
           t_new: Nx.t(),
           x_new: Nx.t(),
           k_vals: Nx.t(),
-          options_comp: Nx.t()
+          options_comp: Nx.t(),
+          error_estimate: Nx.t()
         }
 
   defstruct [
     :t_new,
     :x_new,
     :k_vals,
-    :options_comp
+    :options_comp,
+    :error_estimate
   ]
 end

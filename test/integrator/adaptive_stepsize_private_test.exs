@@ -39,7 +39,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
       opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
-      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
 
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
@@ -56,7 +56,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
-      assert_all_close(error, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
     test "works - bug fix for Bogacki-Shampine23" do
@@ -84,7 +84,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
 
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
@@ -104,7 +104,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
       # Note that the error is just accurate to single precision, which is ok; see the test below for abs_rel_norm
       # to see how sensitive the error is to input values:
-      assert_all_close(error, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt" do
@@ -132,7 +132,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.4537555168155827e-4
@@ -160,7 +160,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
-      assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
@@ -191,7 +191,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      {computed_step, error} = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.453755 484642738e-4
@@ -217,7 +217,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
-      assert_all_close(error, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
 

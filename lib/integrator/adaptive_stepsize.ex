@@ -427,13 +427,13 @@ defmodule Integrator.AdaptiveStepsize do
 
   defp step(step, _t_old, t_end, _status, stepper_fn, interpolate_fn, ode_fn, order, opts) do
     # wrapper around compute_step_nx:
-    {new_step, error_est} = compute_step(step, stepper_fn, ode_fn, opts)
+    new_step = compute_step(step, stepper_fn, ode_fn, opts)
 
     step = step |> increment_compute_counter()
 
     # could easily be made into Nx:
     step =
-      if less_than_one?(error_est) do
+      if less_than_one?(new_step.error_estimate) do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
@@ -446,7 +446,7 @@ defmodule Integrator.AdaptiveStepsize do
       end
 
     # This is Nx:
-    dt = compute_next_timestep(step.dt, error_est, order, step.t_new, t_end, opts)
+    dt = compute_next_timestep(step.dt, new_step.error_estimate, order, step.t_new, t_end, opts)
 
     # Needs to be converted to Nx:
     step = %{step | dt: dt} |> delay_simulation(opts[:speed])
@@ -600,7 +600,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: {ComputedStep.t(), Nx.t()}
+  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: ComputedStep.t()
   defp compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -608,15 +608,16 @@ defmodule Integrator.AdaptiveStepsize do
     k_vals_old = step.k_vals
     dt = step.dt
 
-    {t_next, x_next, k_vals, options_comp, error} =
+    {t_next, x_next, k_vals, options_comp, error_estimate} =
       compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts)
 
-    {%ComputedStep{
-       t_new: t_next,
-       x_new: x_next,
-       k_vals: k_vals,
-       options_comp: options_comp
-     }, error}
+    %ComputedStep{
+      t_new: t_next,
+      x_new: x_next,
+      k_vals: k_vals,
+      options_comp: options_comp,
+      error_estimate: error_estimate
+    }
   end
 
   # Computes the next Runge-Kutta step and the associated error
