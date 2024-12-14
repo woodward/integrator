@@ -3,6 +3,16 @@ defmodule Integrator.ComputedStep do
   The results of the computation of an individual Runge-Kutta step
   """
 
+  @derive {Nx.Container,
+           keep: [],
+           containers: [
+             :t_new,
+             :x_new,
+             :k_vals,
+             :options_comp,
+             :error_estimate
+           ]}
+
   @type t :: %__MODULE__{
           t_new: Nx.t(),
           x_new: Nx.t(),
