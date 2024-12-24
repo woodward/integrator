@@ -1,4 +1,4 @@
-defmodule Integrator.ComputedStep do
+defmodule Integrator.Step do
   @moduledoc """
   The results of the computation of an individual Runge-Kutta step
   """
