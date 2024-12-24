@@ -55,8 +55,8 @@ defmodule Integrator.AdaptiveStepsize do
           t_new_chunk: [Nx.t()],
           x_new_chunk: [Nx.t()],
           #
-          timestamp_ms: integer() | nil,
-          timestamp_start_ms: integer() | nil
+          timestamp_μs: integer() | nil,
+          timestamp_start_μs: integer() | nil
         }
   defstruct [
     :t_old,
@@ -101,8 +101,8 @@ defmodule Integrator.AdaptiveStepsize do
     t_new_chunk: [],
     x_new_chunk: [],
     #
-    timestamp_ms: nil,
-    timestamp_start_ms: nil
+    timestamp_μs: nil,
+    timestamp_start_μs: nil
   ]
 
   @type integration_status :: :halt | :continue
@@ -261,7 +261,7 @@ defmodule Integrator.AdaptiveStepsize do
       nx_type
     )
 
-    timestamp_now = timestamp_ms()
+    timestamp_now = timestamp_μs()
 
     %__MODULE__{
       t_new: t_start,
@@ -273,14 +273,14 @@ defmodule Integrator.AdaptiveStepsize do
       fixed_times: fixed_times,
       nx_type: nx_type,
       options_comp: Nx.tensor(0.0, type: nx_type),
-      timestamp_ms: timestamp_now,
-      timestamp_start_ms: timestamp_now
+      timestamp_μs: timestamp_now,
+      timestamp_start_μs: timestamp_now
     }
     |> store_first_point(t_start, x0, opts[:store_results?])
     |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
     |> reverse_results()
     # Capture end timestamp:
-    |> Map.put(:timestamp_ms, timestamp_ms())
+    |> Map.put(:timestamp_μs, timestamp_μs())
   end
 
   @doc """
@@ -362,10 +362,10 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @doc """
-  Returns the total elapsed time for the integration (in milleseconds)
+  Returns the total elapsed time for the integration (in microseconds, or μs)
   """
-  @spec elapsed_time_ms(t()) :: pos_integer()
-  def elapsed_time_ms(step), do: step.timestamp_ms - step.timestamp_start_ms
+  @spec elapsed_time_μs(t()) :: pos_integer()
+  def elapsed_time_μs(step), do: step.timestamp_μs - step.timestamp_start_μs
 
   # ===========================================================================
   # Private functions below here:
@@ -591,11 +591,11 @@ defmodule Integrator.AdaptiveStepsize do
   defp delay_simulation(%{error_count: error_count} = step, _speed) when error_count > 0, do: step
 
   defp delay_simulation(step, speed) do
-    desired_time_interval = Nx.to_number(Nx.subtract(step.t_new, step.t_old)) * 1000 / speed
-    elapsed_time = timestamp_ms() - step.timestamp_ms
-    sleep_time = trunc(desired_time_interval - elapsed_time)
-    if sleep_time > 0, do: Process.sleep(sleep_time)
-    %{step | timestamp_ms: timestamp_ms()}
+    desired_time_interval_ms = Nx.to_number(Nx.subtract(step.t_new, step.t_old)) * 1000.0 / speed
+    elapsed_time_ms = (timestamp_μs() - step.timestamp_μs) / 1000.0
+    sleep_time_ms = trunc(desired_time_interval_ms - elapsed_time_ms)
+    if sleep_time_ms > 0, do: Process.sleep(sleep_time_ms)
+    %{step | timestamp_μs: timestamp_μs()}
   end
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
@@ -836,7 +836,7 @@ defmodule Integrator.AdaptiveStepsize do
     :ok
   end
 
-  # Returns a timestamp in milliseconds
-  @spec timestamp_ms() :: pos_integer()
-  defp timestamp_ms(), do: :os.system_time(:millisecond)
+  # Returns a timestamp in microseconds
+  @spec timestamp_μs() :: pos_integer()
+  defp timestamp_μs(), do: :os.system_time(:microsecond)
 end
