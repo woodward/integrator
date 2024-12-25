@@ -1,16 +1,16 @@
-defmodule Integrator.Integration do
+defmodule Integrator.IntegrationRefactor do
   @moduledoc """
-  A struct which maintains the state of the integration
+  This will become the struct in AdaptiveStepsize once it's refactored
   """
 
   alias Integrator.Step
 
   @derive {Nx.Container,
-           keep: [],
            containers: [
              :step_new,
              :step_old
-           ]}
+           ],
+           keep: []}
 
   @type t :: %__MODULE__{
           step_new: Step.t(),
