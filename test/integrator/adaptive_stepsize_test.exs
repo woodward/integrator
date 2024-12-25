@@ -12,6 +12,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   alias Integrator.SampleEqns
 
   describe "integrate" do
+    @tag transferred_to_refactor?: false
     test "works" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -65,6 +66,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - high fidelity" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -103,6 +105,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - no data interpolation (refine == 1)" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -142,6 +145,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - output function with interpolation" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -197,6 +201,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - event function with interpolation" do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
@@ -249,6 +254,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - event function with interpolation - ballode - high fidelity - one bounce" do
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
@@ -309,6 +315,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
+    @tag transferred_to_refactor?: false
     test "max step uses computed default for short simulation times" do
       # Octave:
       #   format long
@@ -371,6 +378,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - playback speed of 1.0" do
       # Octave:
       #   format long
@@ -433,6 +441,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - high fidelity - playback speed of 0.5" do
       # Octave:
       #   format long
@@ -495,6 +504,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - no data interpolation (refine == 1) together with an output function" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -547,6 +557,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - no data interpolation (refine == 1), no caching, output function with terminal output" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -600,6 +611,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - fixed stepsize output that's a tensor with specific values" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -645,6 +657,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - fixed stepsize output that's smaller than the timestep" do
       # In this test, there are many output timesteps for every integration timestep
 
@@ -706,6 +719,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - do not store results" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -740,6 +754,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert Enum.empty?(result.ode_x)
     end
 
+    @tag transferred_to_refactor?: false
     test "throws an exception if too many errors" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -768,6 +783,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "works - uses Bogacki-Shampine23" do
       stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
@@ -815,6 +831,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - uses Bogacki-Shampine23 - high fidelity" do
       # Octave:
       #   format long
@@ -867,6 +884,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - uses Bogacki-Shampine23 - high fidelity - no interpolation" do
       # Octave:
       #   format long
@@ -921,6 +939,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "starting_stepsize" do
+    @tag transferred_to_refactor?: false
     test "works" do
       order = 5
       t0 = 0.0
@@ -934,6 +953,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - high fidelity ballode example to double precision accuracy (works!!!)" do
       order = 5
       t0 = ~VEC[  0.0  ]f64
@@ -947,6 +967,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "does NOT work for precision :f16" do
       order = 5
       t0 = ~VEC[  0.0  ]f16
@@ -1011,6 +1032,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ]
     end
 
+    @tag transferred_to_refactor?: false
     test "does not raise an exception if all args are correct", %{
       t_start: t_start,
       t_end: t_end,
@@ -1028,6 +1050,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert solution.__struct__ == AdaptiveStepsize
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if t_start is incorrect nx type", %{
       t_end: t_end,
       x0: x0,
@@ -1045,6 +1068,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if t_end is incorrect nx type", %{
       t_start: t_start,
       x0: x0,
@@ -1062,6 +1086,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if t_range is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1080,6 +1105,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if x0 is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1097,6 +1123,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if initial_step is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1114,6 +1141,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if :abs_tol is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1132,6 +1160,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if :rel_tol is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1150,6 +1179,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if :max_step is incorrect nx type", %{
       t_start: t_start,
       t_end: t_end,
@@ -1168,6 +1198,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if the ode function returns the incorrect nx type for x", %{
       t_start: t_start,
       t_end: t_end,

@@ -41,6 +41,7 @@ defmodule Integrator.MultiIntegratorTest do
       ]
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration", %{
       opts: opts,
       t_initial: t_initial,
@@ -81,6 +82,7 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration - high fidelity multi-bounce ballode", %{
       opts: opts,
       t_initial: t_initial,
@@ -155,6 +157,7 @@ defmodule Integrator.MultiIntegratorTest do
       assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
 
+    @tag transferred_to_refactor?: false
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
       opts: opts,
       t_initial: t_initial,
@@ -196,6 +199,7 @@ defmodule Integrator.MultiIntegratorTest do
   end
 
   describe "all_output_data/2" do
+    @tag transferred_to_refactor?: false
     test "gets the output_t values from all of the simuations" do
       sim1 = %AdaptiveStepsize{output_t: [1, 2, 3]}
       sim2 = %AdaptiveStepsize{output_t: [3, 4, 5]}
@@ -207,6 +211,7 @@ defmodule Integrator.MultiIntegratorTest do
       assert output_t == [1, 2, 3, 4, 5, 6, 7]
     end
 
+    @tag transferred_to_refactor?: false
     test "gets the output_x values from all of the simuations" do
       sim1 = %AdaptiveStepsize{output_x: [1, 2, 3]}
       sim2 = %AdaptiveStepsize{output_x: [3, 4, 5]}

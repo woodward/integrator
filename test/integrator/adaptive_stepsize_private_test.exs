@@ -20,8 +20,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, compute_step: 4)
     end
 
+    @tag transferred_to_refactor?: false
+    # Expected values were obtained from Octave:
     test "works" do
-      # Expected values were obtained from Octave:
       k_vals = ~MAT[
         -0.123176646786029  -0.156456392653781  -0.170792108688503  -0.242396950166743  -0.256398564600740  -0.270123280961810  -0.266528851971234
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
@@ -59,8 +60,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
+    @tag transferred_to_refactor?: false
+    # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
     test "works - bug fix for Bogacki-Shampine23" do
-      # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
       k_vals = ~MAT[
         -4.788391990136420e-04  -5.846330800545818e-04  -6.375048176907232e-04  -6.903933604135114e-04
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
@@ -107,8 +109,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
+    @tag transferred_to_refactor?: false
+    # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt" do
-      # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
       k_vals = ~MAT[
         -2.585758248155079e-04  -3.687257174741470e-04  -4.237733527882678e-04  -4.788391990136420e-04
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
@@ -163,8 +166,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
+    # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
-      # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
       # Expected values are from Octave
       k_vals = ~MAT[
         -2.585758248155079e-4  -3.687257174741469e-4  -4.2377335278826774e-4  -4.78839199013642e-4
@@ -234,6 +238,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       [event_fn: event_fn]
     end
 
+    @tag transferred_to_refactor?: false
     test ":continue event", %{event_fn: event_fn} do
       t_new = Nx.tensor(0.553549806109594, type: :f64)
       x_new = ~VEC[ 1.808299104387025  -0.563813853847242 ]f64
@@ -301,6 +306,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, interpolate_one_point: 3)
     end
 
+    @tag transferred_to_refactor?: false
     test "works" do
       t_old = ~VEC[ 2.155396117711071 ]f64
       t_new = ~VEC[ 2.742956500140625 ]f64
@@ -341,6 +347,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, compute_next_timestep: 6)
     end
 
+    @tag transferred_to_refactor?: false
     test "basic case" do
       dt = Nx.tensor(0.068129, type: :f64)
       error = Nx.tensor(0.0015164936598390992, type: :f64)
@@ -355,6 +362,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "uses option :max_step" do
       dt = Nx.tensor(0.068129, type: :f64)
       error = Nx.tensor(0.0015164936598390992, type: :f64)
@@ -369,6 +377,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "does not go past t_end" do
       dt = Nx.tensor(0.3039, type: :f64)
       error = Nx.tensor(0.4414, type: :f64)
@@ -383,6 +392,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above)" do
       dt = Nx.tensor(2.020515504676623e-4, type: :f64)
       error = Nx.tensor(2.7489475539627106, type: :f64)
@@ -398,8 +408,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
     end
 
+    @tag transferred_to_refactor?: false
+    # Octave:
     test "2nd bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above) - compare Elixir input" do
-      # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 1);
@@ -428,8 +439,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
     end
 
+    @tag transferred_to_refactor?: false
+    # Octave:
     test "bug fix for 'works - high fidelity - playback speed of 0.5'" do
-      # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
@@ -474,6 +486,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, initial_empty_k_vals: 2)
     end
 
+    @tag transferred_to_refactor?: false
     test "returns a tensor with zeros that's the correct size" do
       order = 5
       x = ~VEC[ 1.0 2.0 3.0 ]f64
@@ -491,6 +504,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert Nx.type(k_vals) == {:f, 64}
     end
 
+    @tag transferred_to_refactor?: false
     test "returns a tensor that has the Nx type of x" do
       order = 3
       type = {:f, 32}
@@ -515,8 +529,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, abs_rel_norm: 6)
     end
 
+    @tag transferred_to_refactor?: false
+    # These test values were obtained from Octave:
     test "when norm_control: false" do
-      # These test values were obtained from Octave:
       t = Nx.tensor([1.97537683003, -0.26652885197])
       t_old = Nx.tensor([1.99566026409, -0.12317664679])
       abs_tolerance = 1.0000e-06
@@ -530,6 +545,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
+    @tag transferred_to_refactor?: false
     test "when norm_control: false - :f64 - starting_stepsize for high-fidelity ballode" do
       x0 = ~VEC[  0.0 20.0  ]f64
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
@@ -542,8 +558,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
 
+    @tag transferred_to_refactor?: false
+    # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
     test "when norm_control: false - :f64 - for high-fidelity Bogacki-Shampine" do
-      # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
       x_old = ~VEC[ 1.999999880756917  -6.903933604135114e-04 ]f64
       #         [ 1.999999880756917, -6.903933604135114e-04 ]  Elixir values agree exactly
 
@@ -573,8 +590,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
+    @tag transferred_to_refactor?: false
+    # Octave:
     test "when norm_control: false - :f64 - for test 'works - high fidelity - playback speed of 0.5'" do
-      # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
@@ -641,8 +659,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       {(Nx.abs(t - x) / sc) |> Nx.reduce_max(), t - x}
     end
 
+    @tag transferred_to_refactor?: false
+    # Values from Octave:
     test "trying to figure out precision problem" do
-      # Values from Octave:
       x_new_2 = Nx.tensor(-2.446387761668897e-02, type: :f64)
       x_est_2 = Nx.tensor(-2.446387761928104e-02, type: :f64)
 
@@ -668,8 +687,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-17, rtol: 1.0e-17)
     end
 
+    @tag transferred_to_refactor?: false
+    # All values taken from Octave from test "works - high fidelity - playback speed of 0.5" for the 2nd timestep
     test "when norm_control: false - :f64 - for high-fidelity van der pol" do
-      # All values taken from Octave from test "works - high fidelity - playback speed of 0.5" for the 2nd timestep
       # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
@@ -725,8 +745,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       # assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
+    @tag transferred_to_refactor?: false
+    # These test values were obtained from Octave:
     test "when norm_control: true" do
-      # These test values were obtained from Octave:
       x = Nx.tensor([1.99465419035, 0.33300240425])
       x_old = Nx.tensor([1.64842646336, 1.78609260054])
       abs_tolerance = 1.0000e-06
@@ -746,6 +767,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, zero_vector: 1)
     end
 
+    @tag transferred_to_refactor?: false
     test "creates a zero vector with the length and type of x" do
       x = Nx.tensor([1.0, 2.0, 3.0], type: :f64)
       y = private(AdaptiveStepsize.zero_vector(x))
@@ -760,11 +782,13 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       expose(AdaptiveStepsize, check_nx_type: 2)
     end
 
+    @tag transferred_to_refactor?: false
     test "checks one arg" do
       x0 = ~VEC[ 2.0  3.0 ]f64
       assert private(AdaptiveStepsize.check_nx_type([x0: x0], :f64)) == :ok
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if the arg is not a tensor and :f64 is required" do
       x0 = 1.2345
 
@@ -773,6 +797,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       end)
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if the arg is not of the correct precision - :f64 required" do
       x0 = ~VEC[ 2.0  3.0 ]f32
 
@@ -781,6 +806,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       end)
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception if the arg is not of the correct precision - :f32 required" do
       x0 = ~VEC[ 2.0  3.0 ]f64
 
@@ -789,6 +815,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       end)
     end
 
+    @tag transferred_to_refactor?: false
     test "can check multiple args" do
       x0 = ~VEC[ 2.0  3.0 ]f64
       x1 = ~VEC[ 2.0  3.0 ]f32

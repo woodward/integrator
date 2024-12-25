@@ -11,6 +11,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   alias Integrator.RungeKutta.DormandPrince45
 
   describe "find_zero" do
+    @tag transferred_to_refactor?: false
     test "sine function" do
       # Octave:
       # fun = @sin; % function
@@ -59,6 +60,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - works if initial values are swapped" do
       x0 = 4.0
       x1 = 3.0
@@ -85,6 +87,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - raises an error if invalid initial bracket - positive sine" do
       # Sine is positive for both of these:
       x0 = 2.5
@@ -95,6 +98,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - raises an error if invalid initial bracket - negative sine" do
       # Sine is negative for both of these:
       x0 = 3.5
@@ -105,6 +109,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - raises an error if max iterations exceeded" do
       x0 = 3.0
       x1 = 4.0
@@ -115,6 +120,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - raises an error if max function evaluations exceeded" do
       x0 = 3.0
       x1 = 4.0
@@ -125,6 +131,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function - outputs values if a function is given" do
       # Octave:
       #   octave> fun = @sin;
@@ -171,6 +178,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(converged.x, result.x, 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "sine function with single initial value (instead of 2)" do
       x0 = 3.0
 
@@ -196,6 +204,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "returns pi/2 for cos between 0 & 3 - test from Octave" do
       x0 = 0.0
       x1 = 3.0
@@ -206,6 +215,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.c, expected_x, 1.0e-14)
     end
 
+    @tag transferred_to_refactor?: false
     test "equation - test from Octave" do
       # Octave (this code is at the bottom of fzero.m):
       #   fun = @(x) x^(1/3) - 1e-8
@@ -221,6 +231,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 6.764169935169993e-06, 1.0e-22)
     end
 
+    @tag transferred_to_refactor?: false
     test "staight line through zero - test from Octave" do
       # Octave (this code is at the bottom of fzero.m):
       #   fun = @(x) x
@@ -234,6 +245,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
+    @tag transferred_to_refactor?: false
     test "staight line through zero offset by one - test from Octave" do
       x0 = 0.0
       zero_fn = &(&1 + 1)
@@ -244,6 +256,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
+    @tag transferred_to_refactor?: false
     test "staight line through zero offset by one - test from Octave - works" do
       x0 = 0.0
       zero_fn = &(&1 + 1)
@@ -254,6 +267,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
+    @tag transferred_to_refactor?: false
     test "polynomial" do
       # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
       # Roots are 1 and 3
@@ -271,6 +285,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "ballode - first bounce" do
       # Values obtained from Octave right before and after the call to fzero in ode_event_handler.m:
       t0 = 2.898648469921000
@@ -325,6 +340,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   end
 
   describe "bracket_x/1" do
+    @tag transferred_to_refactor?: false
     test "returns a & b" do
       z = %NonLinearEqnRoot{
         a: 3.14,
@@ -336,6 +352,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   end
 
   describe "bracket_fx/1" do
+    @tag transferred_to_refactor?: false
     test "returns fa & fb" do
       z = %NonLinearEqnRoot{
         fa: 3.14,
@@ -347,6 +364,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   end
 
   describe "option_keys" do
+    @tag transferred_to_refactor?: false
     test "returns the option keys" do
       assert NonLinearEqnRoot.option_keys() == [
                :nonlinear_eqn_root_output_fn,

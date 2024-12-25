@@ -11,6 +11,7 @@ defmodule IntegratorTest do
       [initial_x: initial_x, t_initial: t_initial, t_final: t_final]
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       # See:
       # https://octave.sourceforge.io/octave_results/function/ode45.html
@@ -35,6 +36,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration - initial timestep specified", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       # See:
       # https://octave.sourceforge.io/octave_results/function/ode45.html
@@ -61,6 +63,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration - fixed output", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       # See:
       # https://octave.sourceforge.io/octave_results/function/ode45.html
@@ -86,6 +89,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
+    @tag transferred_to_refactor?: false
     test "performs the integration - high fidelity", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       opts = [
         abs_tol: Nx.tensor(1.0e-10, type: :f64),
@@ -105,6 +109,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "works - uses Bogacki-Shampine23", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       opts = [
         refine: 4,
@@ -124,6 +129,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an exception for an undefined integrator", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       opts = [integrator: :undefined_integrator!]
 
@@ -134,6 +140,7 @@ defmodule IntegratorTest do
   end
 
   describe "rigidode/euler_equations" do
+    @tag transferred_to_refactor?: false
     test "works with ode45" do
       # Octave:
       #   format long
@@ -170,6 +177,7 @@ defmodule IntegratorTest do
       assert_nx_lists_equal(solution.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
+    @tag transferred_to_refactor?: false
     test "works with ode23" do
       # Octave:
       #   format long

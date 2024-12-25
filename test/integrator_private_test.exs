@@ -10,6 +10,7 @@ defmodule IntegratorPrivateTest do
       expose(Integrator, parse_start_end: 1)
     end
 
+    @tag transferred_to_refactor?: false
     test "returns an array of times" do
       {t_start, t_end, fixed_times} = private(Integrator.parse_start_end([0.0, 1.0]))
       assert t_start == 0.0
@@ -17,6 +18,7 @@ defmodule IntegratorPrivateTest do
       assert fixed_times == nil
     end
 
+    @tag transferred_to_refactor?: false
     test "creates an array of fixed_times if a single tensor is given" do
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(0.5, type: :f64)

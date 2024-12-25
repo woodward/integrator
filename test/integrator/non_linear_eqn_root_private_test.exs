@@ -16,6 +16,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       # assert Example.private_function(:argument) == {:ok, :argument}
     end
 
+    @tag transferred_to_refactor?: false
     test "returns defaults if no opts are provided" do
       opts = []
 
@@ -31,6 +32,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
              ]
     end
 
+    @tag transferred_to_refactor?: false
     test "use the Nx type for tolerance and machine_eps no opts are provided for those" do
       opts = [type: :f64]
 
@@ -58,6 +60,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
              ]
     end
 
+    @tag transferred_to_refactor?: false
     test "use the value for :machine_eps if one is provided" do
       opts = [machine_eps: 1.0e-05]
       {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
@@ -72,6 +75,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
              ]
     end
 
+    @tag transferred_to_refactor?: false
     test "use the value for :tolerance if one is provided" do
       opts = [tolerance: 1.0e-05]
       {:ok, merged_opts} = NimbleOptions.validate(opts, NonLinearEqnRoot.options_schema())
@@ -96,6 +100,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, converged?: 3)
     end
 
+    @tag transferred_to_refactor?: false
     test "returns :continue if not yet converged" do
       z = %NonLinearEqnRoot{
         a: 3.141592614571824,
@@ -109,6 +114,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert private(NonLinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :continue
     end
 
+    @tag transferred_to_refactor?: false
     test "returns :halt if converged" do
       z = %NonLinearEqnRoot{
         a: 3.141592653589793,
@@ -128,6 +134,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, interpolate: 2)
     end
 
+    @tag transferred_to_refactor?: false
     test "secant" do
       # From Octave for:
       # fun = @sin
@@ -148,11 +155,13 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.157162792479947, 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "bisect" do
       z = %NonLinearEqnRoot{a: 3, b: 4}
       assert private(NonLinearEqnRoot.interpolate(z, :bisect)) == 3.5
     end
 
+    @tag transferred_to_refactor?: false
     test "double_secant" do
       # From Octave for:
       # fun = @sin
@@ -172,6 +181,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.141592692610915, 1.0e-12)
     end
 
+    @tag transferred_to_refactor?: false
     test "quadratic_interpolation_plus_newton" do
       # From Octave for:
       # fun = @sin
@@ -193,6 +203,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "quadratic_interpolation_plus_newton - bug fix" do
       # From Octave for ballode - first bounce
 
@@ -217,6 +228,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 4.077471967384916, 1.0e-15)
     end
 
+    @tag transferred_to_refactor?: false
     test "inverse_cubic_interpolation" do
       # From Octave for:
       # fun = @sin
@@ -243,6 +255,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, too_far?: 2)
     end
 
+    @tag transferred_to_refactor?: false
     test "returns true if too far" do
       z = %NonLinearEqnRoot{
         a: 3.2,
@@ -253,6 +266,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert private(NonLinearEqnRoot.too_far?(3.0, z)) == true
     end
 
+    @tag transferred_to_refactor?: false
     test "returns false if not too far" do
       z = %NonLinearEqnRoot{
         a: 3.141592614571824,
@@ -269,6 +283,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, check_for_non_monotonicity: 1)
     end
 
+    @tag transferred_to_refactor?: false
     test "monotonic" do
       z = %NonLinearEqnRoot{
         d: 3.141281736699444,
@@ -283,6 +298,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
     end
 
+    @tag transferred_to_refactor?: false
     test "non-monotonic" do
       z = %NonLinearEqnRoot{
         d: 3.141281736699444,
@@ -302,6 +318,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, fn_eval_new_point: 3)
     end
 
+    @tag transferred_to_refactor?: false
     test "works" do
       z = %NonLinearEqnRoot{
         c: 3.141281736699444,
@@ -322,6 +339,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fn_eval_count == 4
     end
 
+    @tag transferred_to_refactor?: false
     test "raises an error if max iterations exceeded" do
       max_iterations = 4
 
@@ -346,6 +364,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, adjust_if_too_close_to_a_or_b: 3)
     end
 
+    @tag transferred_to_refactor?: false
     test "when c is NOT too close" do
       z = %NonLinearEqnRoot{
         a: 3.0,
@@ -362,6 +381,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(z.c, 3.157162792479947, 1.0e-16)
     end
 
+    @tag transferred_to_refactor?: false
     test "when c IS too close" do
       z = %NonLinearEqnRoot{
         a: 3.157162792479947,
@@ -384,6 +404,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, find_2nd_starting_point: 2)
     end
 
+    @tag transferred_to_refactor?: false
     test "finds a value in the vicinity" do
       x0 = 3.0
 
@@ -395,6 +416,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert result.fn_eval_count == 5
     end
 
+    @tag transferred_to_refactor?: false
     test "works if x0 is very close to zero" do
       x0 = -0.0005
 
@@ -412,6 +434,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, bracket: 1)
     end
 
+    @tag transferred_to_refactor?: false
     test "first case - move b down to c" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -432,6 +455,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fb == -3.902112221087341e-08
     end
 
+    @tag transferred_to_refactor?: false
     test "second case - move a up to c" do
       z = %NonLinearEqnRoot{
         a: 3.141281736699444,
@@ -452,6 +476,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fa == 3.901796897832363e-08
     end
 
+    @tag transferred_to_refactor?: false
     test "third case - c is already at the root" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -472,6 +497,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fb == 0.0
     end
 
+    @tag transferred_to_refactor?: false
     test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -488,6 +514,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       end
     end
 
+    @tag transferred_to_refactor?: false
     test "bug fix - first iteration of first bounce of ballode.m" do
       z = %NonLinearEqnRoot{
         a: 2.898648469921000,
@@ -522,6 +549,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, compute_iteration_two_or_three: 1)
     end
 
+    @tag transferred_to_refactor?: false
     test "bug fix" do
       z = %NonLinearEqnRoot{
         a: 3.995471442091821,
