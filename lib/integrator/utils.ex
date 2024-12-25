@@ -200,10 +200,11 @@ defmodule Integrator.Utils do
   def vector_as_list(vector) do
     {length} = Nx.shape(vector)
 
-    (length - 1)..0
+    0..(length - 1)
     |> Enum.reduce([], fn i, acc ->
       [vector[i] | acc]
     end)
+    |> Enum.reverse()
   end
 
   @doc """
