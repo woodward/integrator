@@ -748,7 +748,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Hones in (via interpolation) on the exact point that the event function goes to zero
-  @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
+  # Not sure why this typespec is wrong and/or is complaining...
+  # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       x = interpolate_one_point(t, step, interpolate_fn)
