@@ -78,6 +78,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   """
   @impl RungeKutta
   defn interpolate(t, x, der, t_out) do
+    # This could be a defdelegate, but Nx does not yet support that
     Utils.hermite_cubic_interpolation(t, x, der, t_out)
   end
 end
