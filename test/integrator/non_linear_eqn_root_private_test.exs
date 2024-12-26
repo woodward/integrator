@@ -283,7 +283,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, check_for_non_monotonicity: 1)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "monotonic" do
       z = %NonLinearEqnRoot{
         d: 3.141281736699444,
@@ -298,7 +298,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(z.fe, 3.109168853400020e-04, 1.0e-12)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "non-monotonic" do
       z = %NonLinearEqnRoot{
         d: 3.141281736699444,

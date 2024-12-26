@@ -176,4 +176,35 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       assert_all_close(c, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
+
+  describe "check_for_non_monotonicity/1" do
+    test "monotonic" do
+      z = %NonLinearEqnRootRefactor{
+        d: Nx.tensor(3.141281736699444, type: :f64),
+        fa: Nx.tensor(3.901796897832363e-08, type: :f64),
+        fb: Nx.tensor(-1.556950978832860e-02, type: :f64),
+        fc: Nx.tensor(-3.902112221087341e-08, type: :f64),
+        fd: Nx.tensor(3.109168853400020e-04, type: :f64)
+      }
+
+      z = InternalComputations.check_for_non_monotonicity(z)
+
+      assert_all_close(z.e, Nx.tensor(3.141281736699444, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+      assert_all_close(z.fe, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+    end
+
+    test "non-monotonic" do
+      z = %NonLinearEqnRootRefactor{
+        d: Nx.tensor(3.141281736699444, type: :f64),
+        fa: Nx.tensor(-3.911796897832363e-08, type: :f64),
+        fb: Nx.tensor(-1.556950978832860e-02, type: :f64),
+        fc: Nx.tensor(-3.902112221087341e-08, type: :f64),
+        fd: Nx.tensor(3.109168853400020e-04, type: :f64)
+      }
+
+      z = InternalComputations.check_for_non_monotonicity(z)
+
+      assert_all_close(z.fe, Nx.tensor(-3.902112221087341e-08, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+    end
+  end
 end

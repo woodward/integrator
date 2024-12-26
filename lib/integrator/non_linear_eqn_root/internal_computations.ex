@@ -14,6 +14,18 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     Nx.abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
+  # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
+  @spec check_for_non_monotonicity(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn check_for_non_monotonicity(z) do
+    if Nx.sign(z.fc - z.fa) * Nx.sign(z.fc - z.fb) >= 0 do
+      # The new point broke monotonicity.
+      # Disable inverse cubic:
+      %{z | fe: z.fc}
+    else
+      %{z | e: z.d, fe: z.fd}
+    end
+  end
+
   @spec interpolate_quadratic_interpolation_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
   defn interpolate_quadratic_interpolation_plus_newton(z) do
     a0 = z.fa
