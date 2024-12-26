@@ -255,7 +255,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, too_far?: 2)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns true if too far" do
       z = %NonLinearEqnRoot{
         a: 3.2,
@@ -266,7 +266,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert private(NonLinearEqnRoot.too_far?(3.0, z)) == true
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns false if not too far" do
       z = %NonLinearEqnRoot{
         a: 3.141592614571824,

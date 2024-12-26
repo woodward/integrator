@@ -38,6 +38,28 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
   end
 
+  describe "too_far?/1" do
+    test "returns true if too far" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.2, type: :f64),
+        b: Nx.tensor(3.4, type: :f64),
+        u: Nx.tensor(4.0, type: :f64)
+      }
+
+      assert InternalComputations.too_far?(Nx.tensor(3.0, type: :f64), z) == Nx.tensor(1, type: :u8)
+    end
+
+    test "returns false if not too far" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.141592614571824, type: :f64),
+        b: Nx.tensor(3.157162792479947, type: :f64),
+        u: Nx.tensor(3.141592614571824, type: :f64)
+      }
+
+      assert InternalComputations.too_far?(Nx.tensor(3.141592692610915, type: :f64), z) == Nx.tensor(0, type: :u8)
+    end
+  end
+
   describe "interpolate" do
     test "bisect" do
       z = %NonLinearEqnRootRefactor{

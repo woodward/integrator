@@ -9,6 +9,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
   end
 
+  @spec too_far?(Nx.t(), NonLinearEqnRootRefactor.t()) :: Nx.t()
+  defn too_far?(c, z) do
+    Nx.abs(c - z.u) > 0.5 * (z.b - z.a)
+  end
+
   @spec interpolate_quadratic_interpolation_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
   defn interpolate_quadratic_interpolation_plus_newton(z) do
     a0 = z.fa
