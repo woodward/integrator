@@ -11,6 +11,8 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   slightly modified.
   """
 
+  @type zero_fn_t :: (Nx.t() -> Nx.t())
+
   @derive {Nx.Container,
    containers: [
      :a,

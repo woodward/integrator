@@ -5,6 +5,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   use Integrator.TestCase, async: false
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRoot.InternalComputations
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
   describe "converged?" do
     # From Octave for:
@@ -205,6 +207,64 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       z = InternalComputations.check_for_non_monotonicity(z)
 
       assert_all_close(z.fe, Nx.tensor(-3.902112221087341e-08, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+    end
+  end
+
+  describe "fn_eval_new_point" do
+    test "works" do
+      z = %NonLinearEqnRootRefactor{
+        c: Nx.tensor(3.141281736699444, type: :f64),
+        iteration_count: 1,
+        fn_eval_count: 3,
+        fc: 7
+      }
+
+      zero_fn = &Nx.sin/1
+      opts = [max_iterations: 1000, max_fn_eval_count: 1000]
+      z = InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+
+      assert_all_close(z.fc, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fx, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.x, Nx.tensor(3.141281736699444, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
+      assert z.iteration_count == Nx.tensor(2)
+      assert z.fn_eval_count == Nx.tensor(4)
+    end
+
+    test "raises an error if max iterations exceeded" do
+      max_iterations = 4
+
+      z = %NonLinearEqnRootRefactor{
+        c: Nx.tensor(3.141281736699444, type: :f64),
+        iteration_count: max_iterations,
+        fn_eval_count: 3,
+        fc: 7
+      }
+
+      opts = [max_iterations: max_iterations, max_fn_eval_count: 1000]
+      zero_fn = &Nx.sin/1
+
+      assert_raise MaxIterationsExceededError, fn ->
+        InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+      end
+    end
+
+    test "raises an error if max function evaluations exceeded" do
+      max_fn_eval_count = 4
+
+      z = %NonLinearEqnRootRefactor{
+        c: Nx.tensor(3.141281736699444, type: :f64),
+        iteration_count: 1,
+        fn_eval_count: max_fn_eval_count,
+        fc: 7
+      }
+
+      opts = [max_iterations: 1000, max_fn_eval_count: max_fn_eval_count]
+      zero_fn = &Nx.sin/1
+
+      assert_raise MaxFnEvalsExceededError, fn ->
+        InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+      end
     end
   end
 end

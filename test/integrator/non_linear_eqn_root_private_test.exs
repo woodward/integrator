@@ -318,7 +318,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, fn_eval_new_point: 3)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works" do
       z = %NonLinearEqnRoot{
         c: 3.141281736699444,
@@ -339,7 +339,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fn_eval_count == 4
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "raises an error if max iterations exceeded" do
       max_iterations = 4
 

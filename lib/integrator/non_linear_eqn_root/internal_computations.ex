@@ -1,8 +1,18 @@
 defmodule Integrator.NonLinearEqnRoot.InternalComputations do
-  @moduledoc false
+  @moduledoc """
+  Functions which are internal or private to `NonLinearEqnRoot`.  These would have been just implemented as private
+  functions in the `NonLinearEqnRoot` module, but then they could not be tested, as
+  [Patch's feature for testing private functions](https://hexdocs.pm/patch/Patch.html#private/1) does
+  not seem to work for `defnp` functions, only `defp` functions.
+  """
 
   import Nx.Defn
   alias Integrator.NonLinearEqnRootRefactor
+
+  # alias Integrator.NonLinearEqnRoot.BracketingFailureError
+  # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
 
   @spec converged?(NonLinearEqnRootRefactor.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn converged?(z, machine_eps, tolerance) do
@@ -23,6 +33,40 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       %{z | fe: z.fc}
     else
       %{z | e: z.d, fe: z.fd}
+    end
+  end
+
+  @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::
+          NonLinearEqnRootRefactor.t()
+  defn fn_eval_new_point(z, zero_fn, opts) do
+    fc = zero_fn.(z.c)
+
+    %{
+      z
+      | fc: fc,
+        x: z.c,
+        fx: fc,
+        fn_eval_count: z.fn_eval_count + 1,
+        # Perhaps move the incrementing of the iteration count elsewhere?
+        iteration_count: z.iteration_count + 1
+    }
+    |> max_iteration_count_exceeded?(opts[:max_iterations])
+    |> max_fn_eval_count_exceeded?(opts[:max_fn_eval_count])
+  end
+
+  defnp max_iteration_count_exceeded?(z, max_iterations) do
+    if z.iteration_count > max_iterations do
+      hook(z, fn step -> raise MaxIterationsExceededError, step: step, iteration_count: step.iteration_count end)
+    else
+      z
+    end
+  end
+
+  defnp max_fn_eval_count_exceeded?(z, max_fn_eval_count) do
+    if z.fn_eval_count > max_fn_eval_count do
+      hook(z, fn step -> raise MaxFnEvalsExceededError, step: step, fn_eval_count: step.fn_eval_count end)
+    else
+      z
     end
   end
 
