@@ -155,13 +155,13 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.157162792479947, 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "bisect" do
       z = %NonLinearEqnRoot{a: 3, b: 4}
       assert private(NonLinearEqnRoot.interpolate(z, :bisect)) == 3.5
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "double_secant" do
       # From Octave for:
       # fun = @sin
@@ -181,7 +181,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.141592692610915, 1.0e-12)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "quadratic_interpolation_plus_newton" do
       # From Octave for:
       # fun = @sin
@@ -203,7 +203,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 3.141281736699444, 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "quadratic_interpolation_plus_newton - bug fix" do
       # From Octave for ballode - first bounce
 
@@ -228,7 +228,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(c, 4.077471967384916, 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "inverse_cubic_interpolation" do
       # From Octave for:
       # fun = @sin
