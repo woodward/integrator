@@ -11,8 +11,6 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   slightly modified.
   """
 
-  import Nx.Defn
-
   @derive {Nx.Container,
    containers: [
      :a,
@@ -93,16 +91,4 @@ defmodule Integrator.NonLinearEqnRootRefactor do
             iteration_count: 0,
             # Change iter_type to a more descriptive atom later (possibly?):
             iter_type: 1
-
-  @spec converged?(t(), Nx.t(), Nx.t()) :: Nx.t()
-  defn converged?(z, machine_eps, tolerance) do
-    if z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance) do
-      halt()
-    else
-      continue()
-    end
-  end
-
-  defnp halt(), do: 1
-  defnp continue(), do: 0
 end
