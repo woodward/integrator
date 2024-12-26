@@ -11,6 +11,8 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   slightly modified.
   """
 
+  import Nx.Defn
+
   @derive {Nx.Container,
    containers: [
      :a,
@@ -66,31 +68,41 @@ defmodule Integrator.NonLinearEqnRootRefactor do
           iter_type: Nx.t()
         }
 
-  defstruct [
-    :a,
-    :b,
-    :c,
-    :d,
-    :e,
-    :u,
-    #
-    # Function evaluations; e.g., fb is fn(b):
-    :fa,
-    :fb,
-    :fc,
-    :fd,
-    :fe,
-    :fu,
-    #
-    # x (and fx) are the actual found values (i.e., fx should be very close to zero):
-    :x,
-    :fx,
-    #
-    :mu_ba,
-    #
-    fn_eval_count: 0,
-    iteration_count: 0,
-    # Change iter_type to a more descriptive atom later (possibly?):
-    iter_type: 1
-  ]
+  defstruct a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+            u: 0,
+            #
+            # Function evaluations; e.g., fb is fn(b):
+            fa: 0,
+            fb: 0,
+            fc: 0,
+            fd: 0,
+            fe: 0,
+            fu: 0,
+            #
+            # x (and fx) are the actual found values (i.e., fx should be very close to zero):
+            x: 0,
+            fx: 0,
+            #
+            mu_ba: 0,
+            #
+            fn_eval_count: 0,
+            iteration_count: 0,
+            # Change iter_type to a more descriptive atom later (possibly?):
+            iter_type: 1
+
+  @spec converged?(t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn converged?(z, machine_eps, tolerance) do
+    if z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance) do
+      halt()
+    else
+      continue()
+    end
+  end
+
+  defnp halt(), do: 1
+  defnp continue(), do: 0
 end

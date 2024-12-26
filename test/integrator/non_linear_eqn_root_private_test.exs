@@ -100,7 +100,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, converged?: 3)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns :continue if not yet converged" do
       z = %NonLinearEqnRoot{
         a: 3.141592614571824,
@@ -114,7 +114,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert private(NonLinearEqnRoot.converged?(z, machine_epsilon, tolerance)) == :continue
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns :halt if converged" do
       z = %NonLinearEqnRoot{
         a: 3.141592653589793,
