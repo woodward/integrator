@@ -134,7 +134,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, interpolate: 2)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "secant" do
       # From Octave for:
       # fun = @sin

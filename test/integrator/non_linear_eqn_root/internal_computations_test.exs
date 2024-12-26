@@ -37,4 +37,26 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       assert InternalComputations.converged?(z, machine_epsilon, tolerance) == Nx.tensor(1, type: :u8)
     end
   end
+
+  describe "interpolate" do
+    test "secant" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.0, type: :f64),
+        b: Nx.tensor(4.0, type: :f64),
+        u: Nx.tensor(3.0, type: :f64),
+        #
+        fa: Nx.tensor(0.141120008059867, type: :f64),
+        fb: Nx.tensor(-0.756802495307928, type: :f64),
+        fu: Nx.tensor(0.141120008059867, type: :f64)
+      }
+
+      c = InternalComputations.interpolate_secant(z)
+
+      assert_all_close(c, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
+    end
+  end
 end
