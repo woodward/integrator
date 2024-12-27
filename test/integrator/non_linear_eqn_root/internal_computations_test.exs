@@ -467,7 +467,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
   end
 
-  describe "compute_iteration_two_or_three" do
+  describe "compute_iteration_types_two_or_three" do
     test "bug fix" do
       z = %NonLinearEqnRootRefactor{
         a: Nx.tensor(3.995471442091821, type: :f64),
@@ -485,7 +485,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         iter_type: 2
       }
 
-      z = InternalComputations.compute_iteration_two_or_three(z)
+      z = InternalComputations.compute_iteration_types_two_or_three(z)
 
       assert_all_close(z.a, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.b, Nx.tensor(4.077471967384916, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
