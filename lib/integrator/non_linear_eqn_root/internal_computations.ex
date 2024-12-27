@@ -106,6 +106,45 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     Nx.sign(x.fa) * Nx.sign(x.fb) <= 0
   end
 
+  @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn number_of_unique_values(one, two, three, four) do
+    if one == two == three == four do
+      1
+    else
+      one_ne_two = one != two
+      one_ne_three = one != three
+      one_ne_four = one != four
+
+      two_ne_three = two != three
+      two_ne_four = two != four
+
+      three_ne_four = three != four
+
+      one_ne_two + one_ne_three + one_ne_four + two_ne_three + two_ne_four + three_ne_four - 2
+    end
+  end
+
+  @spec compute_iteration_two_or_three(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn compute_iteration_two_or_three(z) do
+    c =
+      case number_of_unique_values(z.fa, z.fb, z.fd, z.fe) do
+        4 ->
+          interpolate_inverse_cubic(z)
+
+        _length ->
+          # Seems like length will always be less than 4 if you're reaching here:
+          # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+          if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+            interpolate_quadratic_plus_newton(z)
+          else
+            # what do we do here?  it's not handled in fzero.m...
+            z.c
+          end
+      end
+
+    %{z | iter_type: z.iter_type + 1, c: c}
+  end
+
   @spec bracket(NonLinearEqnRootRefactor.t()) :: {Nx.t(), NonLinearEqnRootRefactor.t()}
   defn bracket(z) do
     continue = 0

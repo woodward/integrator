@@ -362,7 +362,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   describe "bracket" do
     test "first case - move c down to b" do
       z = %NonLinearEqnRootRefactor{
-        a: Nx.Constants.infinity(:f64),
+        a: Nx.Constants.nan(:f64),
         b: Nx.tensor(3.157162792479947, type: :f64),
         c: Nx.tensor(3.141592692610915, type: :f64),
         #
@@ -384,7 +384,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     test "second case - move a up to c" do
       z = %NonLinearEqnRootRefactor{
         a: Nx.tensor(3.141281736699444, type: :f64),
-        b: Nx.Constants.infinity(:f64),
+        b: Nx.Constants.nan(:f64),
         c: Nx.tensor(3.141592614571824, type: :f64),
         #
         fa: Nx.tensor(3.109168853400020e-04, type: :f64),
@@ -403,12 +403,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
     test "third case - c is already at the root" do
       z = %NonLinearEqnRootRefactor{
-        a: Nx.Constants.infinity(:f64),
-        b: Nx.Constants.infinity(:f64),
+        a: Nx.Constants.nan(:f64),
+        b: Nx.Constants.nan(:f64),
         c: Nx.tensor(1.0, type: :f64),
         #
-        fa: Nx.Constants.infinity(:f64),
-        fb: Nx.Constants.infinity(:f64),
+        fa: Nx.Constants.nan(:f64),
+        fb: Nx.Constants.nan(:f64),
         fc: Nx.tensor(0.0, type: :f64)
       }
 
@@ -423,12 +423,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
     test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
       z = %NonLinearEqnRootRefactor{
-        a: Nx.Constants.infinity(:f64),
-        b: Nx.Constants.infinity(:f64),
+        a: Nx.Constants.nan(:f64),
+        b: Nx.Constants.nan(:f64),
         c: 1.0,
         #
-        fa: Nx.Constants.infinity(:f64),
-        fb: Nx.Constants.infinity(:f64),
+        fa: Nx.Constants.nan(:f64),
+        fb: Nx.Constants.nan(:f64),
         fc: 0.1
       }
 
@@ -455,12 +455,77 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
       assert_all_close(z.a, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fa, Nx.tensor(1.607028863214206, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
       assert_all_close(z.b, Nx.tensor(4.294180317944318, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fb, Nx.tensor(-4.564518118928532, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
       assert_all_close(z.c, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fc, Nx.tensor(1.607028863214206, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
       assert_all_close(z.d, Nx.tensor(2.898648469921000, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fd, Nx.tensor(16.76036011799988, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+  end
+
+  describe "compute_iteration_two_or_three" do
+    test "bug fix" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.995471442091821, type: :f64),
+        b: Nx.tensor(4.077471967384916, type: :f64),
+        c: Nx.tensor(4.077471967384916, type: :f64),
+        d: Nx.tensor(4.294180317944318, type: :f64),
+        e: Nx.tensor(2.898648469921000, type: :f64),
+        #
+        fa: Nx.tensor(1.607028863214206, type: :f64),
+        fb: Nx.tensor(-9.382095100818333e-11, type: :f64),
+        fc: Nx.tensor(-9.382095100818333e-11, type: :f64),
+        fd: Nx.tensor(-4.564518118928532, type: :f64),
+        fe: Nx.tensor(16.76036011799988, type: :f64),
+        #
+        iter_type: 2
+      }
+
+      z = InternalComputations.compute_iteration_two_or_three(z)
+
+      assert_all_close(z.a, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.b, Nx.tensor(4.077471967384916, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
+      # Precision issues?
+      # 4.07747196738 4916
+      # 4.07747196738 0238
+      assert_all_close(z.c, Nx.tensor(4.077471967380238, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+
+      assert_all_close(z.d, Nx.tensor(4.294180317944318, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.e, Nx.tensor(2.898648469921000, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
+      assert_all_close(z.fa, Nx.tensor(1.607028863214206, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fb, Nx.tensor(-9.382095100818333e-11, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fc, Nx.tensor(-9.382095100818333e-11, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fd, Nx.tensor(-4.564518118928532, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fe, Nx.tensor(16.76036011799988, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+  end
+
+  describe "number_of_unique_values" do
+    test "returns 4 if all values are unique" do
+      assert InternalComputations.number_of_unique_values(1, 2, 3, 4) == Nx.tensor(4, type: :u8)
+    end
+
+    test "returns 3 if all but one values are unique" do
+      assert InternalComputations.number_of_unique_values(1, 2, 3, 1) == Nx.tensor(3, type: :u8)
+      assert InternalComputations.number_of_unique_values(1, 2, 3, 3) == Nx.tensor(3, type: :u8)
+      assert InternalComputations.number_of_unique_values(1, 2, 2, 4) == Nx.tensor(3, type: :u8)
+      assert InternalComputations.number_of_unique_values(1, 1, 3, 4) == Nx.tensor(3, type: :u8)
+    end
+
+    test "returns 2 if two values are unique" do
+      assert InternalComputations.number_of_unique_values(1, 2, 2, 1) == Nx.tensor(2, type: :u8)
+      assert InternalComputations.number_of_unique_values(1, 2, 1, 2) == Nx.tensor(2, type: :u8)
+      assert InternalComputations.number_of_unique_values(1, 1, 2, 2) == Nx.tensor(2, type: :u8)
+    end
+
+    test "returns 1 if only value is unique" do
+      assert InternalComputations.number_of_unique_values(1, 1, 1, 1) == Nx.tensor(1, type: :u8)
     end
   end
 end

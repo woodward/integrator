@@ -549,7 +549,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, compute_iteration_two_or_three: 1)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "bug fix" do
       z = %NonLinearEqnRoot{
         a: 3.995471442091821,
