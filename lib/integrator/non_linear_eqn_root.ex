@@ -186,11 +186,13 @@ defmodule Integrator.NonLinearEqnRoot do
     find_zero(zero_fn, [solo_point, second_point.b], opts, second_point.fn_eval_count)
   end
 
+  # IS THIS USED?
   @spec bracket_x(t()) :: [float()]
   def bracket_x(z) do
     [z.a, z.b]
   end
 
+  # IS THIS USED?
   @spec bracket_fx(t()) :: [float()]
   def bracket_fx(z) do
     [z.fa, z.fb]
@@ -201,6 +203,7 @@ defmodule Integrator.NonLinearEqnRoot do
   # ===========================================================================
   # Private functions below here:
 
+  # CONVERT TO WHILE LOOP
   @spec iterate(t(), atom(), zero_fn_t(), Keyword.t()) :: t()
   defp iterate(z, :halt, _zero_fn, _opts), do: z
 
@@ -232,6 +235,7 @@ defmodule Integrator.NonLinearEqnRoot do
   defp halt?(_, :halt), do: :halt
   defp halt?(_, _), do: :continue
 
+  # DO THIS NEXT
   @spec compute_iteration(t()) :: t()
   defp compute_iteration(%{iter_type: 1} = z) do
     # Octave:
@@ -264,6 +268,7 @@ defmodule Integrator.NonLinearEqnRoot do
     compute_iteration_two_or_three(z)
   end
 
+  # DO THIS NEXT
   defp compute_iteration(%{iter_type: 4} = z) do
     # Octave:
     #   # Double secant step.
@@ -287,6 +292,7 @@ defmodule Integrator.NonLinearEqnRoot do
     %{z | iter_type: 5, c: c}
   end
 
+  # DO THIS NEXT
   defp compute_iteration(%{iter_type: 5} = z) do
     # Octave:
     #   # Bisection step.
@@ -519,6 +525,7 @@ defmodule Integrator.NonLinearEqnRoot do
     z
   end
 
+  # DO THIS NEXT
   @spec update_u(t()) :: t()
   defp update_u(z) do
     # Octave:
@@ -545,6 +552,7 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
+  # DO THIS NEXT
   @spec skip_bisection_if_successful_reduction(t()) :: t()
   defp skip_bisection_if_successful_reduction(z) do
     # Octave:
