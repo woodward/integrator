@@ -11,6 +11,11 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   slightly modified.
   """
 
+  import Nx.Defn
+
+  # alias Integrator.NonLinearEqnRoot.InternalComputations, as: Internal
+  # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+
   @type zero_fn_t :: (Nx.t() -> Nx.t())
 
   @derive {Nx.Container,
@@ -103,11 +108,11 @@ defmodule Integrator.NonLinearEqnRootRefactor do
              containers: [
                :max_iterations,
                :max_fn_eval_count,
-               :type,
                :machine_eps,
                :tolerance
              ],
              keep: [
+               :type,
                :nonlinear_eqn_root_output_fn
              ]}
 
@@ -163,19 +168,77 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   @options_schema NimbleOptions.new!(options)
   def options_schema, do: @options_schema
 
-  @spec bracket_x(t()) :: [Nx.t()]
-  def bracket_x(z) do
-    [z.a, z.b]
+  @doc """
+  Finds a zero for a function in an interval `[a, b]` (if the 2nd argument is a list) or
+  in the vicinity of `a` (if the 2nd argument is a float).
+
+  ## Options
+
+  #{NimbleOptions.docs(@options_schema)}
+
+  """
+
+  @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), Keyword.t()) :: t()
+  deftransform find_zero(zero_fn, a, b, opts \\ []) do
+    options = convert_to_nx_options(opts)
+    # opts = opts |> NimbleOptions.validate!(@options_schema) |> merge_default_opts()
+
+    # fa = zero_fn.(a)
+    # fb = zero_fn.(b)
+    # fn_eval_count = 2 + fn_evals
+    # {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
+    # {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
+
+    # z = %__MODULE__{
+    #   a: a,
+    #   b: b,
+    #   d: u,
+    #   e: u,
+    #   u: u,
+    #   #
+    #   fa: fa,
+    #   fb: fb,
+    #   fd: fu,
+    #   fe: fu,
+    #   fu: fu,
+    #   #
+    #   fn_eval_count: fn_eval_count,
+    #   iter_type: 1,
+    #   mu_ba: @initial_mu * (b - a)
+    # }
+
+    # if sign(z.fa) * sign(z.fb) > 0.0, do: raise(InvalidInitialBracketError, step: z)
+
+    # case converged?(z, opts[:machine_eps], opts[:tolerance]) do
+    #   :continue -> iterate(z, :continue, zero_fn, opts)
+    #   :halt -> %{z | x: u, fx: fu}
+    # end
+    find_zero_nx(zero_fn, a, b, options)
   end
 
-  @spec bracket_fx(t()) :: [Nx.t()]
+  defn find_zero_nx(_zero_fn, _a, _b, _options) do
+    %__MODULE__{}
+  end
+
+  # def find_zero(zero_fn, solo_point, opts, _fn_evals) do
+  #   # second_point = Internal.find_2nd_starting_point(zero_fn, solo_point)
+
+  #   # find_zero(zero_fn, [solo_point, second_point.b], opts, second_point.fn_eval_count)
+  # end
+
+  @spec bracket_x(t()) :: {Nx.t(), Nx.t()}
+  def bracket_x(z) do
+    {z.a, z.b}
+  end
+
+  @spec bracket_fx(t()) :: {Nx.t(), Nx.t()}
   def bracket_fx(z) do
-    [z.fa, z.fb]
+    {z.fa, z.fb}
   end
 
   def convert_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
-    nx_type = nimble_opts[:type]
+    nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
 
     machine_eps =
       if Map.has_key?(nimble_opts, :machine_eps) do
