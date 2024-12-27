@@ -9,7 +9,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   import Nx.Defn
   alias Integrator.NonLinearEqnRootRefactor
 
-  # alias Integrator.NonLinearEqnRoot.BracketingFailureError
+  alias Integrator.NonLinearEqnRoot.BracketingFailureError
   # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
@@ -104,6 +104,36 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec found?(search_for_2nd_point_t()) :: Nx.t()
   defn found?(x) do
     Nx.sign(x.fa) * Nx.sign(x.fb) <= 0
+  end
+
+  @spec bracket(NonLinearEqnRootRefactor.t()) :: {Nx.t(), NonLinearEqnRootRefactor.t()}
+  defn bracket(z) do
+    continue = 0
+    halt = 1
+
+    {status, z} =
+      if Nx.sign(z.fa) * Nx.sign(z.fc) < 0 do
+        # Move c to b:
+        {continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
+      else
+        if Nx.sign(z.fb) * Nx.sign(z.fc) < 0 do
+          {continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
+        else
+          if z.fc == 0.0 do
+            {halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
+          else
+            # Should never reach here
+            {halt, raise_bracketing_failure_error(z)}
+          end
+        end
+      end
+
+    {status, z}
+  end
+
+  @spec raise_bracketing_failure_error(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defnp raise_bracketing_failure_error(z) do
+    hook(z, fn step -> raise BracketingFailureError, step: step end)
   end
 
   @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::

@@ -434,7 +434,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, bracket: 1)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "first case - move b down to c" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -455,7 +455,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fb == -3.902112221087341e-08
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "second case - move a up to c" do
       z = %NonLinearEqnRoot{
         a: 3.141281736699444,
@@ -476,7 +476,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fa == 3.901796897832363e-08
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "third case - c is already at the root" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -497,7 +497,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert z.fb == 0.0
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
       z = %NonLinearEqnRoot{
         a: nil,
@@ -514,7 +514,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "bug fix - first iteration of first bounce of ballode.m" do
       z = %NonLinearEqnRoot{
         a: 2.898648469921000,

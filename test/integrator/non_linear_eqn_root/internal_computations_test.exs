@@ -6,6 +6,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InternalComputations.SearchFor2ndPoint
+  alias Integrator.NonLinearEqnRoot.BracketingFailureError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
@@ -355,6 +356,111 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       # -0.09983341 664682815
 
       assert result.fn_eval_count == Nx.tensor(8, type: :s32)
+    end
+  end
+
+  describe "bracket" do
+    test "first case - move c down to b" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.Constants.infinity(:f64),
+        b: Nx.tensor(3.157162792479947, type: :f64),
+        c: Nx.tensor(3.141592692610915, type: :f64),
+        #
+        fa: Nx.tensor(3.901796897832363e-08, type: :f64),
+        fb: Nx.tensor(-1.556950978832860e-02, type: :f64),
+        fc: Nx.tensor(-3.902112221087341e-08, type: :f64)
+      }
+
+      continue = Nx.tensor(0, type: :s32)
+      {^continue, z} = InternalComputations.bracket(z)
+
+      assert_all_close(z.d, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fd, Nx.tensor(-1.556950978832860e-02, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+
+      assert_all_close(z.b, Nx.tensor(3.141592692610915, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fb, Nx.tensor(-3.902112221087341e-08, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "second case - move a up to c" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.141281736699444, type: :f64),
+        b: Nx.Constants.infinity(:f64),
+        c: Nx.tensor(3.141592614571824, type: :f64),
+        #
+        fa: Nx.tensor(3.109168853400020e-04, type: :f64),
+        fb: Nx.tensor(-1.556950978832860e-02, type: :f64),
+        fc: Nx.tensor(3.901796897832363e-08, type: :f64)
+      }
+
+      continue = Nx.tensor(0, type: :s32)
+      {^continue, z} = InternalComputations.bracket(z)
+
+      assert_all_close(z.d, Nx.tensor(3.141281736699444, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fd, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.a, Nx.tensor(3.141592614571824, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fa, Nx.tensor(3.901796897832363e-08, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "third case - c is already at the root" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.Constants.infinity(:f64),
+        b: Nx.Constants.infinity(:f64),
+        c: Nx.tensor(1.0, type: :f64),
+        #
+        fa: Nx.Constants.infinity(:f64),
+        fb: Nx.Constants.infinity(:f64),
+        fc: Nx.tensor(0.0, type: :f64)
+      }
+
+      halt = Nx.tensor(1, type: :s32)
+      {^halt, z} = InternalComputations.bracket(z)
+
+      assert_all_close(z.a, Nx.tensor(1.0, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fa, Nx.tensor(0.0, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.b, Nx.tensor(1.0, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fb, Nx.tensor(0.0, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.Constants.infinity(:f64),
+        b: Nx.Constants.infinity(:f64),
+        c: 1.0,
+        #
+        fa: Nx.Constants.infinity(:f64),
+        fb: Nx.Constants.infinity(:f64),
+        fc: 0.1
+      }
+
+      assert_raise BracketingFailureError, fn ->
+        InternalComputations.bracket(z)
+      end
+    end
+
+    test "bug fix - first iteration of first bounce of ballode.m" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(2.898648469921000, type: :f64),
+        b: Nx.tensor(4.294180317944318, type: :f64),
+        c: Nx.tensor(3.995471442091821, type: :f64),
+        d: Nx.tensor(4.294180317944318, type: :f64),
+        #
+        fa: Nx.tensor(16.76036011799988, type: :f64),
+        fb: Nx.tensor(-4.564518118928532, type: :f64),
+        fc: Nx.tensor(1.607028863214206, type: :f64),
+        fd: Nx.tensor(-4.564518118928532, type: :f64)
+      }
+
+      continue = Nx.tensor(0, type: :s32)
+      {^continue, z} = InternalComputations.bracket(z)
+
+      assert_all_close(z.a, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fa, Nx.tensor(1.607028863214206, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.b, Nx.tensor(4.294180317944318, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fb, Nx.tensor(-4.564518118928532, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.c, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fc, Nx.tensor(1.607028863214206, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.d, Nx.tensor(2.898648469921000, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert_all_close(z.fd, Nx.tensor(16.76036011799988, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
     end
   end
 end
