@@ -4,6 +4,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   # import Nx, only: :sigils
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRootRefactor.NxOptions
+  alias Integrator.NonLinearEqnRoot.TensorTypeError
 
   describe "find_zero" do
     test "sine function (so the zeros of this are known values)" do
@@ -99,6 +100,28 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert nx_options.max_iterations == 10
       assert nx_options.max_fn_eval_count == 20
       assert nx_options.nonlinear_eqn_root_output_fn == output_fn
+    end
+  end
+
+  describe "convert_arg_to_nx_type" do
+    test "passes through tensors (if they are of the correct type)" do
+      arg = Nx.tensor(1.0, type: :f64)
+      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.tensor(1.0, type: :f64)
+    end
+
+    test "converts floats to tensors of the appropriate type" do
+      arg = 1.0
+      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.tensor(1.0, type: :f32)
+
+      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.tensor(1.0, type: :f64)
+    end
+
+    test "raises an exception if you try to cast a tensor to a different type" do
+      arg = Nx.tensor(1.0, type: :f64)
+
+      assert_raise TensorTypeError, fn ->
+        NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 32})
+      end
     end
   end
 end

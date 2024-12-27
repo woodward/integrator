@@ -15,6 +15,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
 
   # alias Integrator.NonLinearEqnRoot.InternalComputations, as: Internal
   # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.TensorTypeError
 
   @type zero_fn_t :: (Nx.t() -> Nx.t())
 
@@ -181,8 +182,14 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, opts \\ []) do
     options = convert_to_nx_options(opts)
-    # opts = opts |> NimbleOptions.validate!(@options_schema) |> merge_default_opts()
+    a_nx = a
+    b_nx = b
+    # a_nx = convert_arg_to_nx_type(a, options.type)
+    # b_nx = convert_arg_to_nx_type(b, options.type)
+    find_zero_nx(zero_fn, a_nx, b_nx, options)
+  end
 
+  defn find_zero_nx(_zero_fn, _a, _b, _options) do
     # fa = zero_fn.(a)
     # fb = zero_fn.(b)
     # fn_eval_count = 2 + fn_evals
@@ -213,10 +220,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     #   :continue -> iterate(z, :continue, zero_fn, opts)
     #   :halt -> %{z | x: u, fx: fu}
     # end
-    find_zero_nx(zero_fn, a, b, options)
-  end
 
-  defn find_zero_nx(_zero_fn, _a, _b, _options) do
     %__MODULE__{}
   end
 
@@ -236,6 +240,15 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     {z.fa, z.fb}
   end
 
+  @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer(), Nx.Type.t()) :: Nx.t()
+  def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
+    if Nx.type(arg) != type, do: raise(TensorTypeError)
+    arg
+  end
+
+  def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
+
+  @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()
   def convert_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
