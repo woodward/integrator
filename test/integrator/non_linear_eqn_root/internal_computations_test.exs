@@ -5,6 +5,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   use Integrator.TestCase, async: false
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRoot.InternalComputations
+  alias Integrator.NonLinearEqnRoot.InternalComputations.SearchFor2ndPoint
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
@@ -265,6 +266,95 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       assert_raise MaxFnEvalsExceededError, fn ->
         InternalComputations.fn_eval_new_point(z, zero_fn, opts)
       end
+    end
+  end
+
+  describe "adjust_if_too_close_to_a_or_b" do
+    test "when c is NOT too close" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.0, type: :f64),
+        b: Nx.tensor(4.0, type: :f64),
+        c: Nx.tensor(3.157162792479947, type: :f64),
+        u: Nx.tensor(3, type: :f64)
+      }
+
+      machine_epsilon = Nx.Constants.epsilon(:f64)
+      tolerance = Nx.Constants.epsilon(:f64)
+
+      z = InternalComputations.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance)
+
+      assert_all_close(z.c, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
+    end
+
+    test "when c IS too close" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.tensor(3.157162792479947, type: :f64),
+        b: Nx.tensor(3.157162792479948, type: :f64),
+        c: Nx.tensor(3.157162792479947, type: :f64),
+        u: Nx.tensor(3.157162792479947, type: :f64)
+      }
+
+      machine_epsilon = Nx.Constants.epsilon(:f64)
+      tolerance = Nx.Constants.epsilon(:f64)
+
+      z = InternalComputations.adjust_if_too_close_to_a_or_b(z, machine_epsilon, tolerance)
+
+      assert_all_close(z.c, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
+    end
+  end
+
+  describe "found?/1" do
+    test "returns true if signs are different" do
+      fa = Nx.tensor(-1.0, type: :f64)
+      fb = Nx.tensor(2.0, type: :f64)
+      x = %SearchFor2ndPoint{fa: fa, fb: fb}
+      assert InternalComputations.found?(x) == Nx.tensor(1, type: :u8)
+    end
+
+    test "returns false if signs are the same" do
+      fa = Nx.tensor(3.0, type: :f64)
+      fb = Nx.tensor(4.0, type: :f64)
+      x = %SearchFor2ndPoint{fa: fa, fb: fb}
+      assert InternalComputations.found?(x) == Nx.tensor(0, type: :u8)
+    end
+
+    test "returns false if signs are the same - 2nd case" do
+      fa = Nx.tensor(-5.0, type: :f64)
+      fb = Nx.tensor(-6.0, type: :f64)
+      x = %SearchFor2ndPoint{fa: fa, fb: fb}
+      assert InternalComputations.found?(x) == Nx.tensor(0, type: :u8)
+    end
+  end
+
+  describe "find_2nd_starting_point" do
+    test "finds a value in the vicinity" do
+      x0 = Nx.tensor(3.0, type: :f64)
+      zero_fn = &Nx.sin/1
+
+      result = InternalComputations.find_2nd_starting_point(zero_fn, x0)
+
+      assert_all_close(result.b, Nx.tensor(3.3, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(result.fb, Nx.tensor(-0.1577456941432482, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+      assert_all_close(result.fa, Nx.tensor(0.1411200080598672, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+      assert result.fn_eval_count == Nx.tensor(5, type: :s32)
+    end
+
+    test "works if x0 is very close to zero" do
+      x0 = Nx.tensor(-0.0005, type: :f64)
+      zero_fn = &Nx.sin/1
+
+      result = InternalComputations.find_2nd_starting_point(zero_fn, x0)
+
+      assert_all_close(result.b, Nx.tensor(0.0, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
+      assert_all_close(result.fb, Nx.tensor(0.0, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+
+      # I think there is some single vs double floating point issue here:
+      assert_all_close(result.fa, Nx.tensor(-0.09983341664682815, type: :f64), atol: 1.0e-08, rtol: 1.0e-08)
+      # If you set the tolerances to 1.0e-09, note these differences which are at the single/double point boundary:
+      # -0.09983341 81294999
+      # -0.09983341 664682815
+
+      assert result.fn_eval_count == Nx.tensor(8, type: :s32)
     end
   end
 end

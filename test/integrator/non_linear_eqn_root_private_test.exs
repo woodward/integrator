@@ -364,7 +364,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, adjust_if_too_close_to_a_or_b: 3)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "when c is NOT too close" do
       z = %NonLinearEqnRoot{
         a: 3.0,
@@ -381,7 +381,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert_in_delta(z.c, 3.157162792479947, 1.0e-16)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "when c IS too close" do
       z = %NonLinearEqnRoot{
         a: 3.157162792479947,
@@ -404,7 +404,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       expose(NonLinearEqnRoot, find_2nd_starting_point: 2)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "finds a value in the vicinity" do
       x0 = 3.0
 
@@ -416,7 +416,7 @@ defmodule Integrator.NonLinearEqnRootPrivateTest do
       assert result.fn_eval_count == 5
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works if x0 is very close to zero" do
       x0 = -0.0005
 

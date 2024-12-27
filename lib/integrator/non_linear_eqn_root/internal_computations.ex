@@ -36,6 +36,76 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
+  @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
+
+  defmodule SearchFor2ndPoint do
+    @moduledoc false
+    @derive {Nx.Container,
+     containers: [
+       :a,
+       :b,
+       #
+       :fa,
+       :fb,
+       #
+       :fn_eval_count
+     ],
+     keep: []}
+
+    defstruct a: 0,
+              b: 0,
+              #
+              fa: 0,
+              fb: 0,
+              #
+              fn_eval_count: 0
+  end
+
+  @type search_for_2nd_point_t :: %SearchFor2ndPoint{
+          a: Nx.t(),
+          b: Nx.t(),
+          #
+          # Function evaluations; e.g., fb is fn(b):
+          fa: Nx.t(),
+          fb: Nx.t(),
+          #
+          fn_eval_count: Nx.t()
+        }
+
+  @spec find_2nd_starting_point(NonLinearEqnRootRefactor.zero_fn_t(), Nx.t()) :: map()
+  defn find_2nd_starting_point(zero_fn, a) do
+    # For very small values, switch to absolute rather than relative search:
+    a =
+      if Nx.abs(a) < 0.001 do
+        if a == 0, do: 0.1, else: Nx.sign(a) * 0.1
+      else
+        a
+      end
+
+    fa = zero_fn.(a)
+    x = %SearchFor2ndPoint{a: a, fa: fa, b: a, fb: fa, fn_eval_count: 1}
+    nx_type = Nx.type(a)
+    search_values = Nx.tensor(@search_values, type: nx_type)
+    number_of_search_values = Nx.axis_size(search_values, 0)
+
+    # Search in an ever-widening range around the initial point:
+    {found_x, _, _} =
+      while {x, search_values, i = 0}, not found?(x) and i <= number_of_search_values - 1 do
+        search = search_values[i]
+        b = x.a + x.a * search
+        fb = zero_fn.(b)
+        x = %{x | b: b, fb: fb, fn_eval_count: x.fn_eval_count + 1}
+        {x, search_values, i + 1}
+      end
+
+    found_x
+  end
+
+  @spec found?(search_for_2nd_point_t()) :: Nx.t()
+  defn found?(x) do
+    Nx.sign(x.fa) * Nx.sign(x.fb) <= 0
+  end
+
   @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::
           NonLinearEqnRootRefactor.t()
   defn fn_eval_new_point(z, zero_fn, opts) do
@@ -68,6 +138,20 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     else
       z
     end
+  end
+
+  @spec adjust_if_too_close_to_a_or_b(NonLinearEqnRootRefactor.t(), Nx.t(), Nx.t()) :: NonLinearEqnRootRefactor.t()
+  defn adjust_if_too_close_to_a_or_b(z, machine_eps, tolerance) do
+    delta = 2 * 0.7 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
+
+    c =
+      if z.b - z.a <= 2 * delta do
+        (z.a + z.b) / 2
+      else
+        max(z.a + delta, min(z.b - delta, z.c))
+      end
+
+    %{z | c: c}
   end
 
   @spec interpolate_quadratic_interpolation_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
