@@ -64,7 +64,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
           #
           fn_eval_count: Nx.t(),
           iteration_count: Nx.t(),
-          # Change iter_type to a more descriptive atom later (possibly?):
+          # Change iter_type to a more descriptive atom later (possibly? or keep it this way??):
           iter_type: Nx.t()
         }
 
@@ -93,4 +93,101 @@ defmodule Integrator.NonLinearEqnRootRefactor do
             iteration_count: 0,
             # Change iter_type to a more descriptive atom later (possibly?):
             iter_type: 1
+
+  defmodule NxOptions do
+    @moduledoc """
+    `NimbleOptions` converted into an Nx-friendly format for use when finding the non-linear eqn root
+    """
+
+    @derive {Nx.Container,
+             containers: [
+               :max_iterations,
+               :max_fn_eval_count,
+               :type,
+               :machine_eps,
+               :tolerance
+             ],
+             keep: [
+               :nonlinear_eqn_root_output_fn
+             ]}
+
+    @type t :: %__MODULE__{
+            max_iterations: Nx.t(),
+            max_fn_eval_count: Nx.t(),
+            type: Nx.Type.t(),
+            machine_eps: Nx.t(),
+            tolerance: Nx.t(),
+            nonlinear_eqn_root_output_fn: fun()
+          }
+
+    defstruct max_iterations: 1000,
+              max_fn_eval_count: 1000,
+              type: {:f, 64},
+              machine_eps: 0,
+              tolerance: 0,
+              nonlinear_eqn_root_output_fn: nil
+  end
+
+  options = [
+    max_iterations: [
+      type: :integer,
+      doc: "The maximum allowed number of iterations when finding a root.",
+      default: 1000
+    ],
+    max_fn_eval_count: [
+      type: :integer,
+      doc: "The maximum allowed number of function evaluations when finding a root.",
+      default: 1000
+    ],
+    type: [
+      type: {:in, [:f32, :f64]},
+      doc: "The Nx type.",
+      default: :f64
+    ],
+    machine_eps: [
+      type: :float,
+      doc: "The machine epsilon. Defaults to Nx.constants.epsilon/1 for this Nx type."
+    ],
+    tolerance: [
+      type: :float,
+      doc: "The tolerance for the convergence when finding a root. Defaults to Nx.Constants.epsilon/1 for this Nx type."
+    ],
+    nonlinear_eqn_root_output_fn: [
+      # Ideally the type for this should be set to a function with arity 2, but I could not get that to work:
+      type: :any,
+      doc: "An output function to call so intermediate results can be retrieved when finding a root.",
+      default: nil
+    ]
+  ]
+
+  @options_schema NimbleOptions.new!(options)
+  def options_schema, do: @options_schema
+
+  def convert_to_nx_options(opts) do
+    nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
+    nx_type = nimble_opts[:type]
+
+    machine_eps =
+      if Map.has_key?(nimble_opts, :machine_eps) do
+        Nx.tensor(Map.get(nimble_opts, :machine_eps), type: nx_type)
+      else
+        Nx.Constants.epsilon(nx_type)
+      end
+
+    tolerance =
+      if Map.has_key?(nimble_opts, :tolerance) do
+        Nx.tensor(Map.get(nimble_opts, :tolerance), type: nx_type)
+      else
+        Nx.Constants.epsilon(nx_type)
+      end
+
+    %NxOptions{
+      machine_eps: machine_eps,
+      max_fn_eval_count: nimble_opts[:max_fn_eval_count],
+      max_iterations: nimble_opts[:max_iterations],
+      nonlinear_eqn_root_output_fn: nimble_opts[:nonlinear_eqn_root_output_fn],
+      tolerance: tolerance,
+      type: nx_type
+    }
+  end
 end
