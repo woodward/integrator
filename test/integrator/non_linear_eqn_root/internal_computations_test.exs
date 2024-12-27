@@ -111,7 +111,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         iter_type: 2
       }
 
-      c = InternalComputations.interpolate_quadratic_interpolation_plus_newton(z)
+      c = InternalComputations.interpolate_quadratic_plus_newton(z)
 
       assert_all_close(c, Nx.tensor(3.141281736699444, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
     end
@@ -135,7 +135,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         iter_type: 2
       }
 
-      c = InternalComputations.interpolate_quadratic_interpolation_plus_newton(z)
+      c = InternalComputations.interpolate_quadratic_plus_newton(z)
 
       assert_all_close(c, Nx.tensor(4.077471967384916, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
     end

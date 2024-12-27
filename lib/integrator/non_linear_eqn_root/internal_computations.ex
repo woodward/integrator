@@ -184,8 +184,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | c: c}
   end
 
-  @spec interpolate_quadratic_interpolation_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn interpolate_quadratic_interpolation_plus_newton(z) do
+  @spec interpolate_quadratic_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
+  defn interpolate_quadratic_plus_newton(z) do
     a0 = z.fa
     a1 = (z.fb - z.fa) / (z.b - z.a)
     a2 = ((z.fd - z.fb) / (z.d - z.b) - a1) / (z.d - z.a)
