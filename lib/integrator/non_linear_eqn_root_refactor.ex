@@ -163,6 +163,16 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   @options_schema NimbleOptions.new!(options)
   def options_schema, do: @options_schema
 
+  @spec bracket_x(t()) :: [Nx.t()]
+  def bracket_x(z) do
+    [z.a, z.b]
+  end
+
+  @spec bracket_fx(t()) :: [Nx.t()]
+  def bracket_fx(z) do
+    [z.fa, z.fb]
+  end
+
   def convert_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
     nx_type = nimble_opts[:type]

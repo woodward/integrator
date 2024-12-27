@@ -186,13 +186,13 @@ defmodule Integrator.NonLinearEqnRoot do
     find_zero(zero_fn, [solo_point, second_point.b], opts, second_point.fn_eval_count)
   end
 
-  # IS THIS USED?
+  # MOVED TO REFACTOR
   @spec bracket_x(t()) :: [float()]
   def bracket_x(z) do
     [z.a, z.b]
   end
 
-  # IS THIS USED?
+  # MOVED TO REFACTOR
   @spec bracket_fx(t()) :: [float()]
   def bracket_fx(z) do
     [z.fa, z.fb]
