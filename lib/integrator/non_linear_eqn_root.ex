@@ -296,6 +296,7 @@ defmodule Integrator.NonLinearEqnRoot do
     %{z | iter_type: 2, c: c}
   end
 
+  # MOVED TO REFACTOR
   @spec compute_iteration_two_or_three(t()) :: t()
   defp compute_iteration_two_or_three(z) do
     c =
@@ -315,13 +316,16 @@ defmodule Integrator.NonLinearEqnRoot do
     %{z | iter_type: z.iter_type + 1, c: c}
   end
 
+  # MOVED TO REFACTOR
   @search_values [-0.01, 0.025, -0.05, 0.10, -0.25, 0.50, -1.0, 2.5, -5.0, 10.0, -50.0, 100.0, 500.0, 1000.0]
 
+  # MOVED TO REFACTOR
   defmodule SearchFor2ndPoint do
     @moduledoc false
     defstruct [:a, :fa, :b, :fb, :fn_eval_count]
   end
 
+  # MOVED TO REFACTOR
   @type search_for_2nd_point_t :: %SearchFor2ndPoint{
           a: float() | nil,
           b: float() | nil,
@@ -333,6 +337,7 @@ defmodule Integrator.NonLinearEqnRoot do
           fn_eval_count: integer()
         }
 
+  # MOVED TO REFACTOR
   @spec find_2nd_starting_point(zero_fn_t(), float()) :: map()
   defp find_2nd_starting_point(zero_fn, a) do
     # For very small values, switch to absolute rather than relative search:
@@ -350,6 +355,7 @@ defmodule Integrator.NonLinearEqnRoot do
     searching_for_2nd_point(:continue, zero_fn, x, @search_values)
   end
 
+  # MOVED TO REFACTOR
   @spec searching_for_2nd_point(atom(), zero_fn_t(), search_for_2nd_point_t(), [float()]) :: map()
   defp searching_for_2nd_point(:found, _zero_fn, x, _search_values), do: x
 
@@ -362,6 +368,7 @@ defmodule Integrator.NonLinearEqnRoot do
     searching_for_2nd_point(status, zero_fn, x, rest_of_search_values)
   end
 
+  # MOVED TO REFACTOR
   @spec interpolate(t(), interpolation_type()) :: float()
   defp interpolate(z, :quadratic_interpolation_plus_newton) do
     a0 = z.fa
@@ -391,6 +398,7 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
+  # MOVED TO REFACTOR
   defp interpolate(z, :inverse_cubic_interpolation) do
     q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
     q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
@@ -406,23 +414,28 @@ defmodule Integrator.NonLinearEqnRoot do
     z.a + q31 + q32 + q33
   end
 
+  # MOVED TO REFACTOR
   defp interpolate(z, :double_secant) do
     z.u - 2.0 * (z.b - z.a) / (z.fb - z.fa) * z.fu
   end
 
+  # MOVED TO REFACTOR
   defp interpolate(z, :bisect) do
     0.5 * (z.b + z.a)
   end
 
+  # MOVED TO REFACTOR
   defp interpolate(z, :secant) do
     z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
   end
 
+  # MOVED TO REFACTOR
   @spec too_far?(float(), t()) :: boolean()
   defp too_far?(c, z) do
     abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
+  # MOVED TO REFACTOR
   @spec fn_eval_new_point(t(), zero_fn_t(), Keyword.t()) :: t()
   defp fn_eval_new_point(z, zero_fn, opts) do
     fc = zero_fn.(z.c)
@@ -448,6 +461,7 @@ defmodule Integrator.NonLinearEqnRoot do
     }
   end
 
+  # MOVED TO REFACTOR
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
   @spec check_for_non_monotonicity(t()) :: t()
   defp check_for_non_monotonicity(z) do
@@ -460,6 +474,7 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
+  # MOVED TO REFACTOR
   @spec adjust_if_too_close_to_a_or_b(t(), float(), float()) :: t()
   defp adjust_if_too_close_to_a_or_b(z, machine_eps, tolerance) do
     delta = 2 * 0.7 * (2 * abs(z.u) * machine_eps + tolerance)
@@ -474,6 +489,7 @@ defmodule Integrator.NonLinearEqnRoot do
     %{z | c: c}
   end
 
+  # MOVED TO REFACTOR
   @spec bracket(t()) :: {convergence_status(), t()}
   defp bracket(z) do
     {status, z} =
@@ -519,6 +535,7 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
+  # MOVED TO REFACTOR
   @spec converged?(t(), float(), float()) :: convergence_status()
   defp converged?(z, machine_eps, tolerance) do
     if z.b - z.a <= 2 * (2 * abs(z.u) * machine_eps + tolerance) do
