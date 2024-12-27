@@ -162,17 +162,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
             {halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
           else
             # Should never reach here
-            {halt, raise_bracketing_failure_error(z)}
+            {halt, hook(z, &raise(BracketingFailureError, step: &1))}
           end
         end
       end
 
     {status, z}
-  end
-
-  @spec raise_bracketing_failure_error(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
-  defnp raise_bracketing_failure_error(z) do
-    hook(z, fn step -> raise BracketingFailureError, step: step end)
   end
 
   @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::
