@@ -14,6 +14,64 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
 
+  @spec compute_iteration_type_one(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn compute_iteration_type_one(z) do
+    # Octave:
+    #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
+    #     # Secant step.
+    #     c = u - (a - b) / (fa - fb) * fu;
+    #   else
+    #     # Bisection step.
+    #     c = 0.5*(a + b);
+    #   endif
+    #   d = u; fd = fu;
+    #   iter_type = 5;
+
+    # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
+    c =
+      if Nx.abs(z.fa) <= 1000 * Nx.abs(z.fb) and Nx.abs(z.fb) <= 1000 * Nx.abs(z.fa) do
+        interpolate_secant(z)
+      else
+        interpolate_bisect(z)
+      end
+
+    %{z | c: c, d: z.u, fd: z.fu, iter_type: 5}
+  end
+
+  @spec compute_iteration_type_four(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn compute_iteration_type_four(z) do
+    # Octave:
+    #   # Double secant step.
+    #   c = u - 2*(b - a)/(fb - fa)*fu;
+    #   # Bisect if too far.
+    #   if (abs (c - u) > 0.5*(b - a))
+    #     c = 0.5 * (b + a);
+    #   endif
+    #   iter_type = 5;
+
+    c = interpolate_double_secant(z)
+
+    c =
+      if too_far?(c, z) do
+        # Bisect if too far:
+        interpolate_bisect(z)
+      else
+        c
+      end
+
+    %{z | iter_type: 5, c: c}
+  end
+
+  @spec compute_iteration_type_five(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn compute_iteration_type_five(z) do
+    # Octave:
+    #   # Bisection step.
+    #   c = 0.5 * (b + a);
+    #   iter_type = 2;
+    c = interpolate_bisect(z)
+    %{z | iter_type: 2, c: c}
+  end
+
   @spec converged?(NonLinearEqnRootRefactor.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn converged?(z, machine_eps, tolerance) do
     z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
