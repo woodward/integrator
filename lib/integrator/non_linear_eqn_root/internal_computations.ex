@@ -218,8 +218,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec interpolate_inverse_cubic_interpolation(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn interpolate_inverse_cubic_interpolation(z) do
+  @spec interpolate_inverse_cubic(NonLinearEqnRootRefactor.t()) :: Nx.t()
+  defn interpolate_inverse_cubic(z) do
     q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
     q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
     q31 = (z.a - z.b) * z.fa / (z.fb - z.fa)

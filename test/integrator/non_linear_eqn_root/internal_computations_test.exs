@@ -156,7 +156,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fe: Nx.tensor(-0.756802495307928, type: :f64)
       }
 
-      c = InternalComputations.interpolate_inverse_cubic_interpolation(z)
+      c = InternalComputations.interpolate_inverse_cubic(z)
       assert_all_close(c, Nx.tensor(3.141592614571824, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
     end
 
