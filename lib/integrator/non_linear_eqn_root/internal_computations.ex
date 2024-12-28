@@ -7,14 +7,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   """
 
   import Nx.Defn
+
+  alias Integrator.NonLinearEqnRoot.BracketingFailureError
+  alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRootRefactor.NxOptions
 
-  alias Integrator.NonLinearEqnRoot.BracketingFailureError
-  # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
-  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
-  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-
+  # This also shows up in Integrator.NonLinearEqnRootRefactor - how can I get rid of the duplication?
   @initial_mu 0.5
 
   @spec iterate(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), NxOptions.t()) :: NonLinearEqnRootRefactor.t()
@@ -44,13 +45,14 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {z, options, continue?}
       end
 
-    z
+    %{z | x: z.u, fx: z.fu}
   end
 
   @spec compute_iteration(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
   defn compute_iteration(z) do
     iter_type = z.iter_type
 
+    # How can I get rid of these nasty nested if statements and do a case statement? See attempts below:
     if iter_type == 1 do
       compute_iteration_type_one(z)
     else
@@ -63,13 +65,27 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           if iter_type == 5 do
             compute_iteration_type_five(z)
           else
-            # Should never reach here
-            z
-            # hook(z, &raise(IncorrectIterationType, type: iter_type))
+            # Should never reach here:
+            hook(z, &raise(IncorrectIterationTypeError, step: &1, iter_type: &1.iter_type))
           end
         end
       end
     end
+
+    # I should be able to do this as a case statement on z.iter_type - why does this not work???
+
+    # First try:
+    # case z.iter_type do
+    #   1 -> compute_iteration_type_one(z)
+    #   2 -> compute_iteration_types_two_or_three(z)
+    #   3 -> compute_iteration_types_two_or_three(z)
+    #   4 -> compute_iteration_type_four(z)
+    #   5 -> compute_iteration_type_five(z)
+    # end
+
+    # ---------------
+
+    # 2nd try:
 
     # one = Nx.tensor(1, type: :s32)
     # two = Nx.tensor(2, type: :s32)
@@ -83,14 +99,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   ^three -> compute_iteration_types_two_or_three(z)
     #   ^four -> compute_iteration_type_four(z)
     #   ^five -> compute_iteration_type_five(z)
-    # end
-
-    # case z.iter_type do
-    #   1 -> compute_iteration_type_one(z)
-    #   2 -> compute_iteration_types_two_or_three(z)
-    #   3 -> compute_iteration_types_two_or_three(z)
-    #   4 -> compute_iteration_type_four(z)
-    #   5 -> compute_iteration_type_five(z)
     # end
   end
 
@@ -306,13 +314,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec halt?(Nx.t(), Nx.t()) :: Nx.t()
-  defn halt?(status1, status2) do
-    status1 == 1 or status2 == 1
-  end
-
   @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn number_of_unique_values(one, two, three, four) do
+    # There's got to be a better, Nx-ey way to do this! This is brute-force (for now).
+
     if one == two == three == four do
       1
     else
@@ -368,21 +373,23 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         # Perhaps move the incrementing of the iteration count elsewhere?
         iteration_count: z.iteration_count + 1
     }
-    |> max_iteration_count_exceeded?(options.max_iterations)
-    |> max_fn_eval_count_exceeded?(options.max_fn_eval_count)
+    |> raise_if_max_iteration_count_exceeded(options.max_iterations)
+    |> raise_if_max_fn_eval_count_exceeded(options.max_fn_eval_count)
   end
 
-  defnp max_iteration_count_exceeded?(z, max_iterations) do
+  @spec raise_if_max_iteration_count_exceeded(NonLinearEqnRootRefactor.t(), Nx.t()) :: NonLinearEqnRootRefactor.t()
+  defnp raise_if_max_iteration_count_exceeded(z, max_iterations) do
     if z.iteration_count > max_iterations do
-      hook(z, fn step -> raise MaxIterationsExceededError, step: step, iteration_count: step.iteration_count end)
+      hook(z, &raise(MaxIterationsExceededError, step: &1, iteration_count: &1.iteration_count))
     else
       z
     end
   end
 
-  defnp max_fn_eval_count_exceeded?(z, max_fn_eval_count) do
+  @spec raise_if_max_fn_eval_count_exceeded(NonLinearEqnRootRefactor.t(), Nx.t()) :: NonLinearEqnRootRefactor.t()
+  defnp raise_if_max_fn_eval_count_exceeded(z, max_fn_eval_count) do
     if z.fn_eval_count > max_fn_eval_count do
-      hook(z, fn step -> raise MaxFnEvalsExceededError, step: step, fn_eval_count: step.fn_eval_count end)
+      hook(z, &raise(MaxFnEvalsExceededError, step: &1, fn_eval_count: &1.fn_eval_count))
     else
       z
     end

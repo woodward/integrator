@@ -189,6 +189,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     find_zero_nx(zero_fn, a_nx, b_nx, options)
   end
 
+  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), NxOptions.t()) :: t()
   defn find_zero_nx(zero_fn, a, b, options) do
     fa = zero_fn.(a)
     fb = zero_fn.(b)

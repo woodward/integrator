@@ -222,7 +222,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       zero_fn = &Nx.sin/1
-      opts = [max_iterations: 1000, max_fn_eval_count: 1000]
+      opts = %{max_iterations: 1000, max_fn_eval_count: 1000}
       z = InternalComputations.fn_eval_new_point(z, zero_fn, opts)
 
       assert_all_close(z.fc, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -243,7 +243,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: 7
       }
 
-      opts = [max_iterations: max_iterations, max_fn_eval_count: 1000]
+      opts = %{max_iterations: max_iterations, max_fn_eval_count: 1000}
       zero_fn = &Nx.sin/1
 
       assert_raise MaxIterationsExceededError, fn ->
@@ -261,7 +261,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: 7
       }
 
-      opts = [max_iterations: 1000, max_fn_eval_count: max_fn_eval_count]
+      opts = %{max_iterations: 1000, max_fn_eval_count: max_fn_eval_count}
       zero_fn = &Nx.sin/1
 
       assert_raise MaxFnEvalsExceededError, fn ->
@@ -371,7 +371,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.tensor(-3.902112221087341e-08, type: :f64)
       }
 
-      continue = Nx.tensor(0, type: :s32)
+      continue = Nx.tensor(1, type: :s32)
       {^continue, z} = InternalComputations.bracket(z)
 
       assert_all_close(z.d, Nx.tensor(3.157162792479947, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -392,7 +392,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.tensor(3.901796897832363e-08, type: :f64)
       }
 
-      continue = Nx.tensor(0, type: :s32)
+      continue = Nx.tensor(1, type: :s32)
       {^continue, z} = InternalComputations.bracket(z)
 
       assert_all_close(z.d, Nx.tensor(3.141281736699444, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -412,7 +412,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.tensor(0.0, type: :f64)
       }
 
-      halt = Nx.tensor(1, type: :s32)
+      halt = Nx.tensor(0, type: :s32)
       {^halt, z} = InternalComputations.bracket(z)
 
       assert_all_close(z.a, Nx.tensor(1.0, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -450,7 +450,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fd: Nx.tensor(-4.564518118928532, type: :f64)
       }
 
-      continue = Nx.tensor(0, type: :s32)
+      continue = Nx.tensor(1, type: :s32)
       {^continue, z} = InternalComputations.bracket(z)
 
       assert_all_close(z.a, Nx.tensor(3.995471442091821, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
