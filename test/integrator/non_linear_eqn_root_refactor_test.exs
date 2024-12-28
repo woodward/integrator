@@ -40,14 +40,9 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert_all_close(result.c, expected_x, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(result.fx, 0.0, atol: 1.0e-14, rtol: 1.0e-14)
 
-      assert Nx.to_number(result.fn_eval_count) == 23
-      assert Nx.to_number(result.iteration_count) == 21
+      assert Nx.to_number(result.fn_eval_count) == 8
+      assert Nx.to_number(result.iteration_count) == 6
       assert Nx.to_number(result.iter_type) == 4
-
-      # Original values before refactor - why are these different?
-      # assert Nx.to_number(result.fn_eval_count) == 8
-      # assert Nx.to_number(result.iteration_count) == 6
-      # assert Nx.to_number(result.iter_type) == 4
 
       {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
       # Expected values are from Octave:

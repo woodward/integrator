@@ -22,6 +22,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   defn iterate(z, zero_fn, options) do
     continue? = Nx.tensor(1, type: :u8)
 
+    # For debugging:
+    # z = print_z(z)
+
     {z, _, _} =
       while {z, options, continue?}, continue? do
         {status_1, z} =
@@ -42,6 +45,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         status_2 = converged?(z, options.machine_eps, options.tolerance)
         continue? = not status_2 and status_1
 
+        # For debugging:
+        # z = print_z(z)
         {z, options, continue?}
       end
 
@@ -134,13 +139,17 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           interpolate_inverse_cubic(z)
 
         _length ->
-          # Seems like length will always be less than 4 if you're reaching here:
+          # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
           # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+
+          # Shouldn't it be this instead?
           if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+            #
             interpolate_quadratic_plus_newton(z)
           else
             # what do we do here?  it's not handled in fzero.m...
-            z.c
+            interpolate_quadratic_plus_newton(z)
+            # z.c
           end
       end
 
@@ -177,8 +186,43 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   # Bisection step.
     #   c = 0.5 * (b + a);
     #   iter_type = 2;
+
     c = interpolate_bisect(z)
     %{z | iter_type: 2, c: c}
+  end
+
+  # For debugging purposes
+  @spec print_z(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn print_z(z) do
+    hook(z, fn step ->
+      print = &inspect(Nx.to_number(&1))
+
+      z_data = """
+      %Integrator.NonLinearEqnRootRefactor{
+          a: #{print.(step.a)},
+          b: #{print.(step.b)},
+          c: #{print.(step.c)},
+          d: #{print.(step.d)},
+          e: #{print.(step.e)},
+          u: #{print.(step.u)},
+          fa: #{print.(step.fa)},
+          fb: #{print.(step.fb)},
+          fc: #{print.(step.fc)},
+          fd: #{print.(step.fd)},
+          fe: #{print.(step.fe)},
+          fu: #{print.(step.fu)},
+          x: #{print.(step.x)},
+          fx: #{print.(step.fx)},
+          mu_ba: #{print.(step.mu_ba)},
+          fn_eval_count: #{print.(step.fn_eval_count)},
+          iteration_count: #{print.(step.iteration_count)},
+          iter_type: #{print.(step.iter_type)}
+      }
+      """
+
+      IO.puts(z_data)
+      step
+    end)
   end
 
   @spec converged?(NonLinearEqnRootRefactor.t(), Nx.t(), Nx.t()) :: Nx.t()

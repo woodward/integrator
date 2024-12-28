@@ -202,6 +202,12 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     x = Nx.tensor(0.0, type: options.type)
     fx = Nx.tensor(0.0, type: options.type)
 
+    # These don't seem to work:
+    # c = Nx.Constants.nan(type: options.type)
+    # fc = Nx.Constants.nan(type: options.type)
+    # x = Nx.Constants.nan(type: options.type)
+    # fx = Nx.Constants.nan(type: options.type)
+
     z = %__MODULE__{
       a: a,
       b: b,
