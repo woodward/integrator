@@ -8,11 +8,91 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   import Nx.Defn
   alias Integrator.NonLinearEqnRootRefactor
+  alias Integrator.NonLinearEqnRootRefactor.NxOptions
 
   alias Integrator.NonLinearEqnRoot.BracketingFailureError
   # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
+
+  @initial_mu 0.5
+
+  @spec iterate(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), NxOptions.t()) :: NonLinearEqnRootRefactor.t()
+  defn iterate(z, zero_fn, options) do
+    continue? = Nx.tensor(1, type: :u8)
+
+    {z, _, _} =
+      while {z, options, continue?}, continue? do
+        {status_1, z} =
+          z
+          |> compute_iteration()
+          |> adjust_if_too_close_to_a_or_b(options.machine_eps, options.tolerance)
+          |> fn_eval_new_point(zero_fn, options)
+          |> check_for_non_monotonicity()
+          |> bracket()
+
+        z =
+          z
+          |> skip_bisection_if_successful_reduction()
+          |> update_u()
+
+        # # |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
+
+        status_2 = converged?(z, options.machine_eps, options.tolerance)
+        continue? = not status_2 and status_1
+
+        {z, options, continue?}
+      end
+
+    z
+  end
+
+  @spec compute_iteration(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn compute_iteration(z) do
+    iter_type = z.iter_type
+
+    if iter_type == 1 do
+      compute_iteration_type_one(z)
+    else
+      if iter_type == 2 or iter_type == 3 do
+        compute_iteration_types_two_or_three(z)
+      else
+        if iter_type == 4 do
+          compute_iteration_type_four(z)
+        else
+          if iter_type == 5 do
+            compute_iteration_type_five(z)
+          else
+            # Should never reach here
+            z
+            # hook(z, &raise(IncorrectIterationType, type: iter_type))
+          end
+        end
+      end
+    end
+
+    # one = Nx.tensor(1, type: :s32)
+    # two = Nx.tensor(2, type: :s32)
+    # three = Nx.tensor(3, type: :s32)
+    # four = Nx.tensor(4, type: :s32)
+    # five = Nx.tensor(5, type: :s32)
+
+    # case z.iter_type do
+    #   ^one -> compute_iteration_type_one(z)
+    #   ^two -> compute_iteration_types_two_or_three(z)
+    #   ^three -> compute_iteration_types_two_or_three(z)
+    #   ^four -> compute_iteration_type_four(z)
+    #   ^five -> compute_iteration_type_five(z)
+    # end
+
+    # case z.iter_type do
+    #   1 -> compute_iteration_type_one(z)
+    #   2 -> compute_iteration_types_two_or_three(z)
+    #   3 -> compute_iteration_types_two_or_three(z)
+    #   4 -> compute_iteration_type_four(z)
+    #   5 -> compute_iteration_type_five(z)
+    # end
+  end
 
   @spec compute_iteration_type_one(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
   defn compute_iteration_type_one(z) do
@@ -185,6 +265,52 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     Nx.sign(x.fa) * Nx.sign(x.fb) <= 0
   end
 
+  @spec skip_bisection_if_successful_reduction(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn skip_bisection_if_successful_reduction(z) do
+    # Octave:
+    #   if (iter_type == 5 && (b - a) <= mba)
+    #     iter_type = 2;
+    #   endif
+    #   if (iter_type == 2)
+    #     mba = mu * (b - a);
+    #   endif
+
+    z =
+      if z.iter_type == 5 and z.b - z.a <= z.mu_ba do
+        %{z | iter_type: 2}
+      else
+        z
+      end
+
+    if z.iter_type == 2 do
+      # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd...
+      %{z | mu_ba: (z.b - z.a) * @initial_mu}
+    else
+      z
+    end
+  end
+
+  @spec update_u(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn update_u(z) do
+    # Octave:
+    #   if (abs (fa) < abs (fb))
+    #     u = a; fu = fa;
+    #   else
+    #     u = b; fu = fb;
+    #   endif
+
+    if Nx.abs(z.fa) < Nx.abs(z.fb) do
+      %{z | u: z.a, fu: z.fa}
+    else
+      %{z | u: z.b, fu: z.fb}
+    end
+  end
+
+  @spec halt?(Nx.t(), Nx.t()) :: Nx.t()
+  defn halt?(status1, status2) do
+    status1 == 1 or status2 == 1
+  end
+
   @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn number_of_unique_values(one, two, three, four) do
     if one == two == three == four do
@@ -205,8 +331,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec bracket(NonLinearEqnRootRefactor.t()) :: {Nx.t(), NonLinearEqnRootRefactor.t()}
   defn bracket(z) do
-    continue = 0
-    halt = 1
+    continue = 1
+    halt = 0
 
     {status, z} =
       if Nx.sign(z.fa) * Nx.sign(z.fc) < 0 do
@@ -230,7 +356,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::
           NonLinearEqnRootRefactor.t()
-  defn fn_eval_new_point(z, zero_fn, opts) do
+  defn fn_eval_new_point(z, zero_fn, options) do
     fc = zero_fn.(z.c)
 
     %{
@@ -242,8 +368,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         # Perhaps move the incrementing of the iteration count elsewhere?
         iteration_count: z.iteration_count + 1
     }
-    |> max_iteration_count_exceeded?(opts[:max_iterations])
-    |> max_fn_eval_count_exceeded?(opts[:max_fn_eval_count])
+    |> max_iteration_count_exceeded?(options.max_iterations)
+    |> max_fn_eval_count_exceeded?(options.max_fn_eval_count)
   end
 
   defnp max_iteration_count_exceeded?(z, max_iterations) do

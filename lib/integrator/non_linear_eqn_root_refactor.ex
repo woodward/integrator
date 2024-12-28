@@ -13,11 +13,13 @@ defmodule Integrator.NonLinearEqnRootRefactor do
 
   import Nx.Defn
 
-  # alias Integrator.NonLinearEqnRoot.InternalComputations, as: Internal
-  # alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.InternalComputations
+  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.TensorTypeError
 
   @type zero_fn_t :: (Nx.t() -> Nx.t())
+  @type iter_type :: 1 | 2 | 3 | 4 | 5
+  @initial_mu 0.5
 
   @derive {Nx.Container,
    containers: [
@@ -74,26 +76,26 @@ defmodule Integrator.NonLinearEqnRootRefactor do
           iter_type: Nx.t()
         }
 
-  defstruct a: 0,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-            u: 0,
+  defstruct a: 0.0,
+            b: 0.0,
+            c: 0.0,
+            d: 0.0,
+            e: 0.0,
+            u: 0.0,
             #
             # Function evaluations; e.g., fb is fn(b):
-            fa: 0,
-            fb: 0,
-            fc: 0,
-            fd: 0,
-            fe: 0,
-            fu: 0,
+            fa: 0.0,
+            fb: 0.0,
+            fc: 0.0,
+            fd: 0.0,
+            fe: 0.0,
+            fu: 0.0,
             #
             # x (and fx) are the actual found values (i.e., fx should be very close to zero):
-            x: 0,
-            fx: 0,
+            x: 0.0,
+            fx: 0.0,
             #
-            mu_ba: 0,
+            mu_ba: 0.0,
             #
             fn_eval_count: 0,
             iteration_count: 0,
@@ -182,46 +184,54 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, opts \\ []) do
     options = convert_to_nx_options(opts)
-    a_nx = a
-    b_nx = b
-    # a_nx = convert_arg_to_nx_type(a, options.type)
-    # b_nx = convert_arg_to_nx_type(b, options.type)
+    a_nx = convert_arg_to_nx_type(a, options.type)
+    b_nx = convert_arg_to_nx_type(b, options.type)
     find_zero_nx(zero_fn, a_nx, b_nx, options)
   end
 
-  defn find_zero_nx(_zero_fn, _a, _b, _options) do
-    # fa = zero_fn.(a)
-    # fb = zero_fn.(b)
+  defn find_zero_nx(zero_fn, a, b, options) do
+    fa = zero_fn.(a)
+    fb = zero_fn.(b)
     # fn_eval_count = 2 + fn_evals
-    # {u, fu} = if abs(fa) < abs(fb), do: {a, fa}, else: {b, fb}
-    # {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
+    fn_eval_count = 2
+    {u, fu} = if Nx.abs(fa) < Nx.abs(fb), do: {a, fa}, else: {b, fb}
+    {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
+    c = Nx.tensor(0.0, type: options.type)
+    fc = Nx.tensor(0.0, type: options.type)
+    x = Nx.tensor(0.0, type: options.type)
+    fx = Nx.tensor(0.0, type: options.type)
 
-    # z = %__MODULE__{
-    #   a: a,
-    #   b: b,
-    #   d: u,
-    #   e: u,
-    #   u: u,
-    #   #
-    #   fa: fa,
-    #   fb: fb,
-    #   fd: fu,
-    #   fe: fu,
-    #   fu: fu,
-    #   #
-    #   fn_eval_count: fn_eval_count,
-    #   iter_type: 1,
-    #   mu_ba: @initial_mu * (b - a)
-    # }
+    z = %__MODULE__{
+      a: a,
+      b: b,
+      c: c,
+      d: u,
+      e: u,
+      u: u,
+      x: x,
+      #
+      fa: fa,
+      fb: fb,
+      fc: fc,
+      fd: fu,
+      fe: fu,
+      fu: fu,
+      fx: fx,
+      #
+      fn_eval_count: fn_eval_count,
+      iter_type: 1,
+      mu_ba: (b - a) * @initial_mu
+    }
 
-    # if sign(z.fa) * sign(z.fb) > 0.0, do: raise(InvalidInitialBracketError, step: z)
+    z = if Nx.sign(z.fa) * Nx.sign(z.fb) > 0.0, do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z
 
     # case converged?(z, opts[:machine_eps], opts[:tolerance]) do
     #   :continue -> iterate(z, :continue, zero_fn, opts)
     #   :halt -> %{z | x: u, fx: fu}
     # end
 
-    %__MODULE__{}
+    InternalComputations.iterate(z, zero_fn, options)
+    # z
   end
 
   # def find_zero(zero_fn, solo_point, opts, _fn_evals) do
