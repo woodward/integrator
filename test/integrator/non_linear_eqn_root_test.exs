@@ -11,7 +11,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   alias Integrator.RungeKutta.DormandPrince45
 
   describe "find_zero" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function" do
       # Octave:
       # fun = @sin; % function
@@ -60,7 +60,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - works if initial values are swapped" do
       x0 = 4.0
       x1 = 3.0
@@ -87,7 +87,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - raises an error if invalid initial bracket - positive sine" do
       # Sine is positive for both of these:
       x0 = 2.5
@@ -98,7 +98,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - raises an error if invalid initial bracket - negative sine" do
       # Sine is negative for both of these:
       x0 = 3.5
@@ -109,7 +109,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - raises an error if max iterations exceeded" do
       x0 = 3.0
       x1 = 4.0
@@ -120,7 +120,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - raises an error if max function evaluations exceeded" do
       x0 = 3.0
       x1 = 4.0

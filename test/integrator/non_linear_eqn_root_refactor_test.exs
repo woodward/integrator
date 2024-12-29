@@ -2,9 +2,13 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   @moduledoc false
   use Integrator.TestCase
   # import Nx, only: :sigils
+
+  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
+  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
+  alias Integrator.NonLinearEqnRoot.TensorTypeError
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRootRefactor.NxOptions
-  alias Integrator.NonLinearEqnRoot.TensorTypeError
 
   describe "find_zero" do
     test "sine function (so the zeros of this are known values) - computations in :f64" do
@@ -79,6 +83,46 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       # Expected values are from Octave:
       assert_all_close(y1, Nx.tensor(1.224646799147353e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.tensor(-2.097981369335578e-15, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+    end
+
+    test "sine function - raises an error if invalid initial bracket - positive sine" do
+      # Sine is positive for both of these:
+      x0 = 2.5
+      x1 = 3.0
+
+      assert_raise InvalidInitialBracketError, fn ->
+        NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1)
+      end
+    end
+
+    test "sine function - raises an error if invalid initial bracket - negative sine" do
+      # Sine is negative for both of these:
+      x0 = 3.5
+      x1 = 4.0
+
+      assert_raise InvalidInitialBracketError, fn ->
+        NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1)
+      end
+    end
+
+    test "sine function - raises an error if max iterations exceeded" do
+      x0 = 3.0
+      x1 = 4.0
+      opts = [max_iterations: 2]
+
+      assert_raise MaxIterationsExceededError, fn ->
+        NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1, opts)
+      end
+    end
+
+    test "sine function - raises an error if max function evaluations exceeded" do
+      x0 = 3.0
+      x1 = 4.0
+      opts = [max_fn_eval_count: 2]
+
+      assert_raise MaxFnEvalsExceededError, fn ->
+        NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1, opts)
+      end
     end
   end
 
