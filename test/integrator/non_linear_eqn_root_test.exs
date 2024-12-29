@@ -178,7 +178,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(converged.x, result.x, 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function with single initial value (instead of 2)" do
       x0 = 3.0
 
@@ -204,7 +204,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(y2, -2.097981369335578e-15, 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns pi/2 for cos between 0 & 3 - test from Octave" do
       x0 = 0.0
       x1 = 3.0
@@ -215,7 +215,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.c, expected_x, 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "equation - test from Octave" do
       # Octave (this code is at the bottom of fzero.m):
       #   fun = @(x) x^(1/3) - 1e-8
@@ -231,7 +231,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 6.764169935169993e-06, 1.0e-22)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "staight line through zero - test from Octave" do
       # Octave (this code is at the bottom of fzero.m):
       #   fun = @(x) x
@@ -245,7 +245,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "staight line through zero offset by one - test from Octave" do
       x0 = 0.0
       zero_fn = &(&1 + 1)
@@ -256,7 +256,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "staight line through zero offset by one - test from Octave - works" do
       x0 = 0.0
       zero_fn = &(&1 + 1)
@@ -267,7 +267,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-22)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "polynomial" do
       # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
       # Roots are 1 and 3

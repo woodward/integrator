@@ -11,6 +11,14 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.NonLinearEqnRootRefactor.NxOptions
 
+  defmodule NonLinearEqnRootTestFunctions do
+    import Nx.Defn
+
+    defn pow_fn(x) do
+      Nx.pow(x, 1 / 3) - 1.0e-8
+    end
+  end
+
   describe "find_zero" do
     test "sine function (so the zeros of this are known values) - computations in :f64" do
       # Octave:
@@ -241,6 +249,94 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       # Expected values are from Octave:
       assert_all_close(y1, Nx.tensor(1.224646799147353e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.tensor(-2.097981369335578e-15, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+    end
+
+    test "returns pi/2 for cos between 0 & 3 - test from Octave" do
+      x0 = Nx.tensor(0.0, type: :f64)
+      x1 = Nx.tensor(3.0, type: :f64)
+
+      result = NonLinearEqnRootRefactor.find_zero(&Nx.cos/1, x0, x1)
+
+      expected_x = Nx.divide(Nx.Constants.pi({:f, 64}), Nx.tensor(2.0, type: :f64))
+      assert_all_close(result.c, expected_x, atol: 1.0e-14, rtol: 1.0e-14)
+    end
+
+    @tag :skip
+    test "equation - test from Octave" do
+      # Octave (this code is at the bottom of fzero.m):
+      #   fun = @(x) x^(1/3) - 1e-8
+      #   fzero(fun, [0.0, 1.0])
+      x0 = Nx.tensor(0.0, type: :f64)
+      x1 = Nx.tensor(1.0, type: :f64)
+      zero_fn = &NonLinearEqnRootTestFunctions.pow_fn/1
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0, x1)
+      dbg(result)
+
+      # Expected values are from Octave:
+      # assert_all_close(result.x, Nx.tensor(3.108624468950438e-16, type: :f64), atol: 1.0e-24, rtol: 1.0e-24)
+      # assert_all_close(result.fx, Nx.tensor(6.764169935169993e-06, type: :f64), atol: 1.0e-22, rtol: 1.0e-22)
+
+      # I am getting these values, but for b - what is up???
+      assert_all_close(result.b, Nx.tensor(3.108624468950438e-16, type: :f64), atol: 1.0e-22, rtol: 1.0e-22)
+      # And note the decreased precision on this one:
+      assert_all_close(result.fb, Nx.tensor(6.764169935169993e-06, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
+      #                            actual:  6.76416 7493850112e-6
+      # almost looks like single precision agreement
+    end
+
+    @tag :skip
+    test "staight line through zero - test from Octave" do
+      # Octave (this code is at the bottom of fzero.m):
+      #   fun = @(x) x
+      #   fzero(fun, 0)
+      x0 = 0.0
+      zero_fn = & &1
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, 0.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
+
+    @tag :skip
+    test "staight line through zero offset by one - test from Octave" do
+      x0 = 0.0
+      zero_fn = &(&1 + 1)
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, -1.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
+
+    @tag :skip
+    test "staight line through zero offset by one - test from Octave - works" do
+      x0 = 0.0
+      zero_fn = &(&1 + 1)
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+
+      assert_in_delta(result.x, -1.0, 1.0e-22)
+      assert_in_delta(result.fx, 0.0, 1.0e-22)
+    end
+
+    @tag :skip
+    test "polynomial" do
+      # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
+      # Roots are 1 and 3
+
+      zero_fn = &(&1 * &1 - 4 * &1 + 3)
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, [0.5, 1.5])
+
+      assert_in_delta(result.x, 1.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-14)
+
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, [3.5, 1.5])
+
+      assert_in_delta(result.x, 3.0, 1.0e-15)
+      assert_in_delta(result.fx, 0.0, 1.0e-15)
     end
   end
 
