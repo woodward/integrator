@@ -77,7 +77,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   defn compute_iteration(z) do
     iter_type = z.iter_type
 
-    # How can I get rid of these nasty nested if statements and do a case statement? See attempts below:
+    # How can I get rid of these nasty nested if statements and do a case statement instead? See failed attempts below:
     if iter_type == 1 do
       compute_iteration_type_one(z)
     else

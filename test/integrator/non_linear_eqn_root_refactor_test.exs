@@ -217,6 +217,31 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert nx_options.max_fn_eval_count == 20
       assert nx_options.nonlinear_eqn_root_output_fn == output_fn
     end
+
+    test "sine function with single initial value (instead of 2)" do
+      x0 = Nx.tensor(3.0, type: :f64)
+
+      result = NonLinearEqnRootRefactor.find_zero_with_single_point(&Nx.sin/1, x0)
+
+      # Expected value is from Octave:
+      expected_x = Nx.tensor(3.141592653589795, type: :f64)
+      assert_all_close(result.c, expected_x, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+
+      assert Nx.to_number(result.fn_eval_count) == 11
+      assert Nx.to_number(result.iteration_count) == 4
+      assert Nx.to_number(result.iter_type) == 2
+
+      {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      # Expected values are from Octave:
+      assert_all_close(x_low, Nx.tensor(3.141592653589793, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(x_high, Nx.tensor(3.141592653589795, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+
+      {y1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      # Expected values are from Octave:
+      assert_all_close(y1, Nx.tensor(1.224646799147353e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(y2, Nx.tensor(-2.097981369335578e-15, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+    end
   end
 
   describe "convert_arg_to_nx_type" do

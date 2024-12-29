@@ -180,6 +180,7 @@ defmodule Integrator.NonLinearEqnRoot do
     end
   end
 
+  # MOVED TO REFACTOR
   def find_zero(zero_fn, solo_point, opts, _fn_evals) do
     second_point = find_2nd_starting_point(zero_fn, solo_point)
 

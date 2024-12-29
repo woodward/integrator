@@ -200,6 +200,16 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     find_zero_nx(zero_fn, a_nx, b_nx, options)
   end
 
+  @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), Keyword.t()) :: t()
+  deftransform find_zero_with_single_point(zero_fn, solo_point, opts \\ []) do
+    options = convert_to_nx_options(opts)
+    solo_point_nx = convert_arg_to_nx_type(solo_point, options.type)
+    second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx)
+
+    result = find_zero(zero_fn, solo_point_nx, second_point.b, opts)
+    %{result | fn_eval_count: Nx.add(result.fn_eval_count, second_point.fn_eval_count)}
+  end
+
   @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), NxOptions.t()) :: t()
   defn find_zero_nx(zero_fn, a, b, options) do
     fa = zero_fn.(a)
