@@ -19,6 +19,8 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       power = Nx.tensor(1, type: type) / Nx.tensor(3, type: type)
       Nx.pow(x, power) - Nx.tensor(1.0e-8, type: type)
     end
+
+    defn straight_line_through_zero(x), do: x
   end
 
   describe "find_zero" do
@@ -278,19 +280,18 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert_all_close(result.fx, Nx.tensor(6.764169935169993e-06, type: :f64), atol: 1.0e-22, rtol: 1.0e-22)
     end
 
-    # @tag :skip
-    # test "staight line through zero - test from Octave" do
-    #   # Octave (this code is at the bottom of fzero.m):
-    #   #   fun = @(x) x
-    #   #   fzero(fun, 0)
-    #   x0 = 0.0
-    #   zero_fn = & &1
+    test "staight line through zero - test from Octave" do
+      # Octave (this code is at the bottom of fzero.m):
+      #   fun = @(x) x
+      #   fzero(fun, 0)
+      x0 = Nx.tensor(0.0, type: :f64)
+      zero_fn = &NonLinearEqnRootTestFunctions.straight_line_through_zero/1
 
-    #   result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+      result = NonLinearEqnRootRefactor.find_zero_with_single_point(zero_fn, x0)
 
-    #   assert_in_delta(result.x, 0.0, 1.0e-22)
-    #   assert_in_delta(result.fx, 0.0, 1.0e-22)
-    # end
+      assert_all_close(result.x, Nx.tensor(0.0, type: :f64), atol: 1.0e-24, rtol: 1.0e-24)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e-24, rtol: 1.0e-24)
+    end
 
     # @tag :skip
     # test "staight line through zero offset by one - test from Octave" do
