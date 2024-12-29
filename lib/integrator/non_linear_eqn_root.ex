@@ -517,6 +517,7 @@ defmodule Integrator.NonLinearEqnRoot do
     {status, z}
   end
 
+  # MOVED TO REFACTOR
   @spec call_output_fn(t(), output_fn_t()) :: t()
   defp call_output_fn(z, nil = _output_fn), do: z
 

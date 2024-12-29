@@ -50,6 +50,21 @@ defmodule Integrator.Helpers do
   end
 
   @doc """
+  Asserts that two Nx lists are equal
+  """
+  def assert_nx_lists_equal_refactor(actual_list, expected_list, opts \\ []) do
+    assert length(actual_list) == length(expected_list)
+
+    atol = Keyword.get(opts, :atol, 1.0e-15)
+    rtol = Keyword.get(opts, :rtol, 1.0e-15)
+
+    Enum.zip(actual_list, expected_list)
+    |> Enum.map(fn {actual, expected} ->
+      assert_all_close(actual, expected, atol: atol, rtol: rtol)
+    end)
+  end
+
+  @doc """
   Reads a CSV file which contains a single column of float values
 
   Returns a list of float values

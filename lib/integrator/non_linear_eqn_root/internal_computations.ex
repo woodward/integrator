@@ -60,8 +60,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           z
           |> skip_bisection_if_successful_reduction()
           |> update_u()
-
-        # # |> call_output_fn(opts[:nonlinear_eqn_root_output_fn])
+          |> call_output_fn()
 
         status_2 = converged?(z, options.machine_eps, options.tolerance)
         continue? = not status_2 and status_1
@@ -452,6 +451,23 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       end
 
     {status, z}
+  end
+
+  @spec is_nil?(any()) :: Nx.t()
+  deftransform is_nil?(item) do
+    if is_nil(item), do: 1, else: 0
+  end
+
+  @spec call_output_fn(NonLinearEqnRootRefactor.t()) :: Nx.t()
+  defn call_output_fn(z) do
+    if is_nil?(z.nonlinear_eqn_root_output_fn) do
+      z
+    else
+      hook(z, fn tensor ->
+        tensor.nonlinear_eqn_root_output_fn.(tensor)
+        tensor
+      end)
+    end
   end
 
   @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::

@@ -3,6 +3,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   use Integrator.TestCase
   # import Nx, only: :sigils
 
+  alias Integrator.DataCollector
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
@@ -123,6 +124,51 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert_raise MaxFnEvalsExceededError, fn ->
         NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1, opts)
       end
+    end
+
+    test "sine function - outputs values if a function is given" do
+      # Octave:
+      #   octave> fun = @sin;
+      #   octave> x0 = 3;
+      #   octave> x1 = 4;
+      #   octave> x = fzero(fun, [x0, x1])
+
+      x0 = Nx.tensor(3.0, type: :f64)
+      x1 = Nx.tensor(4.0, type: :f64)
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      opts = [nonlinear_eqn_root_output_fn: output_fn]
+
+      result = NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1, opts)
+      assert_all_close(result.x, Nx.tensor(3.1415926535897936, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(result.fx, Nx.tensor(-3.216245299353273e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+
+      data = DataCollector.get_data(pid)
+      assert length(data) == 6
+
+      # From Octave:
+      converging_t_data = [
+        Nx.tensor(3.157162792479947, type: :f64),
+        Nx.tensor(3.141281736699444, type: :f64),
+        Nx.tensor(3.141592614571824, type: :f64),
+        Nx.tensor(3.141592692610915, type: :f64),
+        Nx.tensor(3.141592653589793, type: :f64),
+        Nx.tensor(3.141592653589795, type: :f64)
+      ]
+
+      t_data = data |> Enum.map(& &1.x)
+
+      assert_nx_lists_equal_refactor(t_data, converging_t_data)
+      expected_t = converging_t_data |> Enum.reverse() |> hd()
+      assert_all_close(result.x, expected_t, atol: 1.0e-14, rtol: 1.0e-14)
+
+      converged = data |> hd()
+
+      assert Nx.to_number(converged.iteration_count) == 6
+      assert Nx.to_number(converged.fn_eval_count) == 8
+      assert_all_close(converged.x, result.x, atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 

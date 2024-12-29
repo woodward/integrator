@@ -18,6 +18,8 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   alias Integrator.NonLinearEqnRoot.TensorTypeError
 
   @type zero_fn_t :: (Nx.t() -> Nx.t())
+  @type output_fn_t :: (Nx.t() -> any())
+
   @type iter_type :: 1 | 2 | 3 | 4 | 5
   @initial_mu 0.5
 
@@ -47,7 +49,9 @@ defmodule Integrator.NonLinearEqnRootRefactor do
      :iter_type,
      :interpolation_type_debug_only
    ],
-   keep: []}
+   keep: [
+     :nonlinear_eqn_root_output_fn
+   ]}
 
   @type t :: %__MODULE__{
           a: Nx.t(),
@@ -77,7 +81,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
           iter_type: Nx.t(),
           interpolation_type_debug_only: Nx.t(),
           #
-          # nonlinear_eqn_root_output_fn: output_fn_t()
+          nonlinear_eqn_root_output_fn: output_fn_t()
         }
 
   defstruct a: 0.0,
@@ -107,7 +111,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
             iter_type: 1,
             interpolation_type_debug_only: 0,
             #
-            # nonlinear_eqn_root_output_fn: nil
+            nonlinear_eqn_root_output_fn: nil
 
   defmodule NxOptions do
     @moduledoc """
@@ -234,7 +238,8 @@ defmodule Integrator.NonLinearEqnRootRefactor do
       #
       fn_eval_count: fn_eval_count,
       iter_type: 1,
-      mu_ba: (b - a) * @initial_mu
+      mu_ba: (b - a) * @initial_mu,
+      nonlinear_eqn_root_output_fn: options.nonlinear_eqn_root_output_fn
     }
 
     z = if Nx.sign(z.fa) * Nx.sign(z.fb) > 0.0, do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z
