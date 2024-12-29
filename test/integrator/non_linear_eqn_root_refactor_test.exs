@@ -54,6 +54,32 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert_all_close(y1, Nx.tensor(1.224646799147353e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.tensor(-2.097981369335578e-15, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
+
+    test "sine function - works if initial values are swapped" do
+      x0 = Nx.tensor(4.0, type: :f64)
+      x1 = Nx.tensor(3.0, type: :f64)
+
+      result = NonLinearEqnRootRefactor.find_zero(&Nx.sin/1, x0, x1)
+
+      # Expected value is from Octave:
+      expected_x = Nx.tensor(3.141592653589795, type: :f64)
+      assert_all_close(result.c, expected_x, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+
+      assert Nx.to_number(result.fn_eval_count) == 8
+      assert Nx.to_number(result.iteration_count) == 6
+      assert Nx.to_number(result.iter_type) == 4
+
+      {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      # Expected values are from Octave:
+      assert_all_close(x_low, Nx.tensor(3.141592653589793, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(x_high, Nx.tensor(3.141592653589795, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+
+      {y1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      # Expected values are from Octave:
+      assert_all_close(y1, Nx.tensor(1.224646799147353e-16, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(y2, Nx.tensor(-2.097981369335578e-15, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+    end
   end
 
   describe "convert_to_nx_options" do
