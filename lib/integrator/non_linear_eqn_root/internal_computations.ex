@@ -511,11 +511,13 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec adjust_if_too_close_to_a_or_b(NonLinearEqnRootRefactor.t(), Nx.t(), Nx.t()) :: NonLinearEqnRootRefactor.t()
   defn adjust_if_too_close_to_a_or_b(z, machine_eps, tolerance) do
-    delta = 2 * 0.7 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
+    type = Nx.type(z.c)
+    two = Nx.tensor(2, type: type)
+    delta = two * Nx.tensor(0.7, type: type) * (two * Nx.abs(z.u) * machine_eps + tolerance)
 
     c =
-      if z.b - z.a <= 2 * delta do
-        (z.a + z.b) / 2
+      if z.b - z.a <= two * delta do
+        (z.a + z.b) / two
       else
         max(z.a + delta, min(z.b - delta, z.c))
       end
