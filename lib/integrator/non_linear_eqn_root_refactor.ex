@@ -44,7 +44,8 @@ defmodule Integrator.NonLinearEqnRootRefactor do
      #
      :fn_eval_count,
      :iteration_count,
-     :iter_type
+     :iter_type,
+     :interpolation_type_debug_only
    ],
    keep: []}
 
@@ -73,7 +74,10 @@ defmodule Integrator.NonLinearEqnRootRefactor do
           fn_eval_count: Nx.t(),
           iteration_count: Nx.t(),
           # Change iter_type to a more descriptive atom later (possibly? or keep it this way??):
-          iter_type: Nx.t()
+          iter_type: Nx.t(),
+          interpolation_type_debug_only: Nx.t(),
+          #
+          # nonlinear_eqn_root_output_fn: output_fn_t()
         }
 
   defstruct a: 0.0,
@@ -100,7 +104,10 @@ defmodule Integrator.NonLinearEqnRootRefactor do
             fn_eval_count: 0,
             iteration_count: 0,
             # Change iter_type to a more descriptive atom later (possibly?):
-            iter_type: 1
+            iter_type: 1,
+            interpolation_type_debug_only: 0,
+            #
+            # nonlinear_eqn_root_output_fn: nil
 
   defmodule NxOptions do
     @moduledoc """

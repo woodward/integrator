@@ -18,6 +18,27 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # This also shows up in Integrator.NonLinearEqnRootRefactor - how can I get rid of the duplication?
   @initial_mu 0.5
 
+  # These values are here just to aid in debugging (they show up when printing out the main struct)
+  @interpolation_bisect 0
+  @interpolation_double_secant 1
+  @interpolation_double_secant_plus_bisect 2
+  @interpolation_inverse_cubic 3
+  @interpolation_none 4
+  @interpolation_quadratic_plus_newton 5
+  @interpolation_secant 6
+  @interpolation_undetermined 7
+
+  @interpolation_types_for_debug_only %{
+    @interpolation_bisect => :bisect,
+    @interpolation_double_secant => :double_secant,
+    @interpolation_double_secant_plus_bisect => :double_secant_plus_bisect,
+    @interpolation_inverse_cubic => :inverse_cubic,
+    @interpolation_none => :none,
+    @interpolation_quadratic_plus_newton => :quadratic_plus_newton,
+    @interpolation_secant => :secant,
+    @interpolation_undetermined => :undetermined
+  }
+
   @spec iterate(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), NxOptions.t()) :: NonLinearEqnRootRefactor.t()
   defn iterate(z, zero_fn, options) do
     continue? = Nx.tensor(1, type: :u8)
@@ -121,22 +142,22 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   iter_type = 5;
 
     # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
-    c =
+    {c, interpolation_type} =
       if Nx.abs(z.fa) <= 1000 * Nx.abs(z.fb) and Nx.abs(z.fb) <= 1000 * Nx.abs(z.fa) do
-        interpolate_secant(z)
+        {interpolate_secant(z), @interpolation_secant}
       else
-        interpolate_bisect(z)
+        {interpolate_bisect(z), @interpolation_bisect}
       end
 
-    %{z | c: c, d: z.u, fd: z.fu, iter_type: 5}
+    %{z | c: c, d: z.u, fd: z.fu, iter_type: 5, interpolation_type_debug_only: interpolation_type}
   end
 
   @spec compute_iteration_types_two_or_three(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
   defn compute_iteration_types_two_or_three(z) do
-    c =
+    {c, interpolation_type} =
       case number_of_unique_values(z.fa, z.fb, z.fd, z.fe) do
         4 ->
-          interpolate_inverse_cubic(z)
+          {interpolate_inverse_cubic(z), @interpolation_inverse_cubic}
 
         _length ->
           # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
@@ -145,15 +166,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           # Shouldn't it be this instead?
           if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
             #
-            interpolate_quadratic_plus_newton(z)
+            {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
           else
             # what do we do here?  it's not handled in fzero.m...
-            interpolate_quadratic_plus_newton(z)
-            # z.c
+            {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
+            # {z.c, @interpolation_none}
           end
       end
 
-    %{z | iter_type: z.iter_type + 1, c: c}
+    %{z | iter_type: z.iter_type + 1, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
   @spec compute_iteration_type_four(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
@@ -169,15 +190,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
     c = interpolate_double_secant(z)
 
-    c =
+    {c, interpolation_type} =
       if too_far?(c, z) do
         # Bisect if too far:
-        interpolate_bisect(z)
+        {interpolate_bisect(z), @interpolation_double_secant_plus_bisect}
       else
-        c
+        {c, @interpolation_double_secant}
       end
 
-    %{z | iter_type: 5, c: c}
+    %{z | iter_type: 5, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
   @spec compute_iteration_type_five(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
@@ -188,7 +209,35 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   iter_type = 2;
 
     c = interpolate_bisect(z)
-    %{z | iter_type: 2, c: c}
+    %{z | iter_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
+  end
+
+  # For debugging purposes
+  @spec print_line(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn print_line(z) do
+    hook(z, fn step ->
+      IO.puts("# ----------------------------------")
+      step
+    end)
+  end
+
+  # For debugging purposes
+  @spec print_number_of_unique_values(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn print_number_of_unique_values(z) do
+    hook(z, fn step ->
+      IO.puts("# Number of unique values: #{inspect(Nx.to_number(number_of_unique_values(step.fa, step.fb, step.fd, step.fe)))}")
+      step
+    end)
+  end
+
+  # For debugging purposes
+  @spec print_computing_iteration_type(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
+  defn print_computing_iteration_type(z) do
+    # hook(z, fn step ->
+    #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iter_type))}")
+    #   step
+    # end)
+    z
   end
 
   # For debugging purposes
@@ -196,6 +245,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   defn print_z(z) do
     hook(z, fn step ->
       print = &inspect(Nx.to_number(&1))
+      interpolation_type = Map.get(@interpolation_types_for_debug_only, Nx.to_number(step.interpolation_type_debug_only))
 
       z_data = """
       %Integrator.NonLinearEqnRootRefactor{
@@ -216,7 +266,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           mu_ba: #{print.(step.mu_ba)},
           fn_eval_count: #{print.(step.fn_eval_count)},
           iteration_count: #{print.(step.iteration_count)},
-          iter_type: #{print.(step.iter_type)}
+          iter_type: #{print.(step.iter_type)},
+          interpolation_type_debug_only: :#{interpolation_type}
       }
       """
 
