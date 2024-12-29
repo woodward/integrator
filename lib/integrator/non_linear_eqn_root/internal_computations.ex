@@ -97,6 +97,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       end
     end
 
+    # ----------------------------------------------------------------------------------------------
+    # Failed attempts to do a case statement:
+
     # I should be able to do this as a case statement on z.iter_type - why does this not work???
 
     # First try:
@@ -153,24 +156,24 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec compute_iteration_types_two_or_three(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
   defn compute_iteration_types_two_or_three(z) do
+    length = number_of_unique_values(z.fa, z.fb, z.fd, z.fe)
+
     {c, interpolation_type} =
-      case number_of_unique_values(z.fa, z.fb, z.fd, z.fe) do
-        4 ->
-          {interpolate_inverse_cubic(z), @interpolation_inverse_cubic}
-
-        _length ->
-          # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
-          # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
-
-          # Shouldn't it be this instead?
-          if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
-            #
-            {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
-          else
-            # what do we do here?  it's not handled in fzero.m...
-            {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
-            # {z.c, @interpolation_none}
-          end
+      if length == 4 do
+        {interpolate_inverse_cubic(z), @interpolation_inverse_cubic}
+      else
+        # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
+        # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+        #
+        # Shouldn't it be this instead?
+        if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+          #
+          {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
+        else
+          # what do we do here?  it's not handled in fzero.m...
+          {interpolate_quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
+          # {z.c, @interpolation_none}
+        end
       end
 
     %{z | iter_type: z.iter_type + 1, c: c, interpolation_type_debug_only: interpolation_type}

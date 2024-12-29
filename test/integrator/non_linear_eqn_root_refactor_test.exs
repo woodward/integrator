@@ -164,7 +164,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       expected_t = converging_t_data |> Enum.reverse() |> hd()
       assert_all_close(result.x, expected_t, atol: 1.0e-14, rtol: 1.0e-14)
 
-      converged = data |> hd()
+      converged = data |> List.last()
 
       assert Nx.to_number(converged.iteration_count) == 6
       assert Nx.to_number(converged.fn_eval_count) == 8

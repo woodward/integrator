@@ -131,7 +131,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "sine function - outputs values if a function is given" do
       # Octave:
       #   octave> fun = @sin;
