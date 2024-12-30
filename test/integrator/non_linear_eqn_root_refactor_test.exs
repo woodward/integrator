@@ -12,6 +12,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   alias Integrator.NonLinearEqnRootRefactor.NxOptions
 
   defmodule NonLinearEqnRootTestFunctions do
+    @moduledoc false
     import Nx.Defn
 
     defn pow_fn(x) do
@@ -21,6 +22,11 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
     end
 
     defn straight_line_through_zero(x), do: x
+    defn straight_line_offset_by_one(x), do: x + 1
+
+    defn polynomial(x) do
+      x * x - 4 * x + 3
+    end
   end
 
   describe "find_zero" do
@@ -293,45 +299,32 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e-24, rtol: 1.0e-24)
     end
 
-    # @tag :skip
-    # test "staight line through zero offset by one - test from Octave" do
-    #   x0 = 0.0
-    #   zero_fn = &(&1 + 1)
+    test "staight line through zero offset by one - test from Octave" do
+      x0 = Nx.tensor(0.0, type: :f64)
+      zero_fn = &NonLinearEqnRootTestFunctions.straight_line_offset_by_one/1
 
-    #   result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+      result = NonLinearEqnRootRefactor.find_zero_with_single_point(zero_fn, x0)
 
-    #   assert_in_delta(result.x, -1.0, 1.0e-22)
-    #   assert_in_delta(result.fx, 0.0, 1.0e-22)
-    # end
+      assert_all_close(result.x, Nx.tensor(-1.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
+    end
 
-    # @tag :skip
-    # test "staight line through zero offset by one - test from Octave - works" do
-    #   x0 = 0.0
-    #   zero_fn = &(&1 + 1)
+    test "polynomial" do
+      # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
+      # Roots are 1 and 3
 
-    #   result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0)
+      zero_fn = &NonLinearEqnRootTestFunctions.polynomial/1
 
-    #   assert_in_delta(result.x, -1.0, 1.0e-22)
-    #   assert_in_delta(result.fx, 0.0, 1.0e-22)
-    # end
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, 0.5, 1.5, type: :f64)
 
-    # @tag :skip
-    # test "polynomial" do
-    #   # y = (x - 1) * (x - 3) = x^2 - 4*x + 3
-    #   # Roots are 1 and 3
+      assert_all_close(result.x, Nx.tensor(1.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
 
-    #   zero_fn = &(&1 * &1 - 4 * &1 + 3)
+      result = NonLinearEqnRootRefactor.find_zero(zero_fn, 3.5, 1.5, type: :f64)
 
-    #   result = NonLinearEqnRootRefactor.find_zero(zero_fn, [0.5, 1.5])
-
-    #   assert_in_delta(result.x, 1.0, 1.0e-15)
-    #   assert_in_delta(result.fx, 0.0, 1.0e-14)
-
-    #   result = NonLinearEqnRootRefactor.find_zero(zero_fn, [3.5, 1.5])
-
-    #   assert_in_delta(result.x, 3.0, 1.0e-15)
-    #   assert_in_delta(result.fx, 0.0, 1.0e-15)
-    # end
+      assert_all_close(result.x, Nx.tensor(3.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
+      assert_all_close(result.fx, Nx.tensor(0.0, type: :f64), atol: 1.0e24, rtol: 1.0e24)
+    end
   end
 
   describe "convert_arg_to_nx_type" do
