@@ -285,7 +285,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_in_delta(result.fx, 0.0, 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "ballode - first bounce" do
       # Values obtained from Octave right before and after the call to fzero in ode_event_handler.m:
       t0 = 2.898648469921000

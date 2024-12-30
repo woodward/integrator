@@ -30,11 +30,16 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
     end
 
     defn ballode(t_out) do
+      x_out = ballode_internals(t_out)
+      x_out[0][0]
+    end
+
+    defn ballode_internals(t_out) do
       # Values obtained from Octave right before and after the call to fzero in ode_event_handler.m:
       type = Nx.type(t_out)
-      t0 = Nx.tensor(2.898648469921000, type: type)
-      t1 = Nx.tensor(4.294180317944318, type: type)
-      t = [t0, t1]
+      t0 = Nx.tensor([2.898648469921000], type: type)
+      t1 = Nx.tensor([4.294180317944318], type: type)
+      t = Nx.concatenate([t0, t1])
 
       x = ~MAT[
            1.676036011799988e+01  -4.564518118928532e+00
@@ -46,8 +51,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
           -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00  -9.810000000000000e+00   -9.810000000000000e+00  -9.810000000000000e+00
       ]f64
 
-      x_out = DormandPrince45.interpolate(t, x, k_vals, t_out)
-      x_out[0][0]
+      DormandPrince45.interpolate(t, x, k_vals, t_out)
     end
   end
 
@@ -381,9 +385,9 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       # In Octave:
       # [0, 0]
 
-      # x_out = DormandPrince45.interpolate(t, x, k_vals, Nx.tensor(result.c, type: :f64))
-      # assert_all_close(Nx.to_number(x_out[0][0]), Nx.tensor(0.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
-      # assert_all_close(Nx.to_number(x_out[1][0]), Nx.tensor(-20.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      x_out = NonLinearEqnRootTestFunctions.ballode_internals(result.c)
+      assert_all_close(Nx.to_number(x_out[0][0]), Nx.tensor(0.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(Nx.to_number(x_out[1][0]), Nx.tensor(-20.0, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 
