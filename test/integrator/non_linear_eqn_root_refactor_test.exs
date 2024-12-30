@@ -391,6 +391,28 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
     end
   end
 
+  describe "bracket_x/1" do
+    test "returns a & b" do
+      z = %NonLinearEqnRootRefactor{
+        a: 3.14,
+        b: 3.15
+      }
+
+      assert NonLinearEqnRootRefactor.bracket_x(z) == {3.14, 3.15}
+    end
+  end
+
+  describe "bracket_fx/1" do
+    test "returns fa & fb" do
+      z = %NonLinearEqnRootRefactor{
+        fa: 3.14,
+        fb: 3.15
+      }
+
+      assert NonLinearEqnRootRefactor.bracket_fx(z) == {3.14, 3.15}
+    end
+  end
+
   describe "convert_arg_to_nx_type" do
     test "passes through tensors (if they are of the correct type)" do
       arg = Nx.tensor(1.0, type: :f64)

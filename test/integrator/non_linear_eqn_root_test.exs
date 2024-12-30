@@ -340,7 +340,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   end
 
   describe "bracket_x/1" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns a & b" do
       z = %NonLinearEqnRoot{
         a: 3.14,
@@ -352,7 +352,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   end
 
   describe "bracket_fx/1" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns fa & fb" do
       z = %NonLinearEqnRoot{
         fa: 3.14,

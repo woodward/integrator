@@ -70,7 +70,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {z, options, continue?}
       end
 
-    %{z | x: z.u, fx: z.fu}
+    # %{z | x: z.u, fx: z.fu}
+    z
   end
 
   @spec compute_iteration(NonLinearEqnRootRefactor.t()) :: NonLinearEqnRootRefactor.t()
