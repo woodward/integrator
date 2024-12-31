@@ -163,7 +163,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
     {c, interpolation_type} =
       if length == 4 do
-        {Interpolation.inverse_cubic(z), @interpolation_inverse_cubic}
+        {Interpolation.inverse_cubic(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.e, z.fe), @interpolation_inverse_cubic}
       else
         # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
         # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do

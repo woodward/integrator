@@ -166,18 +166,17 @@ defmodule Integrator.InterpolationTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonLinearEqnRootRefactor{
-        a: Nx.f64(3.141281736699444),
-        b: Nx.f64(3.157162792479947),
-        d: Nx.f64(3.0),
-        e: Nx.f64(4.0),
-        fa: Nx.f64(3.109168853400020e-04),
-        fb: Nx.f64(-1.556950978832860e-02),
-        fd: Nx.f64(0.141120008059867),
-        fe: Nx.f64(-0.756802495307928)
-      }
+      a = Nx.f64(3.141281736699444)
+      b = Nx.f64(3.157162792479947)
+      d = Nx.f64(3.0)
+      e = Nx.f64(4.0)
 
-      c = Interpolation.inverse_cubic(z)
+      fa = Nx.f64(3.109168853400020e-04)
+      fb = Nx.f64(-1.556950978832860e-02)
+      fd = Nx.f64(0.141120008059867)
+      fe = Nx.f64(-0.756802495307928)
+
+      c = Interpolation.inverse_cubic(a, fa, b, fb, d, fd, e, fe)
       assert_all_close(c, Nx.f64(3.141592614571824), atol: 1.0e-12, rtol: 1.0e-12)
     end
 

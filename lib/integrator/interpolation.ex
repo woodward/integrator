@@ -135,20 +135,20 @@ defmodule Integrator.Interpolation do
     end
   end
 
-  @spec inverse_cubic(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn inverse_cubic(z) do
-    q11 = (z.d - z.e) * z.fd / (z.fe - z.fd)
-    q21 = (z.b - z.d) * z.fb / (z.fd - z.fb)
-    q31 = (z.a - z.b) * z.fa / (z.fb - z.fa)
-    d21 = (z.b - z.d) * z.fd / (z.fd - z.fb)
-    d31 = (z.a - z.b) * z.fb / (z.fb - z.fa)
+  @spec inverse_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn inverse_cubic(a, fa, b, fb, d, fd, e, fe) do
+    q11 = (d - e) * fd / (fe - fd)
+    q21 = (b - d) * fb / (fd - fb)
+    q31 = (a - b) * fa / (fb - fa)
+    d21 = (b - d) * fd / (fd - fb)
+    d31 = (a - b) * fb / (fb - fa)
 
-    q22 = (d21 - q11) * z.fb / (z.fe - z.fb)
-    q32 = (d31 - q21) * z.fa / (z.fd - z.fa)
-    d32 = (d31 - q21) * z.fd / (z.fd - z.fa)
-    q33 = (d32 - q22) * z.fa / (z.fe - z.fa)
+    q22 = (d21 - q11) * fb / (fe - fb)
+    q32 = (d31 - q21) * fa / (fd - fa)
+    d32 = (d31 - q21) * fd / (fd - fa)
+    q33 = (d32 - q22) * fa / (fe - fa)
 
-    z.a + q31 + q32 + q33
+    a + q31 + q32 + q33
   end
 
   @spec double_secant(NonLinearEqnRootRefactor.t()) :: Nx.t()
