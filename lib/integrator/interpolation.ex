@@ -151,18 +151,18 @@ defmodule Integrator.Interpolation do
     a + q31 + q32 + q33
   end
 
-  @spec double_secant(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn double_secant(z) do
-    z.u - 2.0 * (z.b - z.a) / (z.fb - z.fa) * z.fu
+  @spec secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn secant(a, fa, b, fb, u, fu) do
+    u - (a - b) / (fa - fb) * fu
   end
 
-  @spec bisect(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn bisect(z) do
-    0.5 * (z.b + z.a)
+  @spec double_secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn double_secant(a, fa, b, fb, u, fu) do
+    u - 2.0 * (b - a) / (fb - fa) * fu
   end
 
-  @spec secant(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn secant(z) do
-    z.u - (z.a - z.b) / (z.fa - z.fb) * z.fu
+  @spec bisect(Nx.t(), Nx.t()) :: Nx.t()
+  defn bisect(a, b) do
+    0.5 * (b + a)
   end
 end

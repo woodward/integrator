@@ -149,9 +149,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
     {c, interpolation_type} =
       if Nx.abs(z.fa) <= 1000 * Nx.abs(z.fb) and Nx.abs(z.fb) <= 1000 * Nx.abs(z.fa) do
-        {Interpolation.secant(z), @interpolation_secant}
+        {Interpolation.secant(z.a, z.fa, z.b, z.fb, z.u, z.fu), @interpolation_secant}
       else
-        {Interpolation.bisect(z), @interpolation_bisect}
+        {Interpolation.bisect(z.a, z.b), @interpolation_bisect}
       end
 
     %{z | c: c, d: z.u, fd: z.fu, iter_type: 5, interpolation_type_debug_only: interpolation_type}
@@ -196,12 +196,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   endif
     #   iter_type = 5;
 
-    c = Interpolation.double_secant(z)
+    c = Interpolation.double_secant(z.a, z.fa, z.b, z.fb, z.u, z.fu)
 
     {c, interpolation_type} =
       if too_far?(c, z) do
         # Bisect if too far:
-        {Interpolation.bisect(z), @interpolation_double_secant_plus_bisect}
+        {Interpolation.bisect(z.a, z.b), @interpolation_double_secant_plus_bisect}
       else
         {c, @interpolation_double_secant}
       end
@@ -216,7 +216,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   c = 0.5 * (b + a);
     #   iter_type = 2;
 
-    c = Interpolation.bisect(z)
+    c = Interpolation.bisect(z.a, z.b)
     %{z | iter_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
   end
 
