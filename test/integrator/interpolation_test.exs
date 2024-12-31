@@ -128,18 +128,17 @@ defmodule Integrator.InterpolationTest do
       # fun = @sin
       # x = fzero(fun, [3, 4])
 
-      z = %NonLinearEqnRootRefactor{
-        a: Nx.f64(3.0),
-        b: Nx.f64(3.157162792479947),
-        d: Nx.f64(4.0),
-        fa: Nx.f64(0.141120008059867),
-        fb: Nx.f64(-1.556950978832860e-02),
-        fd: Nx.f64(-0.756802495307928),
-        fe: Nx.f64(0.141120008059867),
-        iter_type: 2
-      }
+      a = Nx.f64(3.0)
+      b = Nx.f64(3.157162792479947)
+      d = Nx.f64(4.0)
 
-      c = Interpolation.quadratic_plus_newton(z)
+      fa = Nx.f64(0.141120008059867)
+      fb = Nx.f64(-1.556950978832860e-02)
+      fd = Nx.f64(-0.756802495307928)
+
+      iteration_type = 2
+
+      c = Interpolation.quadratic_plus_newton(a, fa, b, fb, d, fd, iteration_type)
 
       assert_all_close(c, Nx.f64(3.141281736699444), atol: 1.0e-15, rtol: 1.0e-15)
     end
@@ -147,23 +146,17 @@ defmodule Integrator.InterpolationTest do
     test "quadratic_interpolation_plus_newton - bug fix" do
       # From Octave for ballode - first bounce
 
-      z = %NonLinearEqnRootRefactor{
-        a: Nx.f64(3.995471442091821),
-        b: Nx.f64(4.294180317944318),
-        c: Nx.f64(3.995471442091821),
-        d: Nx.f64(2.898648469921000),
-        e: Nx.f64(4.294180317944318),
-        #
-        fa: Nx.f64(1.607028863214206),
-        fb: Nx.f64(-4.564518118928532),
-        fc: Nx.f64(1.607028863214206),
-        fd: Nx.f64(16.76036011799988),
-        fe: Nx.f64(-4.564518118928532),
-        #
-        iter_type: 2
-      }
+      a = Nx.f64(3.995471442091821)
+      b = Nx.f64(4.294180317944318)
+      d = Nx.f64(2.898648469921000)
 
-      c = Interpolation.quadratic_plus_newton(z)
+      fa = Nx.f64(1.607028863214206)
+      fb = Nx.f64(-4.564518118928532)
+      fd = Nx.f64(16.76036011799988)
+
+      iteration_type = 2
+
+      c = Interpolation.quadratic_plus_newton(a, fa, b, fb, d, fd, iteration_type)
 
       assert_all_close(c, Nx.f64(4.077471967384916), atol: 1.0e-15, rtol: 1.0e-15)
     end

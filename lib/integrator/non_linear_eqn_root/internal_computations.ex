@@ -171,10 +171,13 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         # Shouldn't it be this instead?
         if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
           #
-          {Interpolation.quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
+          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iter_type),
+           @interpolation_quadratic_plus_newton}
         else
           # what do we do here?  it's not handled in fzero.m...
-          {Interpolation.quadratic_plus_newton(z), @interpolation_quadratic_plus_newton}
+          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iter_type),
+           @interpolation_quadratic_plus_newton}
+
           # {z.c, @interpolation_none}
         end
       end

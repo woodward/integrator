@@ -101,32 +101,32 @@ defmodule Integrator.Interpolation do
     x1 + x2 + x3 + x4 + x5
   end
 
-  @spec quadratic_plus_newton(NonLinearEqnRootRefactor.t()) :: Nx.t()
-  defn quadratic_plus_newton(z) do
-    a0 = z.fa
-    a1 = (z.fb - z.fa) / (z.b - z.a)
-    a2 = ((z.fd - z.fb) / (z.d - z.b) - a1) / (z.d - z.a)
+  @spec quadratic_plus_newton(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn quadratic_plus_newton(a, fa, b, fb, d, fd, iteration_type) do
+    a0 = fa
+    a1 = (fb - fa) / (b - a)
+    a2 = ((fd - fb) / (d - b) - a1) / (d - a)
 
     ## Modification 1: this is simpler and does not seem to be worse.
-    c = z.a - a0 / a1
+    c = a - a0 / a1
 
     if a2 != 0 do
-      {_z, _a0, _a1, _a2, c, _i} =
-        while {z, a0, a1, a2, c, i = 1}, Nx.less_equal(i, z.iter_type) do
-          pc = a0 + (a1 + a2 * (c - z.b)) * (c - z.a)
-          pdc = a1 + a2 * (2 * c - z.a - z.b)
+      {_a, _a0, _a1, _a2, _b, c, _iteration_type, _i} =
+        while {a, a0, a1, a2, b, c, iteration_type, i = 1}, Nx.less_equal(i, iteration_type) do
+          pc = a0 + (a1 + a2 * (c - b)) * (c - a)
+          pdc = a1 + a2 * (2 * c - a - b)
 
           new_c =
             if pdc == 0 do
               # Octave does a break here - is the c = 0 caught downstream? Need to handle this case somehow"
               # Note that there is NO test case for this case, as I couldn't figure out how to set up
               # the initial conditions to reach here
-              z.a - a0 / a1
+              a - a0 / a1
             else
               c - pc / pdc
             end
 
-          {z, a0, a1, a2, new_c, i + 1}
+          {a, a0, a1, a2, b, new_c, iteration_type, i + 1}
         end
 
       c
