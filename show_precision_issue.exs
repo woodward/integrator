@@ -9,12 +9,12 @@ defmodule PrecisionQuestions do
 
   defn x_times_point_seven_returns_f64_precision_result(x) do
     point_seven = Nx.tensor(0.7, type: Nx.type(x))
-    {x * point_seven, point_seven}
+    {print_expr(x * point_seven), point_seven}
   end
 
   defn x_times_point_seven_returns_f32_precision_result(x) do
     point_seven = 0.7
-    {x * point_seven, point_seven}
+    {print_expr(x * point_seven), point_seven}
   end
 
   defn x_times_point_five_returns_f64_precision_result(x) do
@@ -54,6 +54,14 @@ dbg(point_seven_f64)
 #   0.7
 # >
 
+IO.puts(
+  light_yellow() <> "Result of Nx.all_close(result_with_f64_precision, Nx.f64(1.4), atol: 1.0e-14, rtol: 1.0e-14):  " <> reset()
+)
+
+IO.puts(
+  light_green() <> inspect(Nx.all_close(result_with_f64_precision, Nx.f64(1.4), atol: 1.0e-14, rtol: 1.0e-14)) <> "\n" <> reset()
+)
+
 IO.puts(light_green() <> "==================================================================" <> reset())
 IO.puts(light_yellow() <> ":f32 - 2 * 0.7" <> reset())
 
@@ -69,7 +77,6 @@ IO.puts(light_yellow() <> ":f32 - 2 * 0.7" <> reset())
 #   0.699999988079071
 # >
 
-
 {result_with_f32_precision, point_seven_f32} = PrecisionQuestions.x_times_point_seven_returns_f32_precision_result(two_f64)
 dbg(result_with_f32_precision)
 
@@ -77,6 +84,23 @@ IO.puts(light_red() <> "Note how 0.7 is :f32 and has :f32 precision (7 digits of
 dbg(point_seven_f32)
 
 # This shows :f32 precision (note that 0.7 is interpreted as :f32):
+
+IO.puts(
+  light_yellow() <> "Result of Nx.all_close(result_with_f32_precision, Nx.f64(1.4), atol: 1.0e-14, rtol: 1.0e-14):  " <> reset()
+)
+
+IO.puts(
+  light_red() <> inspect(Nx.all_close(result_with_f32_precision, Nx.f64(1.4), atol: 1.0e-14, rtol: 1.0e-14)) <> "\n" <> reset()
+)
+
+IO.puts(
+  light_yellow() <> "Result of Nx.all_close(result_with_f32_precision, Nx.f64(1.4), atol: 1.0e-07, rtol: 1.0e-07):  " <> reset()
+)
+
+IO.puts(
+  light_green() <> inspect(Nx.all_close(result_with_f32_precision, Nx.f64(1.4), atol: 1.0e-07, rtol: 1.0e-07)) <> "\n" <> reset()
+)
+
 
 IO.puts(light_green() <> "==================================================================" <> reset())
 IO.puts(light_yellow() <> ":f64 - 2 * 0.5" <> reset())
