@@ -6,6 +6,8 @@ defmodule Integrator.InterpolationTest do
 
   alias Integrator.Interpolation
 
+  alias Integrator.NonLinearEqnRootRefactor
+
   describe "hermite_quartic" do
     setup do
       # These test values were obtained from Octave:
@@ -87,6 +89,123 @@ defmodule Integrator.InterpolationTest do
       x_out = Interpolation.hermite_cubic(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-15, rtol: 1.0e-15)
       assert_nx_f64(x_out)
+    end
+  end
+
+  describe "interpolations for NonLinearEqnRootFinder" do
+    test "bisect" do
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.0),
+        b: Nx.f64(4.0)
+      }
+
+      c = Interpolation.bisect(z)
+
+      assert_all_close(c, Nx.f64(3.5), atol: 1.0e-15, rtol: 1.0e-15)
+    end
+
+    test "double_secant" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.141592614571824),
+        b: Nx.f64(3.157162792479947),
+        u: Nx.f64(3.141592614571824),
+        fa: Nx.f64(3.901796897832363e-08),
+        fb: Nx.f64(-1.556950978832860e-02),
+        fu: Nx.f64(3.901796897832363e-08)
+      }
+
+      c = Interpolation.double_secant(z)
+
+      assert_all_close(c, Nx.f64(3.141592692610915), atol: 1.0e-12, rtol: 1.0e-12)
+    end
+
+    test "quadratic_interpolation_plus_newton" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.0),
+        b: Nx.f64(3.157162792479947),
+        d: Nx.f64(4.0),
+        fa: Nx.f64(0.141120008059867),
+        fb: Nx.f64(-1.556950978832860e-02),
+        fd: Nx.f64(-0.756802495307928),
+        fe: Nx.f64(0.141120008059867),
+        iter_type: 2
+      }
+
+      c = Interpolation.quadratic_plus_newton(z)
+
+      assert_all_close(c, Nx.f64(3.141281736699444), atol: 1.0e-15, rtol: 1.0e-15)
+    end
+
+    test "quadratic_interpolation_plus_newton - bug fix" do
+      # From Octave for ballode - first bounce
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.995471442091821),
+        b: Nx.f64(4.294180317944318),
+        c: Nx.f64(3.995471442091821),
+        d: Nx.f64(2.898648469921000),
+        e: Nx.f64(4.294180317944318),
+        #
+        fa: Nx.f64(1.607028863214206),
+        fb: Nx.f64(-4.564518118928532),
+        fc: Nx.f64(1.607028863214206),
+        fd: Nx.f64(16.76036011799988),
+        fe: Nx.f64(-4.564518118928532),
+        #
+        iter_type: 2
+      }
+
+      c = Interpolation.quadratic_plus_newton(z)
+
+      assert_all_close(c, Nx.f64(4.077471967384916), atol: 1.0e-15, rtol: 1.0e-15)
+    end
+
+    test "inverse_cubic_interpolation" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.141281736699444),
+        b: Nx.f64(3.157162792479947),
+        d: Nx.f64(3.0),
+        e: Nx.f64(4.0),
+        fa: Nx.f64(3.109168853400020e-04),
+        fb: Nx.f64(-1.556950978832860e-02),
+        fd: Nx.f64(0.141120008059867),
+        fe: Nx.f64(-0.756802495307928)
+      }
+
+      c = Interpolation.inverse_cubic(z)
+      assert_all_close(c, Nx.f64(3.141592614571824), atol: 1.0e-12, rtol: 1.0e-12)
+    end
+
+    test "secant" do
+      # From Octave for:
+      # fun = @sin
+      # x = fzero(fun, [3, 4])
+
+      z = %NonLinearEqnRootRefactor{
+        a: Nx.f64(3.0),
+        b: Nx.f64(4.0),
+        u: Nx.f64(3.0),
+        #
+        fa: Nx.f64(0.141120008059867),
+        fb: Nx.f64(-0.756802495307928),
+        fu: Nx.f64(0.141120008059867)
+      }
+
+      c = Interpolation.secant(z)
+
+      assert_all_close(c, Nx.f64(3.157162792479947), atol: 1.0e-15, rtol: 1.0e-15)
     end
   end
 end
