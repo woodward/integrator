@@ -10,7 +10,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
-  defmodule InternalComputationsTestFunctions do
+  defmodule TestFunctions do
     @moduledoc false
     import Nx.Defn
 
@@ -228,7 +228,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: 7
       }
 
-      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn = &TestFunctions.sin/2
       zero_fn_args = []
       opts = %{max_iterations: 1000, max_fn_eval_count: 1000}
       z = InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
@@ -252,7 +252,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       opts = %{max_iterations: max_iterations, max_fn_eval_count: 1000}
-      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn = &TestFunctions.sin/2
       zero_fn_args = []
 
       assert_raise MaxIterationsExceededError, fn ->
@@ -271,7 +271,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       opts = %{max_iterations: 1000, max_fn_eval_count: max_fn_eval_count}
-      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn = &TestFunctions.sin/2
       zero_fn_args = []
 
       assert_raise MaxFnEvalsExceededError, fn ->
@@ -340,7 +340,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   describe "find_2nd_starting_point" do
     test "finds a value in the vicinity" do
       x0 = Nx.f64(3.0)
-      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn = &TestFunctions.sin/2
       zero_fn_args = []
 
       result = InternalComputations.find_2nd_starting_point(zero_fn, x0, zero_fn_args)
@@ -353,7 +353,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
     test "works if x0 is very close to zero" do
       x0 = Nx.f64(-0.0005)
-      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn = &TestFunctions.sin/2
       zero_fn_args = []
 
       result = InternalComputations.find_2nd_starting_point(zero_fn, x0, zero_fn_args)
