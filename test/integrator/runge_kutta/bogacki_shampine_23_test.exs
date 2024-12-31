@@ -4,7 +4,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
 
   import Nx, only: :sigils
 
-  alias Integrator.Utils
+  alias Integrator.Interpolation
   alias Integrator.RungeKutta.BogackiShampine23
 
   test "order/0" do
@@ -95,7 +95,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
     end
 
     test "the interpolate function delegates", %{t: t, x: x, der: der, t_out: t_out, expected_x_out: expected_x_out} do
-      x_out = Utils.hermite_cubic_interpolation(t, x, der, t_out)
+      x_out = Interpolation.hermite_cubic(t, x, der, t_out)
       assert_all_close(x_out, expected_x_out, atol: 1.0e-13, rtol: 1.0e-13)
     end
   end

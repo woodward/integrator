@@ -6,7 +6,6 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   Originally based on Octave [`runge_kutta_23.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_23.m)
   """
   alias Integrator.RungeKutta
-  alias Integrator.Utils
 
   @behaviour RungeKutta
 
@@ -78,7 +77,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23 do
   """
   @impl RungeKutta
   defn interpolate(t, x, der, t_out) do
-    # This could be a defdelegate, but Nx does not yet support that
-    Utils.hermite_cubic_interpolation(t, x, der, t_out)
+    # This could be a defdelegate, but Nx does not yet support that (to my knowledge)
+    Integrator.Interpolation.hermite_cubic(t, x, der, t_out)
   end
 end

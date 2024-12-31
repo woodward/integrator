@@ -21,7 +21,6 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   """
 
   alias Integrator.RungeKutta
-  alias Integrator.Utils
 
   @behaviour RungeKutta
 
@@ -110,7 +109,7 @@ defmodule Integrator.RungeKutta.DormandPrince45 do
   """
   @impl RungeKutta
   defn interpolate(t, x, der, t_out) do
-    # This could be a defdelegate, but Nx does not yet support that
-    Utils.hermite_quartic_interpolation(t, x, der, t_out)
+    # This could be a defdelegate, but Nx does not yet support that (to my knowledge)
+    Integrator.Interpolation.hermite_quartic(t, x, der, t_out)
   end
 end
