@@ -17,7 +17,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.TensorTypeError
 
-  @type zero_fn_t :: (Nx.t() -> Nx.t())
+  @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
   @type output_fn_t :: (Nx.t() -> any())
 
   @type iter_type :: 1 | 2 | 3 | 4 | 5
@@ -192,28 +192,31 @@ defmodule Integrator.NonLinearEqnRootRefactor do
 
   """
 
-  @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), Keyword.t()) :: t()
-  deftransform find_zero(zero_fn, a, b, opts \\ []) do
+  @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
+  deftransform find_zero(zero_fn, a, b, zero_fn_args, opts \\ []) do
     options = convert_to_nx_options(opts)
     a_nx = convert_arg_to_nx_type(a, options.type)
     b_nx = convert_arg_to_nx_type(b, options.type)
-    find_zero_nx(zero_fn, a_nx, b_nx, options)
+    zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
+
+    find_zero_nx(zero_fn, a_nx, b_nx, zero_fn_args_nx, options)
   end
 
-  @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), Keyword.t()) :: t()
-  deftransform find_zero_with_single_point(zero_fn, solo_point, opts \\ []) do
+  @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
+  deftransform find_zero_with_single_point(zero_fn, solo_point, zero_fn_args, opts \\ []) do
     options = convert_to_nx_options(opts)
     solo_point_nx = convert_arg_to_nx_type(solo_point, options.type)
-    second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx)
+    second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx, zero_fn_args)
+    zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
 
-    result = find_zero(zero_fn, solo_point_nx, second_point.b, opts)
+    result = find_zero(zero_fn, solo_point_nx, second_point.b, zero_fn_args_nx, opts)
     %{result | fn_eval_count: Nx.add(result.fn_eval_count, second_point.fn_eval_count)}
   end
 
-  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), NxOptions.t()) :: t()
-  defn find_zero_nx(zero_fn, a, b, options) do
-    fa = zero_fn.(a)
-    fb = zero_fn.(b)
+  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
+  defn find_zero_nx(zero_fn, a, b, zero_fn_args, options) do
+    fa = zero_fn.(a, zero_fn_args)
+    fb = zero_fn.(b, zero_fn_args)
     # fn_eval_count = 2 + fn_evals
     fn_eval_count = 2
     {u, fu} = if Nx.abs(fa) < Nx.abs(fb), do: {a, fa}, else: {b, fb}
@@ -259,7 +262,7 @@ defmodule Integrator.NonLinearEqnRootRefactor do
     #   :halt -> %{z | x: u, fx: fu}
     # end
 
-    InternalComputations.iterate(z, zero_fn, options)
+    InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
     # z
   end
 
@@ -278,6 +281,10 @@ defmodule Integrator.NonLinearEqnRootRefactor do
   def bracket_fx(z) do
     {z.fa, z.fb}
   end
+
+  def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
+
+  # Convert the following to private functions and test with Patch:
 
   @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer(), Nx.Type.t()) :: Nx.t()
   def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do

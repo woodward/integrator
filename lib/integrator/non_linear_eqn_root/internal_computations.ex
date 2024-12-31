@@ -39,8 +39,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     @interpolation_undetermined => :undetermined
   }
 
-  @spec iterate(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), NxOptions.t()) :: NonLinearEqnRootRefactor.t()
-  defn iterate(z, zero_fn, options) do
+  @spec iterate(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
+          NonLinearEqnRootRefactor.t()
+  defn iterate(z, zero_fn, zero_fn_args, options) do
     continue? = Nx.tensor(1, type: :u8)
 
     # For debugging:
@@ -52,7 +53,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           z
           |> compute_iteration()
           |> adjust_if_too_close_to_a_or_b(options.machine_eps, options.tolerance)
-          |> fn_eval_new_point(zero_fn, options)
+          |> fn_eval_new_point(zero_fn, zero_fn_args, options)
           |> check_for_non_monotonicity()
           |> bracket()
 
@@ -337,8 +338,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           fn_eval_count: Nx.t()
         }
 
-  @spec find_2nd_starting_point(NonLinearEqnRootRefactor.zero_fn_t(), Nx.t()) :: map()
-  defn find_2nd_starting_point(zero_fn, a) do
+  @spec find_2nd_starting_point(NonLinearEqnRootRefactor.zero_fn_t(), Nx.t(), [Nx.t()]) :: map()
+  defn find_2nd_starting_point(zero_fn, a, zero_fn_args) do
     # For very small values, switch to absolute rather than relative search:
     a =
       if Nx.abs(a) < 0.001 do
@@ -347,7 +348,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         a
       end
 
-    fa = zero_fn.(a)
+    fa = zero_fn.(a, zero_fn_args)
     x = %SearchFor2ndPoint{a: a, fa: fa, b: a, fb: fa, fn_eval_count: 1}
     nx_type = Nx.type(a)
     search_values = Nx.tensor(@search_values, type: nx_type)
@@ -358,7 +359,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       while {x, search_values, i = 0}, not found?(x) and i <= number_of_search_values - 1 do
         search = search_values[i]
         b = x.a + x.a * search
-        fb = zero_fn.(b)
+        fb = zero_fn.(b, zero_fn_args)
         x = %{x | b: b, fb: fb, fn_eval_count: x.fn_eval_count + 1}
         {x, search_values, i + 1}
       end
@@ -474,10 +475,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), Keyword.t()) ::
+  @spec fn_eval_new_point(NonLinearEqnRootRefactor.t(), NonLinearEqnRootRefactor.zero_fn_t(), [Nx.t()], Keyword.t()) ::
           NonLinearEqnRootRefactor.t()
-  defn fn_eval_new_point(z, zero_fn, options) do
-    fc = zero_fn.(z.c)
+  defn fn_eval_new_point(z, zero_fn, zero_fn_args, options) do
+    fc = zero_fn.(z.c, zero_fn_args)
 
     %{
       z

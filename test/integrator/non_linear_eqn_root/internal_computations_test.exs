@@ -10,6 +10,13 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
+  defmodule InternalComputationsTestFunctions do
+    @moduledoc false
+    import Nx.Defn
+
+    defn sin(x, _args), do: Nx.sin(x)
+  end
+
   describe "converged?" do
     # From Octave for:
     # fun = @sin
@@ -221,9 +228,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: 7
       }
 
-      zero_fn = &Nx.sin/1
+      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn_args = []
       opts = %{max_iterations: 1000, max_fn_eval_count: 1000}
-      z = InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+      z = InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
 
       assert_all_close(z.fc, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fx, Nx.tensor(3.109168853400020e-04, type: :f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -244,10 +252,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       opts = %{max_iterations: max_iterations, max_fn_eval_count: 1000}
-      zero_fn = &Nx.sin/1
+      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn_args = []
 
       assert_raise MaxIterationsExceededError, fn ->
-        InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+        InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
       end
     end
 
@@ -262,10 +271,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       opts = %{max_iterations: 1000, max_fn_eval_count: max_fn_eval_count}
-      zero_fn = &Nx.sin/1
+      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn_args = []
 
       assert_raise MaxFnEvalsExceededError, fn ->
-        InternalComputations.fn_eval_new_point(z, zero_fn, opts)
+        InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
       end
     end
   end
@@ -330,9 +340,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   describe "find_2nd_starting_point" do
     test "finds a value in the vicinity" do
       x0 = Nx.tensor(3.0, type: :f64)
-      zero_fn = &Nx.sin/1
+      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn_args = []
 
-      result = InternalComputations.find_2nd_starting_point(zero_fn, x0)
+      result = InternalComputations.find_2nd_starting_point(zero_fn, x0, zero_fn_args)
 
       assert_all_close(result.b, Nx.tensor(3.3, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(result.fb, Nx.tensor(-0.1577456941432482, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
@@ -342,9 +353,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
     test "works if x0 is very close to zero" do
       x0 = Nx.tensor(-0.0005, type: :f64)
-      zero_fn = &Nx.sin/1
+      zero_fn = &InternalComputationsTestFunctions.sin/2
+      zero_fn_args = []
 
-      result = InternalComputations.find_2nd_starting_point(zero_fn, x0)
+      result = InternalComputations.find_2nd_starting_point(zero_fn, x0, zero_fn_args)
 
       assert_all_close(result.b, Nx.tensor(0.0, type: :f64), atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(result.fb, Nx.tensor(0.0, type: :f64), atol: 1.0e-12, rtol: 1.0e-12)
