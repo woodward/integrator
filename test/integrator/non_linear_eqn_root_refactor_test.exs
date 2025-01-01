@@ -34,8 +34,9 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
 
     defn ballode(t_out, args) do
       # Values obtained from Octave right before and after the call to fzero in ode_event_handler.m:
-      [t0, t1, x, k_vals] = args
+      [t0, t1, x0, x1, k_vals] = args
       t = Nx.concatenate([t0, t1])
+      x = Nx.stack([x0, x1]) |> Nx.transpose()
       x_out = DormandPrince45.interpolate(t, x, k_vals, t_out)
       x_out[0][0]
     end
@@ -342,10 +343,8 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       t0 = Nx.f64([2.898648469921000])
       t1 = Nx.f64([4.294180317944318])
 
-      x = ~MAT[
-           1.676036011799988e+01  -4.564518118928532e+00
-          -8.435741489925014e+00  -2.212590891903376e+01
-      ]f64
+      x0 = Nx.f64([1.676036011799988e+01, -8.435741489925014e+00])
+      x1 = Nx.f64([-4.564518118928532e+00, -2.212590891903376e+01])
 
       k_vals = ~MAT[
           -8.435741489925014e+00  -1.117377497574676e+01  -1.254279171865764e+01  -1.938787543321202e+01  -2.060477920468836e+01   -2.212590891903378e+01  -2.212590891903376e+01
@@ -353,7 +352,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       ]f64
 
       zero_fn = &TestFunctions.ballode/2
-      zero_fn_args = [t0, t1, x, k_vals]
+      zero_fn_args = [t0, t1, x0, x1, k_vals]
 
       # Same values as in ballode definition above:
       t0 = Nx.f64(2.898648469921000)
