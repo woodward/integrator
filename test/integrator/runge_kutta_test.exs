@@ -25,15 +25,13 @@ defmodule Integrator.RungeKuttaTest do
           -9.81                -9.81                -9.81               -9.81                -9.81                -9.81               -9.81
       ]f64
 
-      expected_result = [
-        ~VEC[13.848290681846994       -11.326806117443777]f64,
-        ~VEC[10.084207516796049       -14.217870744962527]f64,
-        ~VEC[ 5.468110622847037       -17.108935372481277]f64,
-        ~VEC[-3.6415315207705135e-14  -20.00000000000002]f64
-      ]
+      expected_result = ~MAT[
+          13.848290681846994   10.084207516796049   5.468110622847037   -3.6415315207705135e-14
+         -11.326806117443777  -14.217870744962527 -17.108935372481277  -20.00000000000002
+      ]f64
 
       result = RungeKutta.interpolate(t_add, interpolate_fn, t_old, x_old, t_new, x_new, k_vals)
-      assert_lists_of_vectors_equal(result, expected_result, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(result, expected_result, atol: 1.0e-14, rtol: 1.0e-14)
     end
 
     test "works for Bogacki-Shampine23" do
@@ -55,15 +53,13 @@ defmodule Integrator.RungeKuttaTest do
            -2.298003161128081 -2.1108704479395213  -2.0374684115168598    -1.9490956559698092
       ]f64
 
-      expected_result = [
-        ~VEC[2.0072044625559693   0.06571298789094157]f64,
-        ~VEC[2.0079022510428013   0.036140085171095404]f64,
-        ~VEC[2.008203435436361    0.0077602860525202155]f64,
-        ~VEC[2.0081230062138307  -0.019464541184915612]f64
-      ]
+      expected_result = ~MAT[
+          2.0072044625559693   2.0079022510428013    2.008203435436361       2.0081230062138307
+          0.06571298789094157  0.036140085171095404  0.0077602860525202155  -0.019464541184915612
+      ]f64
 
       result = RungeKutta.interpolate(t_add, interpolate_fn, t_old, x_old, t_new, x_new, k_vals)
-      assert_lists_of_vectors_equal(result, expected_result, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(result, expected_result, atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 end

@@ -119,4 +119,12 @@ defmodule Integrator.Utils do
   def unique(values) do
     MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
+
+  # Perhaps this can be deleted soon?
+  def tensor_length(tensor) do
+    case Nx.shape(tensor) do
+      {} -> 1
+      {length} -> length
+    end
+  end
 end

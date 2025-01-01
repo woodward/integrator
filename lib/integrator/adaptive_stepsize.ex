@@ -683,12 +683,13 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   defp interpolate(step, interpolate_fn, refine) when refine > 1 do
-    tadd = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
-    # Get rid of the first element (tadd[0]) via this slice:
-    tadd = Nx.slice_along_axis(tadd, 1, refine, axis: 0)
+    t_add = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
+    # Get rid of the first element (t_add[0]) via this slice:
+    t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
+    t_add_length = Utils.tensor_length(t_add)
 
     x_out_as_cols =
-      tadd
+      t_add
       |> RungeKutta.interpolate(
         interpolate_fn,
         step.t_old,
@@ -697,15 +698,19 @@ defmodule Integrator.AdaptiveStepsize do
         step.x_new_rk_interpolate,
         step.k_vals
       )
+      |> Utils.columns_as_list(0, t_add_length - 1)
       |> Enum.reverse()
 
-    t_new_chunk = tadd |> Utils.vector_as_list() |> Enum.reverse()
+    t_new_chunk = t_add |> Utils.vector_as_list() |> Enum.reverse()
     %{step | x_new_chunk: x_out_as_cols, t_new_chunk: t_new_chunk}
   end
 
   @spec interpolate_one_point(Nx.t(), t(), RungeKutta.interpolate_fn_t()) :: Nx.t()
   defp interpolate_one_point(t_new, step, interpolate_fn) do
-    Nx.tensor(t_new, type: step.nx_type)
+    t_add = Nx.tensor(t_new, type: step.nx_type)
+    t_add_length = Utils.tensor_length(t_add)
+
+    t_add
     |> RungeKutta.interpolate(
       interpolate_fn,
       step.t_old,
@@ -714,6 +719,7 @@ defmodule Integrator.AdaptiveStepsize do
       step.x_new_rk_interpolate,
       step.k_vals
     )
+    |> Utils.columns_as_list(0, t_add_length - 1)
     |> List.first()
   end
 

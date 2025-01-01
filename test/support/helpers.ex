@@ -38,21 +38,6 @@ defmodule Integrator.Helpers do
   end
 
   @doc """
-  Asserts that two lists of vectors are equal
-  """
-  def assert_lists_of_vectors_equal(actual_list, expected_list, opts \\ []) do
-    atol = Keyword.get(opts, :atol, 1.0e-14)
-    rtol = Keyword.get(opts, :rtol, 1.0e-14)
-
-    assert length(actual_list) == length(expected_list)
-
-    Enum.zip(actual_list, expected_list)
-    |> Enum.map(fn {actual, expected} ->
-      assert_all_close(actual, expected, atol: atol, rtol: rtol)
-    end)
-  end
-
-  @doc """
   Asserts that two lists (which contain Nx tensors) are equal
   """
   def assert_nx_lists_equal(actual_list, expected_list, opts \\ []) do
