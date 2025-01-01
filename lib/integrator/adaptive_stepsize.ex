@@ -110,6 +110,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @type event_fn_t :: (Nx.t(), Nx.t() -> {integration_status(), Nx.t()})
   @type output_fn_t :: ([Nx.t()], [Nx.t()] -> any())
+  @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
 
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
@@ -173,6 +174,11 @@ defmodule Integrator.AdaptiveStepsize do
       type: :boolean,
       doc: "Indicates whether or not to store the results of the integration.",
       default: true
+    ],
+    zero_fn: [
+      type: {:or, [{:fun, 2}, nil]},
+      doc: "Finds the zero; used in conjunction with `event_fn`",
+      default: nil
     ]
   ]
 
@@ -437,7 +443,7 @@ defmodule Integrator.AdaptiveStepsize do
         step
         |> increment_and_reset_counters()
         |> merge_new_step(new_step)
-        |> call_event_fn(opts[:event_fn], interpolate_fn, opts)
+        |> call_event_fn(opts[:event_fn], opts[:zero_fn], interpolate_fn, opts)
         |> interpolate(interpolate_fn, opts[:refine])
         |> store_resuts(opts[:store_results?])
         |> call_output_fn(opts[:output_fn])
@@ -712,19 +718,19 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Calls an event function (e.g., checking to see if a bouncing ball has collided with a surface)
-  @spec call_event_fn(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: t()
-  defp call_event_fn(step, event_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
+  @spec call_event_fn(t(), event_fn_t(), zero_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: t()
+  defp call_event_fn(step, event_fn, _zero_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
   end
 
-  defp call_event_fn(step, event_fn, interpolate_fn, opts) do
+  defp call_event_fn(step, event_fn, zero_fn, interpolate_fn, opts) do
     # Pass opts to event_fn?
     case event_fn.(step.t_new, step.x_new) do
       {:continue, _value} ->
         step
 
       {:halt, _value} ->
-        new_step = step |> compute_new_event_fn_step(event_fn, interpolate_fn, opts)
+        new_step = step |> compute_new_event_fn_step(event_fn, zero_fn, interpolate_fn, opts)
 
         %{
           step
@@ -738,7 +744,7 @@ defmodule Integrator.AdaptiveStepsize do
   # Hones in (via interpolation) on the exact point that the event function goes to zero
   # Not sure why this typespec is wrong and/or is complaining...
   # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
-  defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
+  defp compute_new_event_fn_step(step, event_fn, _new_zero_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       type = Nx.type(step.x_old)
       t_add = Nx.tensor(t, type: type)

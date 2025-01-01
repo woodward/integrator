@@ -227,7 +227,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
   describe "call_event_fn" do
     setup do
-      expose(AdaptiveStepsize, call_event_fn: 4)
+      expose(AdaptiveStepsize, call_event_fn: 5)
 
       event_fn = fn _t, x ->
         value = Nx.to_number(x[0])
@@ -245,8 +245,10 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       opts = []
       step = %AdaptiveStepsize{t_new: t_new, x_new: x_new}
       interpolate_fn_does_not_matter = & &1
+      zero_fn_not_used_yet = nil
 
-      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn_does_not_matter, opts))
+      new_step =
+        private(AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn_does_not_matter, opts))
 
       assert new_step.terminal_event == :continue
     end
@@ -276,8 +278,9 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       }
 
       interpolate_fn = &DormandPrince45.interpolate/4
+      zero_fn_not_used_yet = nil
 
-      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, interpolate_fn, opts))
+      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn, opts))
       assert new_step.terminal_event == :halt
 
       assert_all_close(new_step.t_new, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)
