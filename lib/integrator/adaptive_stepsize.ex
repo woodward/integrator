@@ -653,7 +653,8 @@ defmodule Integrator.AdaptiveStepsize do
     [fixed_time | remaining_fixed_times] = step.fixed_times
 
     if add_fixed_point?(fixed_time, step.t_new) == Nx.tensor(1, type: :u8) do
-      x_at_fixed_time = interpolate_one_point(fixed_time, step, interpolate_fn)
+      type = Nx.type(step.x_old)
+      x_at_fixed_time = interpolate_one_point(Nx.tensor(fixed_time, type: type), step, interpolate_fn)
 
       step = %{
         step
@@ -706,11 +707,8 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   @spec interpolate_one_point(Nx.t(), t(), RungeKutta.interpolate_fn_t()) :: Nx.t()
-  defp interpolate_one_point(t_new, step, interpolate_fn) do
-    t_add = Nx.tensor(t_new, type: step.nx_type)
-    t_add_length = Utils.tensor_length(t_add)
-
-    t_add
+  def interpolate_one_point(t_new, step, interpolate_fn) do
+    t_new
     |> RungeKutta.interpolate(
       interpolate_fn,
       step.t_old,
@@ -719,8 +717,7 @@ defmodule Integrator.AdaptiveStepsize do
       step.x_new_rk_interpolate,
       step.k_vals
     )
-    |> Utils.columns_as_list(0, t_add_length - 1)
-    |> List.first()
+    |> Nx.flatten()
   end
 
   # Calls an output function (such as for plotting while the simulation is in progress)
@@ -763,7 +760,8 @@ defmodule Integrator.AdaptiveStepsize do
   # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
-      x = interpolate_one_point(t, step, interpolate_fn)
+      type = Nx.type(step.x_old)
+      x = interpolate_one_point(Nx.tensor(t, type: type), step, interpolate_fn)
       {_status, value} = event_fn.(t, x)
       value |> Nx.to_number()
     end
