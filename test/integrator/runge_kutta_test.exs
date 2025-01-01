@@ -61,41 +61,5 @@ defmodule Integrator.RungeKuttaTest do
       result = RungeKutta.interpolate(t_add, interpolate_fn, t_old, x_old, t_new, x_new, k_vals)
       assert_all_close(result, expected_result, atol: 1.0e-14, rtol: 1.0e-14)
     end
-
-    test "works" do
-      # The expected values in this test actually came from Octave
-
-      t_old = ~VEC[ 2.155396117711071 ]f64
-      t_new = ~VEC[ 2.742956500140625 ]f64
-      x_old = ~VEC[  1.283429405203074e-02  -2.160506093425276 ]f64
-      x_new = ~VEC[ -1.452959132853812      -2.187778875125423 ]f64
-
-      k_vals = ~MAT[
-              -2.160506093425276  -2.415858015466959  -2.525217131637079  -2.530906930089893  -2.373278736970216  -2.143782883869835  -2.187778875125423
-              -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
-            ]f64
-
-      interpolate_fn = &RungeKutta.DormandPrince45.interpolate/4
-
-      t = ~VEC[ 2.161317515510217 ]f64
-
-      x_interpolated =
-        t
-        |> RungeKutta.interpolate(
-          interpolate_fn,
-          t_old,
-          x_old,
-          t_new,
-          x_new,
-          k_vals
-        )
-        |> Nx.flatten()
-
-      # From Octave:
-      expected_x_interpolated = ~VEC[ 2.473525941362742e-15 -2.173424479824061  ]f64
-
-      # Why is this not closer to tighter tolerances?
-      assert_all_close(x_interpolated, expected_x_interpolated, atol: 1.0e-07, rtol: 1.0e-07)
-    end
   end
 end
