@@ -1218,4 +1218,29 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
   end
+
+  describe "stack" do
+    # This function should move somewhere soon
+    @tag transferred_to_refactor?: false
+    test "puts the arguments in the form required by interpolate/4" do
+      # This struct will become a %RungeKuttaStep{} soon:
+      step = %{
+        t_old: Nx.f32(1),
+        t_new_rk_interpolate: Nx.f32(2),
+        x_old: Nx.f32([10, 20]),
+        x_new_rk_interpolate: Nx.f32([30, 40])
+      }
+
+      {t, x} = AdaptiveStepsize.stack(step)
+
+      expected_t = Nx.f32([1, 2])
+      expected_x = ~MAT[
+        10  30
+        20  40
+      ]f32
+
+      assert t == expected_t
+      assert x == expected_x
+    end
+  end
 end

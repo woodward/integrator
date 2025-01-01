@@ -741,6 +741,14 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
+  # This function will move somewhere else; perhaps to RungeKuttaStep?
+  defn stack(step) do
+    # These should change to t_new, x_new soon
+    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    {t, x}
+  end
+
   # Hones in (via interpolation) on the exact point that the event function goes to zero
   # Not sure why this typespec is wrong and/or is complaining...
   # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
