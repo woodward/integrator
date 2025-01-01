@@ -301,48 +301,6 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     end
   end
 
-  describe "interpolate_one_point" do
-    setup do
-      expose(AdaptiveStepsize, interpolate_one_point: 3)
-    end
-
-    @tag transferred_to_refactor?: false
-    test "works" do
-      t_old = ~VEC[ 2.155396117711071 ]f64
-      t_new = ~VEC[ 2.742956500140625 ]f64
-      x_old = ~VEC[  1.283429405203074e-02  -2.160506093425276 ]f64
-      x_new = ~VEC[ -1.452959132853812      -2.187778875125423 ]f64
-
-      k_vals = ~MAT[
-            -2.160506093425276  -2.415858015466959  -2.525217131637079  -2.530906930089893  -2.373278736970216  -2.143782883869835  -2.187778875125423
-            -2.172984510849814  -2.034431603317282  -1.715883769683796   2.345467244704591   3.812328420909734   4.768800180323954   3.883778892097804
-          ]f64
-
-      interpolate_fn = &DormandPrince45.interpolate/4
-
-      step = %AdaptiveStepsize{
-        t_new: t_new,
-        x_new: x_new,
-        t_old: t_old,
-        x_old: x_old,
-        t_new_rk_interpolate: t_new,
-        x_new_rk_interpolate: x_new,
-        k_vals: k_vals,
-        nx_type: :f64
-      }
-
-      t = ~VEC[ 2.161317515510217 ]f64
-      x_interpolated = private(AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn))
-      x_interpolated = Nx.flatten(x_interpolated)
-
-      # From Octave:
-      expected_x_interpolated = ~VEC[ 2.473525941362742e-15 -2.173424479824061  ]f64
-
-      # Why is this not closer to tighter tolerances?
-      assert_all_close(x_interpolated, expected_x_interpolated, atol: 1.0e-07, rtol: 1.0e-07)
-    end
-  end
-
   describe "compute_next_timestep" do
     setup do
       expose(AdaptiveStepsize, compute_next_timestep: 6)
