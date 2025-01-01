@@ -6,6 +6,8 @@ defmodule Integrator.RungeKutta do
   See the [list of Runge-Kutta methods](https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods)
   """
 
+  import Nx.Defn
+
   @type stepper_fn_t :: ((Nx.t(), Nx.t() -> Nx.t()), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t() -> {Nx.t(), Nx.t(), Nx.t(), Nx.t()})
   @type ode_fn_t :: (Nx.t(), Nx.t() -> Nx.t())
   @type interpolate_fn_t :: (Nx.t(), Nx.t(), Nx.t(), Nx.t() -> Nx.t())
@@ -33,8 +35,8 @@ defmodule Integrator.RungeKutta do
   """
   @callback order() :: integer()
 
-  # Convert to defn:
-  def interpolate(t_add, interpolate_fn, t_old, x_old, t_new, x_new, k_vals) do
+  @spec interpolate(Nx.t(), interpolate_fn_t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  defn interpolate(t_add, interpolate_fn, t_old, x_old, t_new, x_new, k_vals) do
     t = Nx.stack([t_old, t_new])
     x = Nx.stack([x_old, x_new]) |> Nx.transpose()
 
