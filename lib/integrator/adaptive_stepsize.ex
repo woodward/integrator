@@ -655,6 +655,7 @@ defmodule Integrator.AdaptiveStepsize do
     if add_fixed_point?(fixed_time, step.t_new) == Nx.tensor(1, type: :u8) do
       type = Nx.type(step.x_old)
       x_at_fixed_time = interpolate_one_point(Nx.tensor(fixed_time, type: type), step, interpolate_fn)
+      x_at_fixed_time = Nx.flatten(x_at_fixed_time)
 
       step = %{
         step
@@ -717,7 +718,6 @@ defmodule Integrator.AdaptiveStepsize do
       step.x_new_rk_interpolate,
       step.k_vals
     )
-    |> Nx.flatten()
   end
 
   # Calls an output function (such as for plotting while the simulation is in progress)
@@ -762,6 +762,7 @@ defmodule Integrator.AdaptiveStepsize do
     zero_fn = fn t ->
       type = Nx.type(step.x_old)
       x = interpolate_one_point(Nx.tensor(t, type: type), step, interpolate_fn)
+      x = Nx.flatten(x)
       {_status, value} = event_fn.(t, x)
       value |> Nx.to_number()
     end
@@ -774,6 +775,7 @@ defmodule Integrator.AdaptiveStepsize do
       )
 
     x_new = interpolate_one_point(root.x, step, interpolate_fn)
+    x_new = Nx.flatten(x_new)
     %Step{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
 

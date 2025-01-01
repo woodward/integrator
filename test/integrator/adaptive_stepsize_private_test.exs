@@ -333,6 +333,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
       t = ~VEC[ 2.161317515510217 ]f64
       x_interpolated = private(AdaptiveStepsize.interpolate_one_point(t, step, interpolate_fn))
+      x_interpolated = Nx.flatten(x_interpolated)
 
       # From Octave:
       expected_x_interpolated = ~VEC[ 2.473525941362742e-15 -2.173424479824061  ]f64
