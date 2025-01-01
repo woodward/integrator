@@ -654,18 +654,11 @@ defmodule Integrator.AdaptiveStepsize do
 
     if add_fixed_point?(fixed_time, step.t_new) == Nx.tensor(1, type: :u8) do
       type = Nx.type(step.x_old)
-
-      x_at_fixed_time =
-        Nx.tensor(fixed_time, type: type)
-        |> RungeKutta.interpolate(
-          interpolate_fn,
-          step.t_old,
-          step.x_old,
-          step.t_new_rk_interpolate,
-          step.x_new_rk_interpolate,
-          step.k_vals
-        )
-        |> Nx.flatten()
+      t = fixed_time
+      t_add = Nx.tensor(t, type: type)
+      t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+      x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+      x_at_fixed_time = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
 
       step = %{
         step
@@ -699,19 +692,9 @@ defmodule Integrator.AdaptiveStepsize do
     # Get rid of the first element (t_add[0]) via this slice:
     t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
     t_add_length = Utils.tensor_length(t_add)
-
-    x_out_as_cols =
-      t_add
-      |> RungeKutta.interpolate(
-        interpolate_fn,
-        step.t_old,
-        step.x_old,
-        step.t_new_rk_interpolate,
-        step.x_new_rk_interpolate,
-        step.k_vals
-      )
-      |> Utils.columns_as_list(0, t_add_length - 1)
-      |> Enum.reverse()
+    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    x_out_as_cols = interpolate_fn.(t, x, step.k_vals, t_add) |> Utils.columns_as_list(0, t_add_length - 1) |> Enum.reverse()
 
     t_new_chunk = t_add |> Utils.vector_as_list() |> Enum.reverse()
     %{step | x_new_chunk: x_out_as_cols, t_new_chunk: t_new_chunk}
@@ -758,18 +741,10 @@ defmodule Integrator.AdaptiveStepsize do
   defp compute_new_event_fn_step(step, event_fn, interpolate_fn, opts) do
     zero_fn = fn t ->
       type = Nx.type(step.x_old)
-
-      x =
-        Nx.tensor(t, type: type)
-        |> RungeKutta.interpolate(
-          interpolate_fn,
-          step.t_old,
-          step.x_old,
-          step.t_new_rk_interpolate,
-          step.x_new_rk_interpolate,
-          step.k_vals
-        )
-        |> Nx.flatten()
+      t_add = Nx.tensor(t, type: type)
+      t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+      x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+      x = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
 
       {_status, value} = event_fn.(t, x)
       value |> Nx.to_number()
@@ -782,17 +757,11 @@ defmodule Integrator.AdaptiveStepsize do
         only_non_linear_eqn_root_opts(opts)
       )
 
-    x_new =
-      root.x
-      |> RungeKutta.interpolate(
-        interpolate_fn,
-        step.t_old,
-        step.x_old,
-        step.t_new_rk_interpolate,
-        step.x_new_rk_interpolate,
-        step.k_vals
-      )
-      |> Nx.flatten()
+    type = Nx.type(root.x)
+    t_add = Nx.tensor(root.x, type: type)
+    t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    x_new = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
 
     %Step{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
