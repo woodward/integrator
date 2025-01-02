@@ -14,7 +14,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot.NxOptions
+  alias Integrator.NonLinearEqnRoot.NonLinearEqnRootOptions
 
   @initial_mu 0.5
   defn initial_mu, do: @initial_mu
@@ -46,7 +46,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Halt - a root has been found:
   @halt 0
 
-  @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
+  @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NonLinearEqnRootOptions.t()) ::
           NonLinearEqnRoot.t()
   defn iterate(z, zero_fn, zero_fn_args, options) do
     continue? = Nx.tensor(1, type: :u8)
