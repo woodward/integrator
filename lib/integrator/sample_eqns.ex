@@ -54,4 +54,17 @@ defmodule Integrator.SampleEqns do
     x1 = Nx.tensor(@acc_due_to_gravity, type: Nx.type(x))
     Nx.stack([x0, x1])
   end
+
+  @doc """
+  Event function for a point mass or particle falling through pass affected by gravity.  Returns zero
+  if x[0] is below the zero plane, or 1 if x[0] is above the zero plane.  Used for comparisons
+  with the Matlab/Octave `ballode.m` routine
+  """
+  @spec falling_particle_event_fn(Nx.t(), Nx.t()) :: Nx.t()
+  defn falling_particle_event_fn(_t, x) do
+    type = Nx.type(x)
+    zero = Nx.tensor(0, type: type)
+    one = Nx.tensor(1, type: type)
+    if x[0] < 0.0, do: zero, else: one
+  end
 end

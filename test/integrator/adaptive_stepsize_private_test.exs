@@ -227,14 +227,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
   describe "call_event_fn" do
     setup do
-      expose(AdaptiveStepsize, call_event_fn: 5)
-
-      event_fn = fn _t, x ->
-        value = Nx.to_number(x[0])
-        answer = if value <= 0.0, do: :halt, else: :continue
-        {answer, value}
-      end
-
+      event_fn = &SampleEqns.falling_particle_event_fn/2
       [event_fn: event_fn]
     end
 
@@ -247,8 +240,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       interpolate_fn_does_not_matter = & &1
       zero_fn_not_used_yet = nil
 
-      new_step =
-        private(AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn_does_not_matter, opts))
+      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn_does_not_matter, opts)
 
       assert new_step.terminal_event == :continue
     end
@@ -280,7 +272,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       zero_fn_not_used_yet = nil
 
-      new_step = private(AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn, opts))
+      new_step = AdaptiveStepsize.call_event_fn(step, event_fn, zero_fn_not_used_yet, interpolate_fn, opts)
       assert new_step.terminal_event == :halt
 
       assert_all_close(new_step.t_new, Nx.tensor(2.161317515510217), atol: 1.0e-07, rtol: 1.0e-07)

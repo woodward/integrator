@@ -11,38 +11,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.SampleEqns
 
-  defmodule TestFunctions do
-    @moduledoc false
-    import Nx.Defn
-
-    defn ballode_event_fn(_t, x) do
-      type = Nx.type(x)
-      zero = Nx.tensor(0, type: type)
-      one = Nx.tensor(1, type: type)
-      if x[0] < 0.0, do: zero, else: one
-    end
-
-    # GW: do I need this?
-    #    defn ballode_zero_fn(t, args) do
-    #      [step, interpolate_fn] = args
-    #      type = Nx.type(step.x_old)
-    #      t_add = Nx.tensor(t, type: type)
-    #      t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
-    #      x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
-    #      x = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
-    #      ballode_event_fn(t, x)
-    #
-    #      # root =
-    #      #   NonLinearEqnRootRefactor.find_zero(
-    #      #     zero_fn,
-    #      #     [step, interpolate_fn],
-    #      #     step.t_old,
-    #      #     step.t_new,
-    #      #     only_non_linear_eqn_root_opts(opts)
-    #      #   )
-    #    end
-  end
-
   describe "integrate" do
     @tag transferred_to_refactor?: false
     test "works" do
@@ -235,12 +203,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
     @tag transferred_to_refactor?: false
     test "works - event function with interpolation" do
-      event_fn = fn _t, x ->
-        value = Nx.to_number(x[0])
-        answer = if value <= 0.0, do: :halt, else: :continue
-        {answer, value}
-      end
-
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
@@ -252,7 +214,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       x0 = Nx.tensor([2.0, 0.0], type: :f64)
 
       opts = [
-        event_fn: event_fn,
+        event_fn: &SampleEqns.falling_particle_event_fn/2,
         type: :f64,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-06, type: :f64),
@@ -288,9 +250,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
     @tag transferred_to_refactor?: false
     test "works - event function with interpolation - ballode - high fidelity - one bounce" do
-      event_fn = &TestFunctions.ballode_event_fn/2
-      # zero_fn = &TestFunctions.ballode_zero_fn/2
-
+      event_fn = &SampleEqns.falling_particle_event_fn/2
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
@@ -1295,7 +1255,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       zero_fn = &Integrator.AdaptiveStepsize.ZeroFn.find_zero/2
       interpolate_fn = &Integrator.RungeKutta.DormandPrince45.interpolate/4
-      event_fn = &TestFunctions.ballode_event_fn/2
+      event_fn = &SampleEqns.falling_particle_event_fn/2
       zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
 
       arbitrary_t = 3

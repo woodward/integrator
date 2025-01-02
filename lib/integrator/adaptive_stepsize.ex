@@ -719,11 +719,11 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Calls an event function (e.g., checking to see if a bouncing ball has collided with a surface)
   @spec call_event_fn(t(), event_fn_t(), zero_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: t()
-  defp call_event_fn(step, event_fn, _zero_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
+  def call_event_fn(step, event_fn, _zero_fn, _interpolate_fn, _opts) when is_nil(event_fn) do
     step
   end
 
-  defp call_event_fn(step, event_fn, zero_fn, interpolate_fn, opts) do
+  def call_event_fn(step, event_fn, zero_fn, interpolate_fn, opts) do
     # Pass opts to event_fn?
     event_fn_result = event_fn.(step.t_new, step.x_new) |> Nx.to_number()
 

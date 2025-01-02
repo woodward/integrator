@@ -23,12 +23,7 @@ defmodule Integrator.MultiIntegratorTest do
       coefficient_of_restitution = Nx.tensor(-0.9, type: :f64)
 
       ode_fn = &SampleEqns.falling_particle/2
-
-      event_fn = fn _t, x ->
-        value = Nx.to_number(x[0])
-        answer = if value <= 0.0, do: :halt, else: :continue
-        {answer, value}
-      end
+      event_fn = &SampleEqns.falling_particle_event_fn/2
 
       [
         opts: opts,
