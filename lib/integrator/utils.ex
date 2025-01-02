@@ -127,4 +127,16 @@ defmodule Integrator.Utils do
       {length} -> length
     end
   end
+
+  @doc """
+  Returns the elapsed time (in microseconds) given a starting timestamp (also in microseconds)
+  """
+  @spec elapsed_time_μs(Nx.t()) :: Nx.t()
+  def elapsed_time_μs(start_time_μs), do: Nx.subtract(Nx.s32(:os.system_time(:microsecond)), start_time_μs)
+
+  @doc """
+  Returns the timestamp in microseconds as an Nx :s32 tensor
+  """
+  @spec timestamp_μs() :: Nx.t()
+  def timestamp_μs, do: Nx.s32(:os.system_time(:microsecond))
 end

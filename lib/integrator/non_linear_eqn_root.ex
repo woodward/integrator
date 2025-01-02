@@ -17,6 +17,8 @@ defmodule Integrator.NonLinearEqnRoot do
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.TensorTypeError
 
+  import Integrator.Utils, only: [timestamp_μs: 0, elapsed_time_μs: 1]
+
   @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
   @type output_fn_t :: (Nx.t() -> any())
 
@@ -43,6 +45,7 @@ defmodule Integrator.NonLinearEqnRoot do
      #
      :mu_ba,
      #
+     :elapsed_time_μs,
      :fn_eval_count,
      :iteration_count,
      :iteration_type,
@@ -74,6 +77,7 @@ defmodule Integrator.NonLinearEqnRoot do
           #
           mu_ba: Nx.t(),
           #
+          elapsed_time_μs: Nx.t(),
           fn_eval_count: Nx.t(),
           iteration_count: Nx.t(),
           # Change iteration_type to a more descriptive atom later (possibly? or keep it this way??):
@@ -104,6 +108,7 @@ defmodule Integrator.NonLinearEqnRoot do
             #
             mu_ba: 0.0,
             #
+            elapsed_time_μs: 0,
             fn_eval_count: 0,
             iteration_count: 0,
             # Change iteration_type to a more descriptive atom later (possibly?):
@@ -193,23 +198,32 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, zero_fn_args, opts \\ []) do
+    start_time_μs = timestamp_μs()
     options = convert_to_nx_options(opts)
     a_nx = convert_arg_to_nx_type(a, options.type)
     b_nx = convert_arg_to_nx_type(b, options.type)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
 
-    find_zero_nx(zero_fn, a_nx, b_nx, zero_fn_args_nx, options)
+    result = find_zero_nx(zero_fn, a_nx, b_nx, zero_fn_args_nx, options)
+
+    %{result | elapsed_time_μs: elapsed_time_μs(start_time_μs)}
   end
 
   @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero_with_single_point(zero_fn, solo_point, zero_fn_args, opts \\ []) do
+    start_time_μs = timestamp_μs()
     options = convert_to_nx_options(opts)
     solo_point_nx = convert_arg_to_nx_type(solo_point, options.type)
     second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx, zero_fn_args)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
 
     result = find_zero(zero_fn, solo_point_nx, second_point.b, zero_fn_args_nx, opts)
-    %{result | fn_eval_count: Nx.add(result.fn_eval_count, second_point.fn_eval_count)}
+
+    %{
+      result
+      | fn_eval_count: Nx.add(result.fn_eval_count, second_point.fn_eval_count),
+        elapsed_time_μs: elapsed_time_μs(start_time_μs)
+    }
   end
 
   @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
@@ -262,7 +276,6 @@ defmodule Integrator.NonLinearEqnRoot do
     # end
 
     InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
-    # z
   end
 
   # def find_zero(zero_fn, solo_point, opts, _fn_evals) do

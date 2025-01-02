@@ -89,6 +89,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
+
+      assert Nx.to_number(result.elapsed_time_μs) > 0
     end
 
     test "sine function - works if initial values are swapped" do
