@@ -9,11 +9,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   import Nx.Defn
 
   alias Integrator.Interpolation
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.BracketingFailureError
   alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.NxOptions
 
   # This also shows up in Integrator.NonLinearEqnRoot - how can I get rid of the duplication?
@@ -39,6 +39,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     @interpolation_secant => :secant,
     @interpolation_undetermined => :undetermined
   }
+
+  # Continue searching for a root:
+  @continue 1
+
+  # Halt - a root has been found:
+  @halt 0
 
   @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
           NonLinearEqnRoot.t()
@@ -355,7 +361,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn number_of_unique_values(one, two, three, four) do
-    # There's got to be a better, Nx-ey way to do this! This is brute-force (for now).
+    # There's got to be a better, Nx-ey way to do this! This is brute-force (for now) - ugh!
 
     if one == two == three == four do
       1
@@ -375,22 +381,19 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec bracket(NonLinearEqnRoot.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defn bracket(z) do
-    continue = 1
-    halt = 0
-
     {status, z} =
       if Nx.sign(z.fa) * Nx.sign(z.fc) < 0 do
         # Move c to b:
-        {continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
+        {@continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
       else
         if Nx.sign(z.fb) * Nx.sign(z.fc) < 0 do
-          {continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
+          {@continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
         else
           if z.fc == 0.0 do
-            {halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
+            {@halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
           else
             # Should never reach here
-            {halt, hook(z, &raise(BracketingFailureError, step: &1))}
+            {@halt, hook(z, &raise(BracketingFailureError, step: &1))}
           end
         end
       end
