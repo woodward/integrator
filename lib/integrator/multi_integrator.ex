@@ -5,7 +5,7 @@ defmodule Integrator.MultiIntegrator do
   """
 
   alias Integrator.AdaptiveStepsize
-  alias Integrator.NonLinearEqnRootRefactor
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
 
   @type integration_status :: :halt | :continue | :completed
@@ -33,7 +33,7 @@ defmodule Integrator.MultiIntegrator do
   ]
 
   all_options =
-    NonLinearEqnRootRefactor.options_schema().schema
+    NonLinearEqnRoot.options_schema().schema
     |> Keyword.merge(AdaptiveStepsize.options_schema_adaptive_stepsize_only().schema)
     |> Keyword.merge(Integrator.options_schema_integrator_only().schema)
 

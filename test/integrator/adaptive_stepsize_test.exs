@@ -1267,7 +1267,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert_all_close(result, Nx.f64(15.855), atol: 1.0e-14, rtol: 1.0e-14)
 
-      root = Integrator.NonLinearEqnRootRefactor.find_zero(zero_fn, t_old, t_new, zero_fn_args, [])
+      root = Integrator.NonLinearEqnRoot.find_zero(zero_fn, t_old, t_new, zero_fn_args, [])
       assert_all_close(root.x, Nx.f64(4.077471967380226), atol: 1.0e-14, rtol: 1.0e-14)
     end
   end

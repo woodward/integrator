@@ -3,7 +3,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   @moduledoc false
   use Integrator.TestCase, async: false
-  alias Integrator.NonLinearEqnRootRefactor
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InternalComputations.SearchFor2ndPoint
   alias Integrator.NonLinearEqnRoot.BracketingFailureError
@@ -23,7 +23,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     # x = fzero(fun, [3, 4])
 
     test "returns false (i.e., 0) if not yet converged" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.141592614571824),
         b: Nx.f64(3.157162792479947),
         u: Nx.f64(3.141592614571824)
@@ -36,7 +36,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "returns true (i.e., 1) if converged" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.141592653589793),
         b: Nx.f64(3.141592653589795),
         u: Nx.f64(3.141592653589793)
@@ -51,7 +51,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "too_far?/1" do
     test "returns true if too far" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.2),
         b: Nx.f64(3.4),
         u: Nx.f64(4.0)
@@ -61,7 +61,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "returns false if not too far" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.141592614571824),
         b: Nx.f64(3.157162792479947),
         u: Nx.f64(3.141592614571824)
@@ -73,7 +73,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "check_for_non_monotonicity/1" do
     test "monotonic" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         d: Nx.f64(3.141281736699444),
         fa: Nx.f64(3.901796897832363e-08),
         fb: Nx.f64(-1.556950978832860e-02),
@@ -88,7 +88,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "non-monotonic" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         d: Nx.f64(3.141281736699444),
         fa: Nx.f64(-3.911796897832363e-08),
         fb: Nx.f64(-1.556950978832860e-02),
@@ -104,7 +104,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "fn_eval_new_point" do
     test "works" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         c: Nx.f64(3.141281736699444),
         iteration_count: 1,
         fn_eval_count: 3,
@@ -127,7 +127,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     test "raises an error if max iterations exceeded" do
       max_iterations = 4
 
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         c: Nx.f64(3.141281736699444),
         iteration_count: max_iterations,
         fn_eval_count: 3,
@@ -146,7 +146,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     test "raises an error if max function evaluations exceeded" do
       max_fn_eval_count = 4
 
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         c: Nx.f64(3.141281736699444),
         iteration_count: 1,
         fn_eval_count: max_fn_eval_count,
@@ -165,7 +165,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "adjust_if_too_close_to_a_or_b" do
     test "when c is NOT too close" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.0),
         b: Nx.f64(4.0),
         c: Nx.f64(3.157162792479947),
@@ -181,7 +181,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "when c IS too close" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.157162792479947),
         b: Nx.f64(3.157162792479948),
         c: Nx.f64(3.157162792479947),
@@ -256,7 +256,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "bracket" do
     test "first case - move c down to b" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.Constants.nan(:f64),
         b: Nx.f64(3.157162792479947),
         c: Nx.f64(3.141592692610915),
@@ -277,7 +277,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "second case - move a up to c" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.141281736699444),
         b: Nx.Constants.nan(:f64),
         c: Nx.f64(3.141592614571824),
@@ -297,7 +297,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "third case - c is already at the root" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.Constants.nan(:f64),
         b: Nx.Constants.nan(:f64),
         c: Nx.f64(1.0),
@@ -317,7 +317,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "fourth case - bracket didn't work (note that this is an artificial, non-real-life case)" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.Constants.nan(:f64),
         b: Nx.Constants.nan(:f64),
         c: 1.0,
@@ -333,7 +333,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
 
     test "bug fix - first iteration of first bounce of ballode.m" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(2.898648469921000),
         b: Nx.f64(4.294180317944318),
         c: Nx.f64(3.995471442091821),
@@ -364,7 +364,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
   describe "compute_iteration_types_two_or_three" do
     test "bug fix" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: Nx.f64(3.995471442091821),
         b: Nx.f64(4.077471967384916),
         c: Nx.f64(4.077471967384916),

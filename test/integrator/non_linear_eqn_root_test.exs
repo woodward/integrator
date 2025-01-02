@@ -1,4 +1,4 @@
-defmodule Integrator.NonLinearEqnRootRefactorTest do
+defmodule Integrator.NonLinearEqnRootTest do
   @moduledoc false
   use Integrator.TestCase
   import Nx, only: :sigils
@@ -8,8 +8,8 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.TensorTypeError
-  alias Integrator.NonLinearEqnRootRefactor
-  alias Integrator.NonLinearEqnRootRefactor.NxOptions
+  alias Integrator.NonLinearEqnRoot
+  alias Integrator.NonLinearEqnRoot.NxOptions
   alias Integrator.RungeKutta.DormandPrince45
 
   defmodule TestFunctions do
@@ -69,7 +69,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x0 = Nx.f64(3.0)
       x1 = Nx.f64(4.0)
 
-      result = NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [])
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
 
       # Expected value is from Octave:
       expected_x = Nx.f64(3.141592653589795)
@@ -80,12 +80,12 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert Nx.to_number(result.iteration_count) == 6
       assert Nx.to_number(result.iter_type) == 4
 
-      {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -95,7 +95,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x0 = Nx.f64(4.0)
       x1 = Nx.f64(3.0)
 
-      result = NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [])
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
 
       # Expected value is from Octave:
       expected_x = Nx.f64(3.141592653589795)
@@ -106,12 +106,12 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert Nx.to_number(result.iteration_count) == 6
       assert Nx.to_number(result.iter_type) == 4
 
-      {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -123,7 +123,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x1 = 3.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [])
+        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
       end
     end
 
@@ -133,7 +133,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x1 = 4.0
 
       assert_raise InvalidInitialBracketError, fn ->
-        NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [])
+        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
       end
     end
 
@@ -143,7 +143,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       opts = [max_iterations: 2]
 
       assert_raise MaxIterationsExceededError, fn ->
-        NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
+        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
       end
     end
 
@@ -153,7 +153,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       opts = [max_fn_eval_count: 2]
 
       assert_raise MaxFnEvalsExceededError, fn ->
-        NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
+        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
       end
     end
 
@@ -172,7 +172,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
 
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
-      result = NonLinearEqnRootRefactor.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
       assert_all_close(result.x, Nx.f64(3.1415926535897936), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(result.fx, Nx.f64(-3.216245299353273e-16), atol: 1.0e-14, rtol: 1.0e-14)
 
@@ -207,7 +207,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
     test "uses the defaults from nimble options (and defaults for machine_eps and tolerance in the type specified)" do
       opts = []
 
-      nx_options = NonLinearEqnRootRefactor.convert_to_nx_options(opts)
+      nx_options = NonLinearEqnRoot.convert_to_nx_options(opts)
       assert %NxOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -234,7 +234,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
         nonlinear_eqn_root_output_fn: output_fn
       ]
 
-      nx_options = NonLinearEqnRootRefactor.convert_to_nx_options(opts)
+      nx_options = NonLinearEqnRoot.convert_to_nx_options(opts)
       assert %NxOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.f32(0.1), atol: 1.0e-16, rtol: 1.0e-16)
@@ -252,7 +252,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
     test "sine function with single initial value (instead of 2)" do
       x0 = Nx.f64(3.0)
 
-      result = NonLinearEqnRootRefactor.find_zero_with_single_point(&TestFunctions.sin/2, x0, [])
+      result = NonLinearEqnRoot.find_zero_with_single_point(&TestFunctions.sin/2, x0, [])
 
       # Expected value is from Octave:
       expected_x = Nx.f64(3.141592653589795)
@@ -263,12 +263,12 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert Nx.to_number(result.iteration_count) == 4
       assert Nx.to_number(result.iter_type) == 2
 
-      {x_low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -278,7 +278,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x0 = Nx.f64(0.0)
       x1 = Nx.f64(3.0)
 
-      result = NonLinearEqnRootRefactor.find_zero(&TestFunctions.cos/2, x0, x1, [])
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.cos/2, x0, x1, [])
 
       expected_x = Nx.divide(Nx.Constants.pi({:f, 64}), Nx.f64(2.0))
       assert_all_close(result.c, expected_x, atol: 1.0e-14, rtol: 1.0e-14)
@@ -292,7 +292,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x1 = Nx.f64(1.0)
       zero_fn = &TestFunctions.pow_fn/2
 
-      result = NonLinearEqnRootRefactor.find_zero(zero_fn, x0, x1, [])
+      result = NonLinearEqnRoot.find_zero(zero_fn, x0, x1, [])
 
       # Expected values are from Octave:
       assert_all_close(result.x, Nx.f64(3.108624468950438e-16), atol: 1.0e-24, rtol: 1.0e-24)
@@ -306,7 +306,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x0 = Nx.f64(0.0)
       zero_fn = &TestFunctions.straight_line_through_zero/2
 
-      result = NonLinearEqnRootRefactor.find_zero_with_single_point(zero_fn, x0, [])
+      result = NonLinearEqnRoot.find_zero_with_single_point(zero_fn, x0, [])
 
       assert_all_close(result.x, Nx.f64(0.0), atol: 1.0e-24, rtol: 1.0e-24)
       assert_all_close(result.fx, Nx.f64(0.0), atol: 1.0e-24, rtol: 1.0e-24)
@@ -316,7 +316,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       x0 = Nx.f64(0.0)
       zero_fn = &TestFunctions.straight_line_offset_by_one/2
 
-      result = NonLinearEqnRootRefactor.find_zero_with_single_point(zero_fn, x0, [])
+      result = NonLinearEqnRoot.find_zero_with_single_point(zero_fn, x0, [])
 
       assert_all_close(result.x, Nx.f64(-1.0), atol: 1.0e24, rtol: 1.0e24)
       assert_all_close(result.fx, Nx.f64(0.0), atol: 1.0e24, rtol: 1.0e24)
@@ -328,12 +328,12 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
 
       zero_fn = &TestFunctions.polynomial/2
 
-      result = NonLinearEqnRootRefactor.find_zero(zero_fn, 0.5, 1.5, [], type: :f64)
+      result = NonLinearEqnRoot.find_zero(zero_fn, 0.5, 1.5, [], type: :f64)
 
       assert_all_close(result.x, Nx.f64(1.0), atol: 1.0e24, rtol: 1.0e24)
       assert_all_close(result.fx, Nx.f64(0.0), atol: 1.0e24, rtol: 1.0e24)
 
-      result = NonLinearEqnRootRefactor.find_zero(zero_fn, 3.5, 1.5, [], type: :f64)
+      result = NonLinearEqnRoot.find_zero(zero_fn, 3.5, 1.5, [], type: :f64)
 
       assert_all_close(result.x, Nx.f64(3.0), atol: 1.0e24, rtol: 1.0e24)
       assert_all_close(result.fx, Nx.f64(0.0), atol: 1.0e24, rtol: 1.0e24)
@@ -358,7 +358,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       t0 = Nx.f64(2.898648469921000)
       t1 = Nx.f64(4.294180317944318)
 
-      result = NonLinearEqnRootRefactor.find_zero(zero_fn, t0, t1, zero_fn_args)
+      result = NonLinearEqnRoot.find_zero(zero_fn, t0, t1, zero_fn_args)
 
       # Expected value is from Octave:
       expected_x = Nx.f64(4.077471967380223)
@@ -370,7 +370,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert Nx.to_number(result.iteration_count) == 5
       assert Nx.to_number(result.iter_type) == 3
 
-      {x__low, x_high} = NonLinearEqnRootRefactor.bracket_x(result)
+      {x__low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave; note that these are the same except in the last digit:
       assert_all_close(x__low, Nx.f64(4.077471967380224), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(4.077471967380227), atol: 1.0e-14, rtol: 1.0e-14)
@@ -378,7 +378,7 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       # 4.077471967380223
       # 4.077471967380223
 
-      {y_1, y2} = NonLinearEqnRootRefactor.bracket_fx(result)
+      {y_1, y2} = NonLinearEqnRoot.bracket_fx(result)
       assert_all_close(y_1, Nx.f64(0.0), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(0.0), atol: 1.0e-14, rtol: 1.0e-14)
       # In Octave:
@@ -391,56 +391,56 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
 
   describe "bracket_x/1" do
     test "returns a & b" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         a: 3.14,
         b: 3.15
       }
 
-      assert NonLinearEqnRootRefactor.bracket_x(z) == {3.14, 3.15}
+      assert NonLinearEqnRoot.bracket_x(z) == {3.14, 3.15}
     end
   end
 
   describe "bracket_fx/1" do
     test "returns fa & fb" do
-      z = %NonLinearEqnRootRefactor{
+      z = %NonLinearEqnRoot{
         fa: 3.14,
         fb: 3.15
       }
 
-      assert NonLinearEqnRootRefactor.bracket_fx(z) == {3.14, 3.15}
+      assert NonLinearEqnRoot.bracket_fx(z) == {3.14, 3.15}
     end
   end
 
   describe "convert_arg_to_nx_type" do
     test "passes through tensors (if they are of the correct type)" do
       arg = Nx.f64(1.0)
-      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
     end
 
     test "converts floats to tensors of the appropriate type" do
       arg = 1.0
-      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
+      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
 
-      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
     end
 
     test "allows functions to pass through" do
       arg = &Nx.sin/1
-      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == (&Nx.sin/1)
+      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == (&Nx.sin/1)
     end
 
     test "raises an exception if you try to cast a tensor to a different type" do
       arg = Nx.f64(1.0)
 
       assert_raise TensorTypeError, fn ->
-        NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 32})
+        NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 32})
       end
     end
   end
 
   describe "option_keys" do
     test "returns the option keys" do
-      assert NonLinearEqnRootRefactor.option_keys() == [
+      assert NonLinearEqnRoot.option_keys() == [
                :nonlinear_eqn_root_output_fn,
                :type,
                :max_fn_eval_count,

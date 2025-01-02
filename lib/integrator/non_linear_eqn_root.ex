@@ -1,4 +1,4 @@
-defmodule Integrator.NonLinearEqnRootRefactor do
+defmodule Integrator.NonLinearEqnRoot do
   @moduledoc """
   Finds the roots (i.e., zeros) of a non-linear equation.
   Based on [`fzero.m`](https://github.com/gnu-octave/octave/blob/default/scripts/optimization/fzero.m)

@@ -7,7 +7,7 @@ defmodule Integrator.AdaptiveStepsize do
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
-  alias Integrator.NonLinearEqnRootRefactor
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
   alias Integrator.Step
   alias Integrator.Utils
@@ -185,7 +185,7 @@ defmodule Integrator.AdaptiveStepsize do
   @options_schema_adaptive_stepsize_only NimbleOptions.new!(options)
   def options_schema_adaptive_stepsize_only, do: @options_schema_adaptive_stepsize_only
 
-  @options_schema NimbleOptions.new!(NonLinearEqnRootRefactor.options_schema().schema |> Keyword.merge(options))
+  @options_schema NimbleOptions.new!(NonLinearEqnRoot.options_schema().schema |> Keyword.merge(options))
   def options_schema, do: @options_schema
 
   @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
@@ -206,7 +206,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   ### Additional Options
 
-  Also see the options for the `Integrator.NonLinearEqnRootRefactor.find_zero/4` which are passed
+  Also see the options for the `Integrator.NonLinearEqnRoot.find_zero/4` which are passed
   into `integrate/10`.
 
   Originally adapted from the Octave
@@ -783,7 +783,7 @@ defmodule Integrator.AdaptiveStepsize do
     zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
 
     root =
-      NonLinearEqnRootRefactor.find_zero(
+      NonLinearEqnRoot.find_zero(
         zero_fn,
         step.t_old,
         step.t_new,
@@ -802,7 +802,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec only_non_linear_eqn_root_opts(Keyword.t()) :: Keyword.t()
   defp only_non_linear_eqn_root_opts(opts) do
-    non_linear_eqn_root_opt_keys = NonLinearEqnRootRefactor.option_keys()
+    non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
     opts |> Keyword.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
   end
 
