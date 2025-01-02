@@ -78,7 +78,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       assert Nx.to_number(result.fn_eval_count) == 8
       assert Nx.to_number(result.iteration_count) == 6
-      assert Nx.to_number(result.iter_type) == 4
+      assert Nx.to_number(result.iteration_type) == 4
 
       {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
@@ -104,7 +104,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       assert Nx.to_number(result.fn_eval_count) == 8
       assert Nx.to_number(result.iteration_count) == 6
-      assert Nx.to_number(result.iter_type) == 4
+      assert Nx.to_number(result.iteration_type) == 4
 
       {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
@@ -261,7 +261,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       assert Nx.to_number(result.fn_eval_count) == 11
       assert Nx.to_number(result.iteration_count) == 4
-      assert Nx.to_number(result.iter_type) == 2
+      assert Nx.to_number(result.iteration_type) == 2
 
       {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave:
@@ -368,7 +368,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       assert Nx.to_number(result.fn_eval_count) == 7
       assert Nx.to_number(result.iteration_count) == 5
-      assert Nx.to_number(result.iter_type) == 3
+      assert Nx.to_number(result.iteration_type) == 3
 
       {x__low, x_high} = NonLinearEqnRoot.bracket_x(result)
       # Expected values are from Octave; note that these are the same except in the last digit:

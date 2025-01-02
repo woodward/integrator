@@ -362,7 +362,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
     end
   end
 
-  describe "compute_iteration_types_two_or_three" do
+  describe "compute_iteration_types_2_or_3" do
     test "bug fix" do
       z = %NonLinearEqnRoot{
         a: Nx.f64(3.995471442091821),
@@ -377,10 +377,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fd: Nx.f64(-4.564518118928532),
         fe: Nx.f64(16.76036011799988),
         #
-        iter_type: 2
+        iteration_type: 2
       }
 
-      z = InternalComputations.compute_iteration_types_two_or_three(z)
+      z = InternalComputations.compute_iteration_types_2_or_3(z)
 
       assert_all_close(z.a, Nx.f64(3.995471442091821), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.b, Nx.f64(4.077471967384916), atol: 1.0e-16, rtol: 1.0e-16)

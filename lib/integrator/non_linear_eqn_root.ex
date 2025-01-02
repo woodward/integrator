@@ -20,7 +20,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
   @type output_fn_t :: (Nx.t() -> any())
 
-  @type iter_type :: 1 | 2 | 3 | 4 | 5
+  @type iteration_type :: 1 | 2 | 3 | 4 | 5
   @initial_mu 0.5
 
   @derive {Nx.Container,
@@ -46,7 +46,7 @@ defmodule Integrator.NonLinearEqnRoot do
      #
      :fn_eval_count,
      :iteration_count,
-     :iter_type,
+     :iteration_type,
      :interpolation_type_debug_only
    ],
    keep: [
@@ -77,8 +77,8 @@ defmodule Integrator.NonLinearEqnRoot do
           #
           fn_eval_count: Nx.t(),
           iteration_count: Nx.t(),
-          # Change iter_type to a more descriptive atom later (possibly? or keep it this way??):
-          iter_type: Nx.t(),
+          # Change iteration_type to a more descriptive atom later (possibly? or keep it this way??):
+          iteration_type: Nx.t(),
           interpolation_type_debug_only: Nx.t(),
           #
           nonlinear_eqn_root_output_fn: output_fn_t()
@@ -107,8 +107,8 @@ defmodule Integrator.NonLinearEqnRoot do
             #
             fn_eval_count: 0,
             iteration_count: 0,
-            # Change iter_type to a more descriptive atom later (possibly?):
-            iter_type: 1,
+            # Change iteration_type to a more descriptive atom later (possibly?):
+            iteration_type: 1,
             interpolation_type_debug_only: 0,
             #
             nonlinear_eqn_root_output_fn: nil
@@ -250,7 +250,7 @@ defmodule Integrator.NonLinearEqnRoot do
       fx: fx,
       #
       fn_eval_count: fn_eval_count,
-      iter_type: 1,
+      iteration_type: 1,
       mu_ba: (b - a) * @initial_mu,
       nonlinear_eqn_root_output_fn: options.nonlinear_eqn_root_output_fn
     }

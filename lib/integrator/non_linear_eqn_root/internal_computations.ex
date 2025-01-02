@@ -78,23 +78,23 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec compute_iteration(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration(z) do
-    iter_type = z.iter_type
+    iteration_type = z.iteration_type
 
     # How can I get rid of these nasty nested if statements and do a case statement instead? See failed attempts below:
-    if iter_type == 1 do
-      compute_iteration_type_one(z)
+    if iteration_type == 1 do
+      compute_iteration_type_1(z)
     else
-      if iter_type == 2 or iter_type == 3 do
-        compute_iteration_types_two_or_three(z)
+      if iteration_type == 2 or iteration_type == 3 do
+        compute_iteration_types_2_or_3(z)
       else
-        if iter_type == 4 do
-          compute_iteration_type_four(z)
+        if iteration_type == 4 do
+          compute_iteration_type_4(z)
         else
-          if iter_type == 5 do
-            compute_iteration_type_five(z)
+          if iteration_type == 5 do
+            compute_iteration_type_5(z)
           else
             # Should never reach here:
-            hook(z, &raise(IncorrectIterationTypeError, step: &1, iter_type: &1.iter_type))
+            hook(z, &raise(IncorrectIterationTypeError, step: &1, iteration_type: &1.iteration_type))
           end
         end
       end
@@ -103,15 +103,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     # ----------------------------------------------------------------------------------------------
     # Failed attempts to do a case statement:
 
-    # I should be able to do this as a case statement on z.iter_type - why does this not work???
+    # I should be able to do this as a case statement on z.iteration_type - why does this not work???
 
     # First try:
-    # case z.iter_type do
-    #   1 -> compute_iteration_type_one(z)
-    #   2 -> compute_iteration_types_two_or_three(z)
-    #   3 -> compute_iteration_types_two_or_three(z)
-    #   4 -> compute_iteration_type_four(z)
-    #   5 -> compute_iteration_type_five(z)
+    # case z.iteration_type do
+    #   1 -> compute_iteration_type_1(z)
+    #   2 -> compute_iteration_types_2_or_3(z)
+    #   3 -> compute_iteration_types_2_or_3(z)
+    #   4 -> compute_iteration_type_4(z)
+    #   5 -> compute_iteration_type_5(z)
     # end
 
     # ---------------
@@ -124,17 +124,17 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     # four = Nx.tensor(4, type: :s32)
     # five = Nx.tensor(5, type: :s32)
 
-    # case z.iter_type do
-    #   ^one -> compute_iteration_type_one(z)
-    #   ^two -> compute_iteration_types_two_or_three(z)
-    #   ^three -> compute_iteration_types_two_or_three(z)
-    #   ^four -> compute_iteration_type_four(z)
-    #   ^five -> compute_iteration_type_five(z)
+    # case z.iteration_type do
+    #   ^one -> compute_iteration_type_1(z)
+    #   ^two -> compute_iteration_types_2_or_3(z)
+    #   ^three -> compute_iteration_types_2_or_3(z)
+    #   ^four -> compute_iteration_type_4(z)
+    #   ^five -> compute_iteration_type_5(z)
     # end
   end
 
-  @spec compute_iteration_type_one(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn compute_iteration_type_one(z) do
+  @spec compute_iteration_type_1(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn compute_iteration_type_1(z) do
     # Octave:
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
     #     # Secant step.
@@ -144,7 +144,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #     c = 0.5*(a + b);
     #   endif
     #   d = u; fd = fu;
-    #   iter_type = 5;
+    #   iteration_type = 5;
 
     # What is the significance or meaning of the 1000 here? Replace with a more descriptive module variable
     {c, interpolation_type} =
@@ -154,11 +154,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {Interpolation.bisect(z.a, z.b), @interpolation_bisect}
       end
 
-    %{z | c: c, d: z.u, fd: z.fu, iter_type: 5, interpolation_type_debug_only: interpolation_type}
+    %{z | c: c, d: z.u, fd: z.fu, iteration_type: 5, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_types_two_or_three(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn compute_iteration_types_two_or_three(z) do
+  @spec compute_iteration_types_2_or_3(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn compute_iteration_types_2_or_3(z) do
     length = number_of_unique_values(z.fa, z.fb, z.fd, z.fe)
 
     {c, interpolation_type} =
@@ -171,22 +171,22 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         # Shouldn't it be this instead?
         if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
           #
-          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iter_type),
+          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iteration_type),
            @interpolation_quadratic_plus_newton}
         else
           # what do we do here?  it's not handled in fzero.m...
-          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iter_type),
+          {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iteration_type),
            @interpolation_quadratic_plus_newton}
 
           # {z.c, @interpolation_none}
         end
       end
 
-    %{z | iter_type: z.iter_type + 1, c: c, interpolation_type_debug_only: interpolation_type}
+    %{z | iteration_type: z.iteration_type + 1, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_type_four(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn compute_iteration_type_four(z) do
+  @spec compute_iteration_type_4(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn compute_iteration_type_4(z) do
     # Octave:
     #   # Double secant step.
     #   c = u - 2*(b - a)/(fb - fa)*fu;
@@ -194,7 +194,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     #   if (abs (c - u) > 0.5*(b - a))
     #     c = 0.5 * (b + a);
     #   endif
-    #   iter_type = 5;
+    #   iteration_type = 5;
 
     c = Interpolation.double_secant(z.a, z.fa, z.b, z.fb, z.u, z.fu)
 
@@ -206,18 +206,18 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {c, @interpolation_double_secant}
       end
 
-    %{z | iter_type: 5, c: c, interpolation_type_debug_only: interpolation_type}
+    %{z | iteration_type: 5, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_type_five(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn compute_iteration_type_five(z) do
+  @spec compute_iteration_type_5(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn compute_iteration_type_5(z) do
     # Octave:
     #   # Bisection step.
     #   c = 0.5 * (b + a);
-    #   iter_type = 2;
+    #   iteration_type = 2;
 
     c = Interpolation.bisect(z.a, z.b)
-    %{z | iter_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
+    %{z | iteration_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
   end
 
   # For debugging purposes
@@ -242,7 +242,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec print_computing_iteration_type(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn print_computing_iteration_type(z) do
     # hook(z, fn step ->
-    #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iter_type))}")
+    #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
     #   step
     # end)
     z
@@ -274,7 +274,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           mu_ba: #{print.(step.mu_ba)},
           fn_eval_count: #{print.(step.fn_eval_count)},
           iteration_count: #{print.(step.iteration_count)},
-          iter_type: #{print.(step.iter_type)},
+          iteration_type: #{print.(step.iteration_type)},
           interpolation_type_debug_only: :#{interpolation_type}
       }
       """
@@ -379,21 +379,21 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec skip_bisection_if_successful_reduction(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn skip_bisection_if_successful_reduction(z) do
     # Octave:
-    #   if (iter_type == 5 && (b - a) <= mba)
-    #     iter_type = 2;
+    #   if (iteration_type == 5 && (b - a) <= mba)
+    #     iteration_type = 2;
     #   endif
-    #   if (iter_type == 2)
+    #   if (iteration_type == 2)
     #     mba = mu * (b - a);
     #   endif
 
     z =
-      if z.iter_type == 5 and z.b - z.a <= z.mu_ba do
-        %{z | iter_type: 2}
+      if z.iteration_type == 5 and z.b - z.a <= z.mu_ba do
+        %{z | iteration_type: 2}
       else
         z
       end
 
-    if z.iter_type == 2 do
+    if z.iteration_type == 2 do
       # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd...
       %{z | mu_ba: (z.b - z.a) * @initial_mu}
     else
