@@ -91,28 +91,4 @@ defmodule Integrator.UtilsTest do
       assert_nx_f64(third)
     end
   end
-
-  describe "sign" do
-    test "is negative one for things less than one" do
-      assert Utils.sign(-7.0) == -1.0
-    end
-
-    test "is plus one for things less than one" do
-      assert Utils.sign(7.0) == 1.0
-    end
-
-    test "is zero for zero" do
-      assert Utils.sign(0.0) == 0.0
-    end
-  end
-
-  describe "unique/1" do
-    test "returns all values if they are unique" do
-      assert Utils.unique([3.3, 2.2, 1.1]) == [1.1, 2.2, 3.3]
-    end
-
-    test "only returns unique values sorted in ascending order" do
-      assert Utils.unique([3.3, 2.2, 3.3]) == [2.2, 3.3]
-    end
-  end
 end

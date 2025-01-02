@@ -41,14 +41,6 @@ defmodule Integrator.Utils do
   end
 
   @doc """
-  Returns the sign of the tensor as -1 or 1 (or 0 for zero tensors)
-  """
-  @spec sign(float()) :: float()
-  def sign(x) when x < 0.0, do: -1.0
-  def sign(x) when x > 0.0, do: 1.0
-  def sign(_x), do: 0.0
-
-  @doc """
   Returns the columns of a tensor as a list of vector tensors
 
   E.g., a tensor of the form:
@@ -110,14 +102,6 @@ defmodule Integrator.Utils do
       [vector[i] | acc]
     end)
     |> Enum.reverse()
-  end
-
-  @doc """
-  Given a list of elements, create a new list with only the unique elements from the list
-  """
-  @spec unique(list()) :: list()
-  def unique(values) do
-    MapSet.new(values) |> MapSet.to_list() |> Enum.sort()
   end
 
   # Perhaps this can be deleted soon?
