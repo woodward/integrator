@@ -220,70 +220,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | iteration_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
   end
 
-  # For debugging purposes
-  @spec print_line(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn print_line(z) do
-    hook(z, fn step ->
-      IO.puts("# ----------------------------------")
-      step
-    end)
-  end
-
-  # For debugging purposes
-  @spec print_number_of_unique_values(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn print_number_of_unique_values(z) do
-    hook(z, fn step ->
-      IO.puts("# Number of unique values: #{inspect(Nx.to_number(number_of_unique_values(step.fa, step.fb, step.fd, step.fe)))}")
-      step
-    end)
-  end
-
-  # For debugging purposes
-  @spec print_computing_iteration_type(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn print_computing_iteration_type(z) do
-    # hook(z, fn step ->
-    #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
-    #   step
-    # end)
-    z
-  end
-
-  # For debugging purposes
-  @spec print_z(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
-  defn print_z(z) do
-    hook(z, fn step ->
-      print = &inspect(Nx.to_number(&1))
-      interpolation_type = Map.get(@interpolation_types_for_debug_only, Nx.to_number(step.interpolation_type_debug_only))
-
-      z_data = """
-      %Integrator.NonLinearEqnRoot{
-          a: #{print.(step.a)},
-          b: #{print.(step.b)},
-          c: #{print.(step.c)},
-          d: #{print.(step.d)},
-          e: #{print.(step.e)},
-          u: #{print.(step.u)},
-          fa: #{print.(step.fa)},
-          fb: #{print.(step.fb)},
-          fc: #{print.(step.fc)},
-          fd: #{print.(step.fd)},
-          fe: #{print.(step.fe)},
-          fu: #{print.(step.fu)},
-          x: #{print.(step.x)},
-          fx: #{print.(step.fx)},
-          mu_ba: #{print.(step.mu_ba)},
-          fn_eval_count: #{print.(step.fn_eval_count)},
-          iteration_count: #{print.(step.iteration_count)},
-          iteration_type: #{print.(step.iteration_type)},
-          interpolation_type_debug_only: :#{interpolation_type}
-      }
-      """
-
-      IO.puts(z_data)
-      step
-    end)
-  end
-
   @spec converged?(NonLinearEqnRoot.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn converged?(z, machine_eps, tolerance) do
     z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
@@ -529,5 +465,72 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       end
 
     %{z | c: c}
+  end
+
+  # ================================================================================================
+  # Some debugging utils below here:
+
+  # For debugging purposes
+  @spec print_line(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn print_line(z) do
+    hook(z, fn step ->
+      IO.puts("# ----------------------------------")
+      step
+    end)
+  end
+
+  # For debugging purposes
+  @spec print_number_of_unique_values(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn print_number_of_unique_values(z) do
+    hook(z, fn step ->
+      IO.puts("# Number of unique values: #{inspect(Nx.to_number(number_of_unique_values(step.fa, step.fb, step.fd, step.fe)))}")
+      step
+    end)
+  end
+
+  # For debugging purposes
+  @spec print_computing_iteration_type(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn print_computing_iteration_type(z) do
+    # hook(z, fn step ->
+    #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
+    #   step
+    # end)
+    z
+  end
+
+  # For debugging purposes
+  @spec print_z(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  defn print_z(z) do
+    hook(z, fn step ->
+      print = &inspect(Nx.to_number(&1))
+      interpolation_type = Map.get(@interpolation_types_for_debug_only, Nx.to_number(step.interpolation_type_debug_only))
+
+      z_data = """
+      %Integrator.NonLinearEqnRoot{
+          a: #{print.(step.a)},
+          b: #{print.(step.b)},
+          c: #{print.(step.c)},
+          d: #{print.(step.d)},
+          e: #{print.(step.e)},
+          u: #{print.(step.u)},
+          fa: #{print.(step.fa)},
+          fb: #{print.(step.fb)},
+          fc: #{print.(step.fc)},
+          fd: #{print.(step.fd)},
+          fe: #{print.(step.fe)},
+          fu: #{print.(step.fu)},
+          x: #{print.(step.x)},
+          fx: #{print.(step.fx)},
+          mu_ba: #{print.(step.mu_ba)},
+          fn_eval_count: #{print.(step.fn_eval_count)},
+          iteration_count: #{print.(step.iteration_count)},
+          iteration_type: #{print.(step.iteration_type)},
+          interpolation_type_debug_only: :#{interpolation_type}
+      }
+      """
+
+      IO.puts(z_data)
+      step
+    end)
   end
 end
