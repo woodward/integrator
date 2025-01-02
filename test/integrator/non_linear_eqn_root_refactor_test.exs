@@ -437,4 +437,15 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       end
     end
   end
+
+  describe "option_keys" do
+    test "returns the option keys" do
+      assert NonLinearEqnRootRefactor.option_keys() == [
+               :nonlinear_eqn_root_output_fn,
+               :type,
+               :max_fn_eval_count,
+               :max_iterations
+             ]
+    end
+  end
 end
