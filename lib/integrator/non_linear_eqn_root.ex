@@ -50,9 +50,6 @@ defmodule Integrator.NonLinearEqnRoot do
      :iteration_count,
      :iteration_type,
      :interpolation_type_debug_only
-   ],
-   keep: [
-     :nonlinear_eqn_root_output_fn
    ]}
 
   @type t :: %__MODULE__{
@@ -82,9 +79,7 @@ defmodule Integrator.NonLinearEqnRoot do
           iteration_count: Nx.t(),
           # Change iteration_type to a more descriptive atom later (possibly? or keep it this way??):
           iteration_type: Nx.t(),
-          interpolation_type_debug_only: Nx.t(),
-          #
-          nonlinear_eqn_root_output_fn: output_fn_t()
+          interpolation_type_debug_only: Nx.t()
         }
 
   defstruct a: 0.0,
@@ -113,9 +108,7 @@ defmodule Integrator.NonLinearEqnRoot do
             iteration_count: 0,
             # Change iteration_type to a more descriptive atom later (possibly?):
             iteration_type: 1,
-            interpolation_type_debug_only: 0,
-            #
-            nonlinear_eqn_root_output_fn: nil
+            interpolation_type_debug_only: 0
 
   defmodule NonLinearEqnRootOptions do
     @moduledoc """
@@ -264,8 +257,7 @@ defmodule Integrator.NonLinearEqnRoot do
       #
       fn_eval_count: fn_eval_count,
       iteration_type: 1,
-      mu_ba: (b - a) * InternalComputations.initial_mu(),
-      nonlinear_eqn_root_output_fn: options.nonlinear_eqn_root_output_fn
+      mu_ba: (b - a) * InternalComputations.initial_mu()
     }
 
     z = if Nx.sign(z.fa) * Nx.sign(z.fb) > 0.0, do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z

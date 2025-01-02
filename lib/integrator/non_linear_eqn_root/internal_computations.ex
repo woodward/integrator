@@ -68,7 +68,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           z
           |> skip_bisection_if_successful_reduction()
           |> update_u()
-          |> tap_output_fn_with_hook()
+          |> tap_output_fn_via_hook(options)
 
         status_2 = converged?(z, options.machine_eps, options.tolerance)
         continue? = not status_2 and status_1
@@ -406,15 +406,18 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     if is_nil(item), do: 1, else: 0
   end
 
-  @spec tap_output_fn_with_hook(NonLinearEqnRoot.t()) :: Nx.t()
-  defn tap_output_fn_with_hook(z) do
-    if is_nil?(z.nonlinear_eqn_root_output_fn) do
+  @spec tap_output_fn_via_hook(NonLinearEqnRoot.t(), NonLinearEqnRootOptions.t()) :: Nx.t()
+  defn tap_output_fn_via_hook(z, options) do
+    if is_nil?(options.nonlinear_eqn_root_output_fn) do
       z
     else
-      hook(z, fn tensor ->
-        tensor.nonlinear_eqn_root_output_fn.(tensor)
-        tensor
-      end)
+      {z, _options} =
+        hook({z, options}, fn {zz, opts} ->
+          opts.nonlinear_eqn_root_output_fn.(zz)
+          {zz, opts}
+        end)
+
+      z
     end
   end
 
