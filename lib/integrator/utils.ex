@@ -3,6 +3,7 @@ defmodule Integrator.Utils do
   Various utility functions used in `Integrator`
   """
   import Nx.Defn
+  import Nx, only: [sign: 1]
 
   @doc """
   Implements the Kahan summation algorithm, also known as compensated summation.
@@ -110,6 +111,66 @@ defmodule Integrator.Utils do
       {} -> 1
       {length} -> length
     end
+  end
+
+  # Paulo said these sign functions might have numerical issues in the Octave version so do this instead
+
+  @doc """
+  Returns true if both quantities have the same sign
+  """
+  @spec same_signs?(Nx.t(), Nx.t()) :: Nx.t()
+  defn same_signs?(x1, x2) do
+    # In original Octave as the following; uncomment to verify working correctly:
+    # sign(x1) * sign(x2) > 0
+
+    sign_x1 = sign(x1)
+    sign_x2 = sign(x2)
+
+    both_signs_are_zero = sign_x1 == 0 and sign_x2 == 0
+    sign_x1 == sign_x2 and not both_signs_are_zero
+  end
+
+  @doc """
+  Returns true if both quantities have the same sign, or if one or more of them is zero
+  """
+  @spec same_signs_or_zero?(Nx.t(), Nx.t()) :: Nx.t()
+  defn same_signs_or_zero?(x1, x2) do
+    # In original Octave as the following; uncomment to verify working correctly:
+    # sign(x1) * sign(x2) >= 0
+
+    sign_x1 = sign(x1)
+    sign_x2 = sign(x2)
+
+    sign_x1 == sign_x2 or sign_x1 == 0 or sign_x2 == 0
+  end
+
+  @doc """
+  Returns true if both quantities have different signs, or if one or more of them is zero
+  """
+  @spec different_signs_or_zero?(Nx.t(), Nx.t()) :: Nx.t()
+  defn different_signs_or_zero?(x1, x2) do
+    # In original Octave as the following; uncomment to verify working correctly:
+    # sign(x1) * sign(x2) <= 0
+
+    sign_x1 = sign(x1)
+    sign_x2 = sign(x2)
+
+    sign_x1 != sign_x2 or sign_x1 == 0 or sign_x2 == 0
+  end
+
+  @doc """
+  Returns true if both quantities have different signs (and neither one of them is zero)
+  """
+  @spec different_signs?(Nx.t(), Nx.t()) :: Nx.t()
+  defn different_signs?(x1, x2) do
+    # In original Octave as the following; uncomment to verify working correctly:
+    # sign(x1) * sign(x2) < 0
+
+    sign_x1 = sign(x1)
+    sign_x2 = sign(x2)
+
+    either_sign_is_zero = sign_x1 == 0 or sign_x2 == 0
+    sign_x1 != sign_x2 and not either_sign_is_zero
   end
 
   @doc """

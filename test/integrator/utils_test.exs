@@ -91,4 +91,112 @@ defmodule Integrator.UtilsTest do
       assert_nx_f64(third)
     end
   end
+
+  describe "same_signs?/2" do
+    setup do
+      one = Nx.u8(1)
+      zero = Nx.u8(0)
+      [zero: zero, one: one]
+    end
+
+    test "returns 1 if both quantities have the same sign", %{one: one} do
+      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(-4.0)) == one
+      assert Utils.same_signs?(Nx.f32(3.0), Nx.f32(7.0)) == one
+    end
+
+    test "returns 0 if both quantities have different signs", %{zero: zero} do
+      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(4.0)) == zero
+      assert Utils.same_signs?(Nx.f32(3.0), Nx.f32(-7.0)) == zero
+    end
+
+    test "returns 0 if one quantity is zero", %{zero: zero} do
+      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(0.0)) == zero
+      assert Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    end
+
+    test "returns 0 if both quantities are zero", %{zero: zero} do
+      assert Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    end
+  end
+
+  describe "same_signs_or_zero?/2" do
+    setup do
+      one = Nx.u8(1)
+      zero = Nx.u8(0)
+      [zero: zero, one: one]
+    end
+
+    test "returns 1 if both quantities have the same sign", %{one: one} do
+      assert Utils.same_signs_or_zero?(Nx.f32(-2.0), Nx.f32(-4.0)) == one
+      assert Utils.same_signs_or_zero?(Nx.f32(3.0), Nx.f32(7.0)) == one
+    end
+
+    test "returns 0 if both quantities have different signs", %{zero: zero} do
+      assert Utils.same_signs_or_zero?(Nx.f32(-2.0), Nx.f32(4.0)) == zero
+      assert Utils.same_signs_or_zero?(Nx.f32(3.0), Nx.f32(-7.0)) == zero
+    end
+
+    test "returns 1 if one quantity is zero", %{one: one} do
+      assert Utils.same_signs_or_zero?(Nx.f32(-2.0), Nx.f32(0.0)) == one
+      assert Utils.same_signs_or_zero?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    end
+
+    test "returns 1 if both quantities are zero", %{one: one} do
+      assert Utils.same_signs_or_zero?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    end
+  end
+
+  describe "different_signs_or_zero?/2" do
+    setup do
+      one = Nx.u8(1)
+      zero = Nx.u8(0)
+      [zero: zero, one: one]
+    end
+
+    test "returns 0 if both quantities have the same sign", %{zero: zero} do
+      assert Utils.different_signs_or_zero?(Nx.f32(-2.0), Nx.f32(-4.0)) == zero
+      assert Utils.different_signs_or_zero?(Nx.f32(3.0), Nx.f32(7.0)) == zero
+    end
+
+    test "returns 1 if both quantities have different signs", %{one: one} do
+      assert Utils.different_signs_or_zero?(Nx.f32(-2.0), Nx.f32(4.0)) == one
+      assert Utils.different_signs_or_zero?(Nx.f32(3.0), Nx.f32(-7.0)) == one
+    end
+
+    test "returns 1 if one quantity is zero", %{one: one} do
+      assert Utils.different_signs_or_zero?(Nx.f32(-2.0), Nx.f32(0.0)) == one
+      assert Utils.different_signs_or_zero?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    end
+
+    test "returns 1 if both quantities are zero", %{one: one} do
+      assert Utils.different_signs_or_zero?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    end
+  end
+
+  describe "different_signs?/2" do
+    setup do
+      one = Nx.u8(1)
+      zero = Nx.u8(0)
+      [zero: zero, one: one]
+    end
+
+    test "returns 0 if both quantities have the same sign", %{zero: zero} do
+      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(-4.0)) == zero
+      assert Utils.different_signs?(Nx.f32(3.0), Nx.f32(7.0)) == zero
+    end
+
+    test "returns 1 if the two quantities have different signs", %{one: one} do
+      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(4.0)) == one
+      assert Utils.different_signs?(Nx.f32(3.0), Nx.f32(-7.0)) == one
+    end
+
+    test "returns 0 if one quantity is zero", %{zero: zero} do
+      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(0.0)) == zero
+      assert Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    end
+
+    test "returns 0 if both quantities are zero", %{zero: zero} do
+      assert Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    end
+  end
 end
