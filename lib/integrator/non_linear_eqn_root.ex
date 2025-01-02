@@ -21,7 +21,6 @@ defmodule Integrator.NonLinearEqnRoot do
   @type output_fn_t :: (Nx.t() -> any())
 
   @type iteration_type :: 1 | 2 | 3 | 4 | 5
-  @initial_mu 0.5
 
   @derive {Nx.Container,
    containers: [
@@ -251,7 +250,7 @@ defmodule Integrator.NonLinearEqnRoot do
       #
       fn_eval_count: fn_eval_count,
       iteration_type: 1,
-      mu_ba: (b - a) * @initial_mu,
+      mu_ba: (b - a) * InternalComputations.initial_mu(),
       nonlinear_eqn_root_output_fn: options.nonlinear_eqn_root_output_fn
     }
 

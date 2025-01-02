@@ -16,8 +16,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.NxOptions
 
-  # This also shows up in Integrator.NonLinearEqnRoot - how can I get rid of the duplication?
   @initial_mu 0.5
+  defn initial_mu, do: @initial_mu
 
   # These values are here just to aid in debugging (they show up when printing out the main struct)
   @interpolation_bisect 0
@@ -336,7 +336,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       end
 
     if z.iteration_type == 2 do
-      # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd...
+      # Should this really be @initial_mu here?  or should it be mu_ba?  Seems a bit odd to me...
       %{z | mu_ba: (z.b - z.a) * @initial_mu}
     else
       z
