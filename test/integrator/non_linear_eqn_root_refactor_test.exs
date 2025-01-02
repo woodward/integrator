@@ -424,6 +424,11 @@ defmodule Integrator.NonLinearEqnRootRefactorTest do
       assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
     end
 
+    test "allows functions to pass through" do
+      arg = &Nx.sin/1
+      assert NonLinearEqnRootRefactor.convert_arg_to_nx_type(arg, {:f, 64}) == (&Nx.sin/1)
+    end
+
     test "raises an exception if you try to cast a tensor to a different type" do
       arg = Nx.f64(1.0)
 

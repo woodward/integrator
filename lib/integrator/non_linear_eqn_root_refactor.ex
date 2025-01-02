@@ -286,12 +286,13 @@ defmodule Integrator.NonLinearEqnRootRefactor do
 
   # Convert the following to private functions and test with Patch:
 
-  @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer(), Nx.Type.t()) :: Nx.t()
+  @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer() | fun(), Nx.Type.t()) :: Nx.t()
   def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
     if Nx.type(arg) != type, do: raise(TensorTypeError)
     arg
   end
 
+  def convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
   def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
 
   @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()

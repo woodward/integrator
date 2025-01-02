@@ -7,7 +7,7 @@ defmodule Integrator.AdaptiveStepsize do
   alias Integrator.AdaptiveStepsize.ArgPrecisionError
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
-  alias Integrator.NonLinearEqnRoot
+  alias Integrator.NonLinearEqnRootRefactor
   alias Integrator.RungeKutta
   alias Integrator.Step
   alias Integrator.Utils
@@ -185,7 +185,7 @@ defmodule Integrator.AdaptiveStepsize do
   @options_schema_adaptive_stepsize_only NimbleOptions.new!(options)
   def options_schema_adaptive_stepsize_only, do: @options_schema_adaptive_stepsize_only
 
-  @options_schema NimbleOptions.new!(NonLinearEqnRoot.options_schema().schema |> Keyword.merge(options))
+  @options_schema NimbleOptions.new!(NonLinearEqnRootRefactor.options_schema().schema |> Keyword.merge(options))
   def options_schema, do: @options_schema
 
   @options_currently_without_nimble_defaults [abs_tol: nil, rel_tol: nil, max_step: nil]
@@ -206,7 +206,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   ### Additional Options
 
-  Also see the options for the `Integrator.NonLinearEqnRoot.find_zero/4` which are passed
+  Also see the options for the `Integrator.NonLinearEqnRootRefactor.find_zero/4` which are passed
   into `integrate/10`.
 
   Originally adapted from the Octave
@@ -725,19 +725,19 @@ defmodule Integrator.AdaptiveStepsize do
 
   defp call_event_fn(step, event_fn, zero_fn, interpolate_fn, opts) do
     # Pass opts to event_fn?
-    case event_fn.(step.t_new, step.x_new) do
-      {:continue, _value} ->
+    event_fn_result = event_fn.(step.t_new, step.x_new) |> Nx.to_number()
+
+    if event_fn_result == 1 do
+      step
+    else
+      new_step = step |> compute_new_event_fn_step(event_fn, zero_fn, interpolate_fn, opts)
+
+      %{
         step
-
-      {:halt, _value} ->
-        new_step = step |> compute_new_event_fn_step(event_fn, zero_fn, interpolate_fn, opts)
-
-        %{
-          step
-          | terminal_event: :halt,
-            x_new: new_step.x_new,
-            t_new: new_step.t_new
-        }
+        | terminal_event: :halt,
+          x_new: new_step.x_new,
+          t_new: new_step.t_new
+      }
     end
   end
 
@@ -749,25 +749,45 @@ defmodule Integrator.AdaptiveStepsize do
     {t, x}
   end
 
+  defmodule ZeroFn do
+    @moduledoc false
+    import Nx.Defn
+
+    # Pass RungeKuttaStep into here soon rather than the constituent parts of it
+    defn find_zero(t, args) do
+      [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, _event_fn] = args
+      t_add = t
+
+      t = Nx.stack([t_old, t_new])
+      x = Nx.stack([x_old, x_new]) |> Nx.transpose()
+      x = interpolate_fn.(t, x, k_vals, t_add) |> Nx.flatten()
+
+      x[0]
+
+      # Why was this used in the old (pre-refactor) code???
+      # event_fn.(t, x)
+    end
+  end
+
   # Hones in (via interpolation) on the exact point that the event function goes to zero
   # Not sure why this typespec is wrong and/or is complaining...
   # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
-  defp compute_new_event_fn_step(step, event_fn, _new_zero_fn, interpolate_fn, opts) do
-    zero_fn = fn t ->
-      type = Nx.type(step.x_old)
-      t_add = Nx.tensor(t, type: type)
-      t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
-      x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
-      x = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
+  defp compute_new_event_fn_step(step, event_fn, zero_fn, interpolate_fn, opts) do
+    t_old = step.t_old
+    t_new = step.t_new_rk_interpolate
+    x_old = step.x_old
+    x_new = step.x_new_rk_interpolate
+    k_vals = step.k_vals
 
-      {_status, value} = event_fn.(t, x)
-      value |> Nx.to_number()
-    end
+    zero_fn = if zero_fn, do: zero_fn, else: &ZeroFn.find_zero/2
+    zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
 
     root =
-      NonLinearEqnRoot.find_zero(
+      NonLinearEqnRootRefactor.find_zero(
         zero_fn,
-        [Nx.to_number(step.t_old), Nx.to_number(step.t_new)],
+        step.t_old,
+        step.t_new,
+        zero_fn_args,
         only_non_linear_eqn_root_opts(opts)
       )
 
@@ -782,7 +802,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   @spec only_non_linear_eqn_root_opts(Keyword.t()) :: Keyword.t()
   defp only_non_linear_eqn_root_opts(opts) do
-    non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
+    non_linear_eqn_root_opt_keys = NonLinearEqnRootRefactor.option_keys()
     opts |> Keyword.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
   end
 

@@ -11,6 +11,38 @@ defmodule Integrator.AdaptiveStepsizeTest do
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.SampleEqns
 
+  defmodule TestFunctions do
+    @moduledoc false
+    import Nx.Defn
+
+    defn ballode_event_fn(_t, x) do
+      type = Nx.type(x)
+      zero = Nx.tensor(0, type: type)
+      one = Nx.tensor(1, type: type)
+      if x[0] < 0.0, do: zero, else: one
+    end
+
+    # GW: do I need this?
+    #    defn ballode_zero_fn(t, args) do
+    #      [step, interpolate_fn] = args
+    #      type = Nx.type(step.x_old)
+    #      t_add = Nx.tensor(t, type: type)
+    #      t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    #      x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    #      x = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
+    #      ballode_event_fn(t, x)
+    #
+    #      # root =
+    #      #   NonLinearEqnRootRefactor.find_zero(
+    #      #     zero_fn,
+    #      #     [step, interpolate_fn],
+    #      #     step.t_old,
+    #      #     step.t_new,
+    #      #     only_non_linear_eqn_root_opts(opts)
+    #      #   )
+    #    end
+  end
+
   describe "integrate" do
     @tag transferred_to_refactor?: false
     test "works" do
@@ -256,11 +288,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
     @tag transferred_to_refactor?: false
     test "works - event function with interpolation - ballode - high fidelity - one bounce" do
-      event_fn = fn _t, x ->
-        value = Nx.to_number(x[0])
-        answer = if value <= 0.0, do: :halt, else: :continue
-        {answer, value}
-      end
+      event_fn = &TestFunctions.ballode_event_fn/2
+      # zero_fn = &TestFunctions.ballode_zero_fn/2
 
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -274,6 +303,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       opts = [
         event_fn: event_fn,
+        #  zero_fn: zero_fn,
         type: :f64,
         norm_control: false,
         abs_tol: Nx.tensor(1.0e-14, type: :f64),
@@ -1241,6 +1271,44 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert t == expected_t
       assert x == expected_x
+    end
+  end
+
+  describe "ZeroFn" do
+    test "works with real-life args" do
+      # The values in this test (both input and expected) were obtained by just printing out values
+      # from AdaptiveStepsize during the test run for ballode (specially, test
+      # "works - event function with interpolation - ballode - high fidelity - one bounce").  This test was
+      #  used in debugging ZeroFn.find_zero/2 and also the integration with the refactored NonLinearEqnRoot
+      # (basically checking that the Nx defns were done correctly and things were no longer blowing up).
+      # The values should be checked against an external source (e.g., Octave).
+
+      t_old = Nx.f64(2.898648469921002)
+      t_new = Nx.f64(4.2941803179443205)
+      x_old = Nx.f64([16.76036011799986, -8.435741489925032])
+      x_new = Nx.f64([-4.564518118928589, -22.125908919033794])
+      k_vals = ~MAT[
+          -8.435741489925032  -11.173774975746785  -12.54279171865766  -19.387875433212034  -20.604779204688395  -22.12590891903377  -22.125908919033794
+          -9.81                -9.81                -9.81               -9.81                -9.81                -9.81               -9.81
+
+      ]f64
+
+      zero_fn = &Integrator.AdaptiveStepsize.ZeroFn.find_zero/2
+      interpolate_fn = &Integrator.RungeKutta.DormandPrince45.interpolate/4
+      event_fn = &TestFunctions.ballode_event_fn/2
+      zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
+
+      arbitrary_t = 3
+
+      result = Integrator.AdaptiveStepsize.ZeroFn.find_zero(arbitrary_t, zero_fn_args)
+      # Before the refactor, the find_zero closure was just returning 1 or 0 - why? I'm not sure why
+      # that worked in hindsight...
+      # assert result == Nx.f64(1)
+
+      assert_all_close(result, Nx.f64(15.855), atol: 1.0e-14, rtol: 1.0e-14)
+
+      root = Integrator.NonLinearEqnRootRefactor.find_zero(zero_fn, t_old, t_new, zero_fn_args, [])
+      assert_all_close(root.x, Nx.f64(4.077471967380226), atol: 1.0e-14, rtol: 1.0e-14)
     end
   end
 end
