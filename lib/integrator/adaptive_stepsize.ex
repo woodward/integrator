@@ -9,7 +9,7 @@ defmodule Integrator.AdaptiveStepsize do
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
   alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
-  alias Integrator.Step
+  alias Integrator.OldStep
   alias Integrator.Utils
 
   @type t :: %__MODULE__{
@@ -552,7 +552,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Merges a newly-computed Runge-Kutta step into the AdaptiveStepsize struct
-  @spec merge_new_step(t(), Step.t()) :: t()
+  @spec merge_new_step(t(), OldStep.t()) :: t()
   defp merge_new_step(step, computed_step) do
     %{
       step
@@ -606,7 +606,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: Step.t()
+  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: OldStep.t()
   def compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -617,7 +617,7 @@ defmodule Integrator.AdaptiveStepsize do
     {t_next, x_next, k_vals, options_comp, error_estimate} =
       compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts)
 
-    %Step{
+    %OldStep{
       t_new: t_next,
       x_new: x_next,
       k_vals: k_vals,
@@ -741,7 +741,7 @@ defmodule Integrator.AdaptiveStepsize do
     end
   end
 
-  # This function will move somewhere else; perhaps to RungeKuttaStep?
+  # This function will move somewhere else; perhaps to Step?
   defn stack(step) do
     # These should change to t_new, x_new soon
     t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
@@ -753,7 +753,7 @@ defmodule Integrator.AdaptiveStepsize do
     @moduledoc false
     import Nx.Defn
 
-    # Pass RungeKuttaStep into here soon rather than the constituent parts of it
+    # Pass Step into here soon rather than the constituent parts of it
     defn find_zero(t, args) do
       [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, _event_fn] = args
       t_add = t
@@ -797,7 +797,7 @@ defmodule Integrator.AdaptiveStepsize do
     x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
     x_new = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
 
-    %Step{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+    %OldStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
   end
 
   @spec only_non_linear_eqn_root_opts(Keyword.t()) :: Keyword.t()

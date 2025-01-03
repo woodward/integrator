@@ -1213,7 +1213,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     # This function should move somewhere soon
     @tag transferred_to_refactor?: false
     test "puts the arguments in the form required by interpolate/4" do
-      # This struct will become a %RungeKuttaStep{} soon:
+      # This struct will become a %Step{} soon:
       step = %{
         t_old: Nx.f32(1),
         t_new_rk_interpolate: Nx.f32(2),

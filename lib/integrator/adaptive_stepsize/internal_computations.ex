@@ -6,12 +6,12 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   import Nx.Defn
 
   alias Integrator.RungeKutta
-  alias Integrator.RungeKuttaStep
+  alias Integrator.RungeKutta.Step
   alias Integrator.Utils
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(RungeKuttaStep.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: RungeKuttaStep.t()
+  @spec compute_step(Step.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: Step.t()
   def compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -22,7 +22,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     {t_next, x_next, k_vals, options_comp, error_estimate} =
       compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts)
 
-    %RungeKuttaStep{
+    %Step{
       t_new: t_next,
       x_new: x_next,
       k_vals: k_vals,

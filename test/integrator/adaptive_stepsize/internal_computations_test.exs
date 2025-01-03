@@ -8,7 +8,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
   alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
-  alias Integrator.RungeKuttaStep
+  alias Integrator.RungeKutta.Step
   alias Integrator.SampleEqns
 
   describe "compute_step" do
@@ -19,7 +19,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
       ]f64
 
-      step = %RungeKuttaStep{
+      step = %Step{
         t_new: Nx.tensor(0.170323017264490, type: :f64),
         x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
         options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
@@ -58,7 +58,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
 
-      step = %RungeKuttaStep{
+      step = %Step{
         t_new: Nx.tensor(3.453755516815583e-04, type: :f64),
         x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
         options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
@@ -106,7 +106,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
       ]f64
 
-      step = %RungeKuttaStep{
+      step = %Step{
         t_new: Nx.tensor(2.395056256047516e-04, type: :f64),
         x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
         options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
@@ -163,7 +163,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
         -1.999224255823159     -1.9988937919269867    -1.9987286328288005     -1.9985634251635955
       ]f64
 
-      step = %RungeKuttaStep{
+      step = %Step{
         t_new: Nx.tensor(2.3950562560475164e-04, type: :f64),
         x_new: Nx.tensor([1.9999999426507922, -4.78839199013642e-4], type: :f64),
         options_comp: Nx.tensor(0.0, type: :f64),
