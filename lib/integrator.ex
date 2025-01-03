@@ -110,9 +110,9 @@ defmodule Integrator do
   end
 
   @spec parse_start_end([float() | Nx.t()] | Nx.t()) :: {Nx.t(), Nx.t(), [Nx.t()] | nil}
-  defp parse_start_end([t_start, t_end]), do: {t_start, t_end, nil}
+  def parse_start_end([t_start, t_end]), do: {t_start, t_end, nil}
 
-  defp parse_start_end(t_range) do
+  def parse_start_end(t_range) do
     t_start = t_range[0]
     {length} = Nx.shape(t_range)
 

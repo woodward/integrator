@@ -3,7 +3,6 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
   @moduledoc false
   use Integrator.TestCase, async: false
-  use Patch
 
   import Nx, only: :sigils
 
@@ -16,10 +15,6 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   alias Integrator.SampleEqns
 
   describe "compute_step" do
-    setup do
-      expose(AdaptiveStepsize, compute_step: 4)
-    end
-
     @tag transferred_to_refactor?: false
     # Expected values were obtained from Octave:
     test "works" do
@@ -40,7 +35,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
       opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
-      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
@@ -86,7 +81,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
@@ -135,7 +130,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.4537555168155827e-4
@@ -195,7 +190,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = private(AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts))
+      computed_step = AdaptiveStepsize.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.453755 484642738e-4
@@ -297,10 +292,6 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "compute_next_timestep" do
-    setup do
-      expose(AdaptiveStepsize, compute_next_timestep: 6)
-    end
-
     @tag transferred_to_refactor?: false
     test "basic case" do
       dt = Nx.tensor(0.068129, type: :f64)
@@ -310,7 +301,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_end = Nx.tensor(2.0, type: :f64)
       opts = [type: :f64, max_step: 2.0]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       expected_dt = Nx.tensor(0.1022, type: :f64)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -325,7 +316,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_end = Nx.tensor(2.0, type: :f64)
       opts = [max_step: 0.05, type: :f64]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       expected_dt = Nx.tensor(0.05, type: :f64)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -340,7 +331,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_end = Nx.tensor(20.0, type: :f64)
       opts = [type: :f64, max_step: 2.0]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       expected_dt = Nx.tensor(0.289, type: :f64)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -355,7 +346,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_end = Nx.tensor(20.0, type: :f64)
       opts = [type: :f64, max_step: Nx.tensor(2.0, type: :f64)]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       # From Octave:
       expected_dt = Nx.tensor(1.616412403741299e-04, type: :f64)
@@ -386,7 +377,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       t_end = Nx.tensor(0.1, type: :f64)
       opts = [type: :f64, max_step: Nx.tensor(2.0, type: :f64)]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       # Expected dt from Octave:
       expected_dt = Nx.tensor(1.058699260768067e-04, type: :f64)
@@ -427,7 +418,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
         norm_control: false
       ]
 
-      new_dt = private(AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts))
+      new_dt = AdaptiveStepsize.compute_next_timestep(dt, error, order, t_old, t_end, opts)
 
       # Expected dt from Octave:
       expected_dt = Nx.tensor(0.007895960916517373, type: :f64)
@@ -436,15 +427,11 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "initial_empty_k_vals" do
-    setup do
-      expose(AdaptiveStepsize, initial_empty_k_vals: 2)
-    end
-
     @tag transferred_to_refactor?: false
     test "returns a tensor with zeros that's the correct size" do
       order = 5
       x = ~VEC[ 1.0 2.0 3.0 ]f64
-      k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -463,7 +450,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       order = 3
       type = {:f, 32}
       x = Nx.tensor([1.0, 2.0, 3.0], type: type)
-      k_vals = private(AdaptiveStepsize.initial_empty_k_vals(order, x))
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0
@@ -479,10 +466,6 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "abs_rel_norm/6" do
-    setup do
-      expose(AdaptiveStepsize, abs_rel_norm: 6)
-    end
-
     @tag transferred_to_refactor?: false
     # These test values were obtained from Octave:
     test "when norm_control: false" do
@@ -494,7 +477,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x = Nx.tensor([1.97537723429, -0.26653011403])
       expected_norm = Nx.tensor(0.00473516383083)
 
-      norm = private(AdaptiveStepsize.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts))
+      norm = AdaptiveStepsize.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
@@ -507,7 +490,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       opts = [norm_control: false]
       x_zeros = Nx.tensor([0.0, 0.0], type: :f64)
 
-      norm = private(AdaptiveStepsize.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts))
+      norm = AdaptiveStepsize.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
 
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
@@ -539,7 +522,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       abs_tol = Nx.tensor(1.0e-12, type: :f64)
       rel_tol = Nx.tensor(1.0e-12, type: :f64)
 
-      error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+      error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
@@ -576,7 +559,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
 
       expected_error = Nx.tensor(0.259206892061492, type: :f64)
 
-      # error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+      # error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
       {error, _t_minus_x} = abs_rel_norm_for_test_purposes(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       # IO.inspect(Nx.to_number(error), label: "error")
@@ -674,7 +657,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       abs_tol = Nx.tensor(1.0e-11, type: :f64)
       rel_tol = Nx.tensor(1.0e-11, type: :f64)
 
-      error = private(AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false))
+      error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       # sc:   [1.99997458501656e-11, 1.0e-11]  Elixir                Agreement!!!
       # sc:    1.999974585016559e-11 9.999999999999999e-12 Octave
@@ -710,21 +693,17 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       y = Nx.tensor([1.99402286380, 0.33477644992])
       expected_norm = Nx.tensor(0.77474409123)
 
-      norm = private(AdaptiveStepsize.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts))
+      norm = AdaptiveStepsize.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
   end
 
   describe "zero_vector" do
-    setup do
-      expose(AdaptiveStepsize, zero_vector: 1)
-    end
-
     @tag transferred_to_refactor?: false
     test "creates a zero vector with the length and type of x" do
       x = Nx.tensor([1.0, 2.0, 3.0], type: :f64)
-      y = private(AdaptiveStepsize.zero_vector(x))
+      y = AdaptiveStepsize.zero_vector(x)
       expected_y = Nx.tensor([0.0, 0.0, 0.0], type: :f64)
       assert_all_close(y, expected_y)
       assert Nx.type(y) == {:f, 64}
@@ -732,14 +711,10 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "check_nx_type/2" do
-    setup do
-      expose(AdaptiveStepsize, check_nx_type: 2)
-    end
-
     @tag transferred_to_refactor?: false
     test "checks one arg" do
       x0 = ~VEC[ 2.0  3.0 ]f64
-      assert private(AdaptiveStepsize.check_nx_type([x0: x0], :f64)) == :ok
+      assert AdaptiveStepsize.check_nx_type([x0: x0], :f64) == :ok
     end
 
     @tag transferred_to_refactor?: false
@@ -747,7 +722,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x0 = 1.2345
 
       assert_raise(ArgPrecisionError, fn ->
-        private(AdaptiveStepsize.check_nx_type([x0: x0], :f64))
+        AdaptiveStepsize.check_nx_type([x0: x0], :f64)
       end)
     end
 
@@ -756,7 +731,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x0 = ~VEC[ 2.0  3.0 ]f32
 
       assert_raise(ArgPrecisionError, fn ->
-        private(AdaptiveStepsize.check_nx_type([x0: x0], :f64))
+        AdaptiveStepsize.check_nx_type([x0: x0], :f64)
       end)
     end
 
@@ -765,7 +740,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x0 = ~VEC[ 2.0  3.0 ]f64
 
       assert_raise(ArgPrecisionError, fn ->
-        private(AdaptiveStepsize.check_nx_type([x0: x0], :f32))
+        AdaptiveStepsize.check_nx_type([x0: x0], :f32)
       end)
     end
 
@@ -775,7 +750,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       x1 = ~VEC[ 2.0  3.0 ]f32
 
       assert_raise(ArgPrecisionError, fn ->
-        private(AdaptiveStepsize.check_nx_type([x0: x0, x1: x1], :f64))
+        AdaptiveStepsize.check_nx_type([x0: x0, x1: x1], :f64)
       end)
     end
   end

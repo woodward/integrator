@@ -400,7 +400,7 @@ defmodule Integrator.AdaptiveStepsize do
   defp store_first_point(step, _t_start, _x0, _store_results?), do: step
 
   @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
-  defp initial_empty_k_vals(order, x) do
+  def initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
     k_length = order + 2
 
@@ -522,7 +522,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Formula taken from Hairer
   @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
-  defnp compute_next_timestep(dt, error, order, t_old, t_end, opts) do
+  defn compute_next_timestep(dt, error, order, t_old, t_end, opts) do
     nx_type = opts[:type]
 
     # Avoid divisions by zero:
@@ -607,7 +607,7 @@ defmodule Integrator.AdaptiveStepsize do
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
   @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: Step.t()
-  defp compute_step(step, stepper_fn, ode_fn, opts) do
+  def compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
@@ -772,7 +772,7 @@ defmodule Integrator.AdaptiveStepsize do
   # Hones in (via interpolation) on the exact point that the event function goes to zero
   # Not sure why this typespec is wrong and/or is complaining...
   # @spec compute_new_event_fn_step(t(), event_fn_t(), RungeKutta.interpolate_fn_t(), Keyword.t()) :: Step.t()
-  defp compute_new_event_fn_step(step, event_fn, zero_fn, interpolate_fn, opts) do
+  def compute_new_event_fn_step(step, event_fn, zero_fn, interpolate_fn, opts) do
     t_old = step.t_old
     t_new = step.t_new_rk_interpolate
     x_old = step.x_old
@@ -816,7 +816,7 @@ defmodule Integrator.AdaptiveStepsize do
   # See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
   # for a description of norm control.
   @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defnp abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
+  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
     if opts[:norm_control] do
       # Octave code
       # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
@@ -844,7 +844,7 @@ defmodule Integrator.AdaptiveStepsize do
   # Creates a zero vector that has the length of `x`
   # Is there a better built-in Nx way of doing this?
   @spec zero_vector(Nx.t()) :: Nx.t()
-  defnp zero_vector(x) do
+  defn zero_vector(x) do
     {length_of_x} = Nx.shape(x)
     zero = Nx.tensor(0.0, type: Nx.type(x))
     Nx.broadcast(zero, {length_of_x})
@@ -852,7 +852,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # 4Checks that the Nx types are in line with what is expected. This avoids args with mismatched types.
   @spec check_nx_type(Keyword.t(), Nx.Type.t()) :: atom()
-  defp check_nx_type(args, expected_nx_type) do
+  def check_nx_type(args, expected_nx_type) do
     args
     |> Enum.each(fn {arg_name, arg_value} ->
       nx_type = Nx.type(arg_value) |> Nx.Type.to_string()
