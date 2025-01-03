@@ -72,7 +72,7 @@ Hermite interpolation (for `ode23`)
   relative tolerance settings
 
 
-## So why should I care??? A tool to solve ODEs? WTF??? 
+## So why should I care??? A tool to solve ODEs? Why would I need this?
 
 The basic gist of the project is that it is a tool in Elixir (that leverages [Nx](https://github.com/elixir-nx)) 
 to numerically solve sets of ordinary differential equations (ODEs).  Science and engineering 
