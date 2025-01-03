@@ -7,6 +7,11 @@ Mix.install([
 ])
 ```
 
+# NOTE - 2025-01-02
+
+This Livebook guide currently does not work (at least not based on code on the `main` branch of `integrator`) 
+as a big refactor is currently happening on `integrator`.  This guide will updated once that refactor is completed.
+
 ## Usage
 
 An event function lets you terminate a simulation based on some event (such as a collision).  For this example, we're going to mimic the [Matlab `ballode.m`](https://www.mathworks.com/help/matlab/math/ode-event-location.html) bouncing ball example. See also [here](https://github.com/kuo-courses/hw00/blob/master/ballode.m).
