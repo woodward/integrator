@@ -540,4 +540,14 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       step
     end)
   end
+
+  @spec bracket_x(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
+  def bracket_x(z) do
+    {z.a, z.b}
+  end
+
+  @spec bracket_fx(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
+  def bracket_fx(z) do
+    {z.fa, z.fb}
+  end
 end

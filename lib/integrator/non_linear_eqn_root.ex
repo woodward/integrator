@@ -223,10 +223,11 @@ defmodule Integrator.NonLinearEqnRoot do
   defn find_zero_nx(zero_fn, a, b, zero_fn_args, options) do
     fa = zero_fn.(a, zero_fn_args)
     fb = zero_fn.(b, zero_fn_args)
-    # fn_eval_count = 2 + fn_evals
     fn_eval_count = 2
+
     {u, fu} = if Nx.abs(fa) < Nx.abs(fb), do: {a, fa}, else: {b, fb}
     {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
+
     c = Nx.tensor(0.0, type: options.type)
     fc = Nx.tensor(0.0, type: options.type)
     x = Nx.tensor(0.0, type: options.type)
@@ -268,22 +269,6 @@ defmodule Integrator.NonLinearEqnRoot do
     # end
 
     InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
-  end
-
-  # def find_zero(zero_fn, solo_point, opts, _fn_evals) do
-  #   # second_point = Internal.find_2nd_starting_point(zero_fn, solo_point)
-
-  #   # find_zero(zero_fn, [solo_point, second_point.b], opts, second_point.fn_eval_count)
-  # end
-
-  @spec bracket_x(t()) :: {Nx.t(), Nx.t()}
-  def bracket_x(z) do
-    {z.a, z.b}
-  end
-
-  @spec bracket_fx(t()) :: {Nx.t(), Nx.t()}
-  def bracket_fx(z) do
-    {z.fa, z.fb}
   end
 
   def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()

@@ -5,6 +5,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   import Nx, only: :sigils
 
   alias Integrator.DataCollector
+  alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
@@ -81,12 +82,12 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert Nx.to_number(result.iteration_count) == 6
       assert Nx.to_number(result.iteration_type) == 4
 
-      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
+      {x_low, x_high} = InternalComputations.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
+      {y1, y2} = InternalComputations.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -109,12 +110,12 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert Nx.to_number(result.iteration_count) == 6
       assert Nx.to_number(result.iteration_type) == 4
 
-      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
+      {x_low, x_high} = InternalComputations.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
+      {y1, y2} = InternalComputations.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -266,12 +267,12 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert Nx.to_number(result.iteration_count) == 4
       assert Nx.to_number(result.iteration_type) == 2
 
-      {x_low, x_high} = NonLinearEqnRoot.bracket_x(result)
+      {x_low, x_high} = InternalComputations.bracket_x(result)
       # Expected values are from Octave:
       assert_all_close(x_low, Nx.f64(3.141592653589793), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(3.141592653589795), atol: 1.0e-14, rtol: 1.0e-14)
 
-      {y1, y2} = NonLinearEqnRoot.bracket_fx(result)
+      {y1, y2} = InternalComputations.bracket_fx(result)
       # Expected values are from Octave:
       assert_all_close(y1, Nx.f64(1.224646799147353e-16), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(-2.097981369335578e-15), atol: 1.0e-14, rtol: 1.0e-14)
@@ -373,7 +374,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert Nx.to_number(result.iteration_count) == 5
       assert Nx.to_number(result.iteration_type) == 3
 
-      {x__low, x_high} = NonLinearEqnRoot.bracket_x(result)
+      {x__low, x_high} = InternalComputations.bracket_x(result)
       # Expected values are from Octave; note that these are the same except in the last digit:
       assert_all_close(x__low, Nx.f64(4.077471967380224), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(x_high, Nx.f64(4.077471967380227), atol: 1.0e-14, rtol: 1.0e-14)
@@ -381,7 +382,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       # 4.077471967380223
       # 4.077471967380223
 
-      {y_1, y2} = NonLinearEqnRoot.bracket_fx(result)
+      {y_1, y2} = InternalComputations.bracket_fx(result)
       assert_all_close(y_1, Nx.f64(0.0), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(y2, Nx.f64(0.0), atol: 1.0e-14, rtol: 1.0e-14)
       # In Octave:
@@ -399,7 +400,7 @@ defmodule Integrator.NonLinearEqnRootTest do
         b: 3.15
       }
 
-      assert NonLinearEqnRoot.bracket_x(z) == {3.14, 3.15}
+      assert InternalComputations.bracket_x(z) == {3.14, 3.15}
     end
   end
 
@@ -410,7 +411,7 @@ defmodule Integrator.NonLinearEqnRootTest do
         fb: 3.15
       }
 
-      assert NonLinearEqnRoot.bracket_fx(z) == {3.14, 3.15}
+      assert InternalComputations.bracket_fx(z) == {3.14, 3.15}
     end
   end
 
