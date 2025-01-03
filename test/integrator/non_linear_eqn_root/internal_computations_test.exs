@@ -1,6 +1,4 @@
 defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
-  # Tests of private functions using Patch in NonLinearEqnRoot
-
   @moduledoc false
   use Integrator.TestCase, async: true
 
