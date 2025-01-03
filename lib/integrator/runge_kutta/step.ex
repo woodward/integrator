@@ -93,7 +93,7 @@ defmodule Integrator.RungeKutta.Step do
   defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
     {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], opts[:norm_control])
     {t_next, x_next, k_vals, options_comp, error}
   end
 end

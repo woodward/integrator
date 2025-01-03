@@ -233,34 +233,34 @@ defmodule Integrator.UtilsTest do
 
   describe "abs_rel_norm/6" do
     # These test values were obtained from Octave:
-    test "when norm_control: false" do
+    test "when norm_control: Nx.tensor(false)" do
       t = Nx.tensor([1.97537683003, -0.26652885197])
       t_old = Nx.tensor([1.99566026409, -0.12317664679])
       abs_tolerance = 1.0000e-06
       rel_tolerance = 1.0000e-03
-      opts = [norm_control: false]
+      norm_control = Nx.tensor(false)
       x = Nx.tensor([1.97537723429, -0.26653011403])
       expected_norm = Nx.tensor(0.00473516383083)
 
-      norm = Utils.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
+      norm = Utils.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, norm_control)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    test "when norm_control: false - :f64 - starting_stepsize for high-fidelity ballode" do
+    test "when norm_control: Nx.tensor(false) - :f64 - starting_stepsize for high-fidelity ballode" do
       x0 = ~VEC[  0.0 20.0  ]f64
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
       rel_tol = Nx.tensor(1.0e-14, type: :f64)
-      opts = [norm_control: false]
+      norm_control = Nx.tensor(false)
       x_zeros = Nx.tensor([0.0, 0.0], type: :f64)
 
-      norm = Utils.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
+      norm = Utils.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, norm_control)
 
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
 
     # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
-    test "when norm_control: false - :f64 - for high-fidelity Bogacki-Shampine" do
+    test "when norm_control: Nx.tensor(false) - :f64 - for high-fidelity Bogacki-Shampine" do
       x_old = ~VEC[ 1.999999880756917  -6.903933604135114e-04 ]f64
       #         [ 1.999999880756917, -6.903933604135114e-04 ]  Elixir values agree exactly
 
@@ -285,13 +285,13 @@ defmodule Integrator.UtilsTest do
       abs_tol = Nx.tensor(1.0e-12, type: :f64)
       rel_tol = Nx.tensor(1.0e-12, type: :f64)
 
-      error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, Nx.tensor(false))
 
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
     # Octave:
-    test "when norm_control: false - :f64 - for test 'works - high fidelity - playback speed of 0.5'" do
+    test "when norm_control: Nx.tensor(false) - :f64 - for test 'works - high fidelity - playback speed of 0.5'" do
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       #   opts = odeset("AbsTol", 1.0e-11, "RelTol", 1.0e-11, "Refine", 1);
@@ -321,8 +321,8 @@ defmodule Integrator.UtilsTest do
 
       expected_error = Nx.tensor(0.259206892061492, type: :f64)
 
-      # error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
-      {error, _t_minus_x} = abs_rel_norm_for_test_purposes(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      # error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: Nx.tensor(false))
+      {error, _t_minus_x} = abs_rel_norm_for_test_purposes(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: Nx.tensor(false))
 
       # IO.inspect(Nx.to_number(error), label: "error")
       # IO.inspect(t_minus_x, label: "t_minus_x")
@@ -386,7 +386,7 @@ defmodule Integrator.UtilsTest do
     end
 
     # All values taken from Octave from test "works - high fidelity - playback speed of 0.5" for the 2nd timestep
-    test "when norm_control: false - :f64 - for high-fidelity van der pol" do
+    test "when norm_control: Nx.tensor(false) - :f64 - for high-fidelity van der pol" do
       # Octave:
       #   format long
       #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
@@ -417,7 +417,7 @@ defmodule Integrator.UtilsTest do
       abs_tol = Nx.tensor(1.0e-11, type: :f64)
       rel_tol = Nx.tensor(1.0e-11, type: :f64)
 
-      error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      error = Utils.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, Nx.tensor(false))
 
       # sc:   [1.99997458501656e-11, 1.0e-11]  Elixir                Agreement!!!
       # sc:    1.999974585016559e-11 9.999999999999999e-12 Octave
@@ -443,16 +443,16 @@ defmodule Integrator.UtilsTest do
     end
 
     # These test values were obtained from Octave:
-    test "when norm_control: true" do
+    test "when norm_control: Nx.tensor(true)" do
       x = Nx.tensor([1.99465419035, 0.33300240425])
       x_old = Nx.tensor([1.64842646336, 1.78609260054])
       abs_tolerance = 1.0000e-06
       rel_tolerance = 1.0000e-03
-      opts = [norm_control: true]
+      norm_control = Nx.tensor(true)
       y = Nx.tensor([1.99402286380, 0.33477644992])
       expected_norm = Nx.tensor(0.77474409123)
 
-      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
+      norm = Utils.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, norm_control)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end

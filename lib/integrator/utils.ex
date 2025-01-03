@@ -52,9 +52,9 @@ defmodule Integrator.Utils do
 
   # See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
   # for a description of norm control.
-  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
-    if opts[:norm_control] do
+  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Nx.t()) :: Nx.t()
+  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, norm_control?) do
+    if norm_control? do
       # Octave code
       # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
       # retval = sqrt (sumsq ((t - x))) / sc;

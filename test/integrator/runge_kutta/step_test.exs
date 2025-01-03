@@ -27,7 +27,7 @@ defmodule Integrator.RungeKutta.StepTest do
 
       stepper_fn = &DormandPrince45.integrate/6
       ode_fn = &SampleEqns.van_der_pol_fn/2
-      opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
+      opts = [type: :f64, norm_control: Nx.u8(0), abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
       computed_step = Step.compute_step(step, stepper_fn, ode_fn, opts)
 
@@ -69,7 +69,7 @@ defmodule Integrator.RungeKutta.StepTest do
 
       opts = [
         type: :f64,
-        norm_control: false,
+        norm_control: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
@@ -117,7 +117,7 @@ defmodule Integrator.RungeKutta.StepTest do
 
       opts = [
         type: :f64,
-        norm_control: false,
+        norm_control: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
@@ -176,7 +176,7 @@ defmodule Integrator.RungeKutta.StepTest do
 
       opts = [
         type: :f64,
-        norm_control: false,
+        norm_control: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
