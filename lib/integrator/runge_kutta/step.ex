@@ -5,6 +5,7 @@ defmodule Integrator.RungeKutta.Step do
 
   import Nx.Defn
 
+  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.Step
   alias Integrator.Utils
@@ -52,8 +53,8 @@ defmodule Integrator.RungeKutta.Step do
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(Step.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: Step.t()
-  def compute_step(step, stepper_fn, ode_fn, opts) do
+  @spec compute_step(Step.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: Step.t()
+  def compute_step(step, stepper_fn, ode_fn, options) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
@@ -61,7 +62,7 @@ defmodule Integrator.RungeKutta.Step do
     dt = step.dt
 
     {t_next, x_next, k_vals, options_comp, error_estimate} =
-      compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts)
+      compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
 
     %Step{
       t_new: t_next,
@@ -81,7 +82,7 @@ defmodule Integrator.RungeKutta.Step do
           k_vals_old :: Nx.t(),
           options_comp_old :: Nx.t(),
           dt :: Nx.t(),
-          opts :: Keyword.t()
+          options :: NxOptions.t()
         ) :: {
           t_next :: Nx.t(),
           x_next :: Nx.t(),
@@ -89,10 +90,10 @@ defmodule Integrator.RungeKutta.Step do
           options_comp :: Nx.t(),
           error :: Nx.t()
         }
-  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
+  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options) do
     {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], opts[:norm_control])
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, options.abs_tol, options.rel_tol, options.norm_control?)
     {t_next, x_next, k_vals, options_comp, error}
   end
 end

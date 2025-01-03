@@ -4,6 +4,7 @@ defmodule Integrator.RungeKutta.StepTest do
 
   import Nx, only: :sigils
 
+  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.RungeKutta.Step
@@ -27,9 +28,14 @@ defmodule Integrator.RungeKutta.StepTest do
 
       stepper_fn = &DormandPrince45.integrate/6
       ode_fn = &SampleEqns.van_der_pol_fn/2
-      opts = [type: :f64, norm_control: Nx.u8(0), abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, opts)
+      nx_options = %NxOptions{
+        norm_control?: Nx.u8(0),
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03)
+      }
+
+      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
@@ -67,14 +73,13 @@ defmodule Integrator.RungeKutta.StepTest do
       stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
-      opts = [
-        type: :f64,
-        norm_control: Nx.u8(0),
+      nx_options = %NxOptions{
+        norm_control?: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
-      ]
+      }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, opts)
+      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
@@ -115,14 +120,13 @@ defmodule Integrator.RungeKutta.StepTest do
       stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
-      opts = [
-        type: :f64,
-        norm_control: Nx.u8(0),
+      nx_options = %NxOptions{
+        norm_control?: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
-      ]
+      }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, opts)
+      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.4537555168155827e-4
@@ -174,14 +178,13 @@ defmodule Integrator.RungeKutta.StepTest do
       stepper_fn = &BogackiShampine23.integrate/6
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
-      opts = [
-        type: :f64,
-        norm_control: Nx.u8(0),
+      nx_options = %NxOptions{
+        norm_control?: Nx.u8(0),
         abs_tol: Nx.tensor(1.0e-12, type: :f64),
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
-      ]
+      }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, opts)
+      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.453755 484642738e-4
