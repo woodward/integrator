@@ -15,7 +15,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   alias Integrator.SampleEqns
 
   describe "compute_step" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Expected values were obtained from Octave:
     test "works" do
       k_vals = ~MAT[
@@ -55,7 +55,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
     test "works - bug fix for Bogacki-Shampine23" do
       k_vals = ~MAT[
@@ -104,7 +104,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt" do
       k_vals = ~MAT[
@@ -161,7 +161,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
       # Expected values are from Octave
@@ -466,7 +466,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "abs_rel_norm/6" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # These test values were obtained from Octave:
     test "when norm_control: false" do
       t = Nx.tensor([1.97537683003, -0.26652885197])
@@ -482,7 +482,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "when norm_control: false - :f64 - starting_stepsize for high-fidelity ballode" do
       x0 = ~VEC[  0.0 20.0  ]f64
       abs_tol = Nx.tensor(1.0e-14, type: :f64)
@@ -495,7 +495,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # All values taken from Octave for the high-fidelity Bogacki-Shampine23 at t = 0.000345375551682:
     test "when norm_control: false - :f64 - for high-fidelity Bogacki-Shampine" do
       x_old = ~VEC[ 1.999999880756917  -6.903933604135114e-04 ]f64
@@ -527,7 +527,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Octave:
     test "when norm_control: false - :f64 - for test 'works - high fidelity - playback speed of 0.5'" do
       #   format long
@@ -596,7 +596,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       {(Nx.abs(t - x) / sc) |> Nx.reduce_max(), t - x}
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Values from Octave:
     test "trying to figure out precision problem" do
       x_new_2 = Nx.tensor(-2.446387761668897e-02, type: :f64)
@@ -624,7 +624,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(subtraction, expected_subtraction_from_octave, atol: 1.0e-17, rtol: 1.0e-17)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # All values taken from Octave from test "works - high fidelity - playback speed of 0.5" for the 2nd timestep
     test "when norm_control: false - :f64 - for high-fidelity van der pol" do
       # Octave:
@@ -682,7 +682,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       # assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # These test values were obtained from Octave:
     test "when norm_control: true" do
       x = Nx.tensor([1.99465419035, 0.33300240425])
