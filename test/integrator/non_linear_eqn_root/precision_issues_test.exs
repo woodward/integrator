@@ -2,7 +2,7 @@ defmodule Integrator.NonLinearEqnRoot.PrecisionIssuesTest do
   # Show some precision issues/problems
 
   @moduledoc false
-  use Integrator.TestCase, async: false
+  use Integrator.TestCase, async: true
 
   #   Works:
   #     two = Nx.tensor(2, type: type)

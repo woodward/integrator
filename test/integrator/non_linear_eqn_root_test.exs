@@ -1,6 +1,7 @@
 defmodule Integrator.NonLinearEqnRootTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
+
   import Nx, only: :sigils
 
   alias Integrator.DataCollector

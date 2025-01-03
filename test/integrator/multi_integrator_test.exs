@@ -1,6 +1,6 @@
 defmodule Integrator.MultiIntegratorTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
 
   alias Integrator.AdaptiveStepsize
   alias Integrator.MultiIntegrator

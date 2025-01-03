@@ -1,7 +1,7 @@
 defmodule Integrator.NxTest do
   @moduledoc false
 
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
 
   import Nx.Defn
   import Nx, only: :sigils

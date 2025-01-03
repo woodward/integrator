@@ -2,7 +2,7 @@ defmodule IntegratorPrivateTest do
   # Test of private functions using Patch in Integrator
 
   @moduledoc false
-  use Integrator.TestCase, async: false
+  use Integrator.TestCase, async: true
 
   describe "parse_start_end/1" do
     @tag transferred_to_refactor?: false

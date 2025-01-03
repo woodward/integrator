@@ -1,6 +1,6 @@
 defmodule IntegratorTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
 
   describe "van_der_pol_fn" do
     setup do

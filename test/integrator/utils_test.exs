@@ -1,6 +1,6 @@
 defmodule Integrator.UtilsTest do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
 
   alias Integrator.Utils
 

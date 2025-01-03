@@ -1,6 +1,6 @@
 defmodule Integrator.RungeKutta.BogackiShampine23Test do
   @moduledoc false
-  use Integrator.TestCase
+  use Integrator.TestCase, async: true
 
   import Nx, only: :sigils
 
