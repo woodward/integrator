@@ -4,6 +4,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
   import Nx, only: :sigils
 
+  alias Integrator.ExternalFnAdapter
   alias Integrator.DataCollector
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
@@ -222,7 +223,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert nx_options.type == {:f, 64}
       assert nx_options.max_iterations == 1_000
       assert nx_options.max_fn_eval_count == 1_000
-      assert nx_options.nonlinear_eqn_root_output_fn == nil
+      assert nx_options.output_fn_adapter == %ExternalFnAdapter{}
     end
 
     test "allows overrides" do
@@ -249,7 +250,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert nx_options.type == {:f, 32}
       assert nx_options.max_iterations == 10
       assert nx_options.max_fn_eval_count == 20
-      assert nx_options.nonlinear_eqn_root_output_fn == output_fn
+      assert nx_options.output_fn_adapter.external_fn == output_fn
     end
 
     test "sine function with single initial value (instead of 2)" do

@@ -13,6 +13,7 @@ defmodule Integrator.NonLinearEqnRoot do
 
   import Nx.Defn
 
+  alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
 
@@ -119,11 +120,11 @@ defmodule Integrator.NonLinearEqnRoot do
                :max_iterations,
                :max_fn_eval_count,
                :machine_eps,
-               :tolerance
+               :tolerance,
+               :output_fn_adapter
              ],
              keep: [
-               :type,
-               :nonlinear_eqn_root_output_fn
+               :type
              ]}
 
     @type t :: %__MODULE__{
@@ -132,7 +133,7 @@ defmodule Integrator.NonLinearEqnRoot do
             type: Nx.Type.t(),
             machine_eps: Nx.t(),
             tolerance: Nx.t(),
-            nonlinear_eqn_root_output_fn: fun()
+            output_fn_adapter: ExternalFnAdapter.t()
           }
 
     defstruct max_iterations: 1000,
@@ -140,7 +141,7 @@ defmodule Integrator.NonLinearEqnRoot do
               type: {:f, 64},
               machine_eps: 0,
               tolerance: 0,
-              nonlinear_eqn_root_output_fn: nil
+              output_fn_adapter: %ExternalFnAdapter{}
   end
 
   options = [
@@ -290,11 +291,18 @@ defmodule Integrator.NonLinearEqnRoot do
         Nx.Constants.epsilon(nx_type)
       end
 
+    output_fn_adapter =
+      if external_fn = nimble_opts[:nonlinear_eqn_root_output_fn] do
+        %ExternalFnAdapter{external_fn: external_fn}
+      else
+        %ExternalFnAdapter{}
+      end
+
     %NxOptions{
       machine_eps: machine_eps,
       max_fn_eval_count: nimble_opts[:max_fn_eval_count],
       max_iterations: nimble_opts[:max_iterations],
-      nonlinear_eqn_root_output_fn: nimble_opts[:nonlinear_eqn_root_output_fn],
+      output_fn_adapter: output_fn_adapter,
       tolerance: tolerance,
       type: nx_type
     }

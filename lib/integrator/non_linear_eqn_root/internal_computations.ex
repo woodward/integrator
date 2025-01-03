@@ -14,6 +14,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       same_signs_or_any_zeros?: 2
     ]
 
+  alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.BracketingFailureError
@@ -74,7 +75,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           z
           |> skip_bisection_if_successful_reduction()
           |> update_u()
-          |> tap_output_fn_via_hook(options)
+          |> then(&ExternalFnAdapter.invoke_external_fn(&1, options.output_fn_adapter))
 
         status_2 = converged?(z, options.machine_eps, options.tolerance)
         continue? = not status_2 and status_1
@@ -409,24 +410,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec is_nil?(any()) :: Nx.t()
   deftransform is_nil?(item) do
     if is_nil(item), do: 1, else: 0
-  end
-
-  # The NxOptions struct (with its :keep section for the &nonlinear_eqn_root_output_fn/1
-  # is used simply as a way to get the function (which is not an Nx.Container) into this function.
-  # The function cannot be passed as an arg to this function as functions are not Nx.Containers.
-  @spec tap_output_fn_via_hook(NonLinearEqnRoot.t(), NxOptions.t()) :: Nx.t()
-  defn tap_output_fn_via_hook(z, options) do
-    if is_nil?(options.nonlinear_eqn_root_output_fn) do
-      z
-    else
-      {z, _options} =
-        hook({z, options}, fn {zz, opts} ->
-          opts.nonlinear_eqn_root_output_fn.(zz)
-          {zz, opts}
-        end)
-
-      z
-    end
   end
 
   @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], Keyword.t()) ::
