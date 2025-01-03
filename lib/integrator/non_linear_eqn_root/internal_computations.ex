@@ -20,7 +20,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot.NonLinearEqnRootOptions
+  alias Integrator.NonLinearEqnRoot.NxOptions
 
   @initial_mu 0.5
   defn initial_mu, do: @initial_mu
@@ -52,7 +52,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Halt - a root has been found:
   @halt 0
 
-  @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NonLinearEqnRootOptions.t()) ::
+  @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
           NonLinearEqnRoot.t()
   defn iterate(z, zero_fn, zero_fn_args, options) do
     continue? = Nx.tensor(1, type: :u8)
@@ -411,10 +411,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     if is_nil(item), do: 1, else: 0
   end
 
-  # The NonLinearEqnRootOptions struct (with its :keep section for the &nonlinear_eqn_root_output_fn/1
+  # The NxOptions struct (with its :keep section for the &nonlinear_eqn_root_output_fn/1
   # is used simply as a way to get the function (which is not an Nx.Container) into this function.
   # The function cannot be passed as an arg to this function as functions are not Nx.Containers.
-  @spec tap_output_fn_via_hook(NonLinearEqnRoot.t(), NonLinearEqnRootOptions.t()) :: Nx.t()
+  @spec tap_output_fn_via_hook(NonLinearEqnRoot.t(), NxOptions.t()) :: Nx.t()
   defn tap_output_fn_via_hook(z, options) do
     if is_nil?(options.nonlinear_eqn_root_output_fn) do
       z

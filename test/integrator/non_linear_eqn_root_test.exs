@@ -10,7 +10,7 @@ defmodule Integrator.NonLinearEqnRootTest do
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot.NonLinearEqnRootOptions
+  alias Integrator.NonLinearEqnRoot.NxOptions
   alias Integrator.RungeKutta.DormandPrince45
 
   defmodule TestFunctions do
@@ -211,7 +211,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       opts = []
 
       nx_options = NonLinearEqnRoot.convert_to_nx_compatible_options(opts)
-      assert %NonLinearEqnRootOptions{} = nx_options
+      assert %NxOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
       assert Nx.type(nx_options.machine_eps) == {:f, 64}
@@ -238,7 +238,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       ]
 
       nx_options = NonLinearEqnRoot.convert_to_nx_compatible_options(opts)
-      assert %NonLinearEqnRootOptions{} = nx_options
+      assert %NxOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.f32(0.1), atol: 1.0e-16, rtol: 1.0e-16)
       assert Nx.type(nx_options.machine_eps) == {:f, 32}

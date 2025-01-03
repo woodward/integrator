@@ -108,7 +108,7 @@ defmodule Integrator.NonLinearEqnRoot do
             iteration_type: 1,
             interpolation_type_debug_only: 0
 
-  defmodule NonLinearEqnRootOptions do
+  defmodule NxOptions do
     @moduledoc """
     `NimbleOptions` converted into an Nx-friendly `Nx.Container` struct for use when finding the non-linear eqn root
     (so that the options can be safely passed from Elixir-land to Nx-land).
@@ -219,7 +219,7 @@ defmodule Integrator.NonLinearEqnRoot do
     }
   end
 
-  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NonLinearEqnRootOptions.t()) :: t()
+  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
   defn find_zero_nx(zero_fn, a, b, zero_fn_args, options) do
     fa = zero_fn.(a, zero_fn_args)
     fb = zero_fn.(b, zero_fn_args)
@@ -271,7 +271,7 @@ defmodule Integrator.NonLinearEqnRoot do
     InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
   end
 
-  @spec convert_to_nx_compatible_options(Keyword.t()) :: NonLinearEqnRootOptions.t()
+  @spec convert_to_nx_compatible_options(Keyword.t()) :: NxOptions.t()
   def convert_to_nx_compatible_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
@@ -290,7 +290,7 @@ defmodule Integrator.NonLinearEqnRoot do
         Nx.Constants.epsilon(nx_type)
       end
 
-    %NonLinearEqnRootOptions{
+    %NxOptions{
       machine_eps: machine_eps,
       max_fn_eval_count: nimble_opts[:max_fn_eval_count],
       max_iterations: nimble_opts[:max_iterations],
