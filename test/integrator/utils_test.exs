@@ -2,6 +2,7 @@ defmodule Integrator.UtilsTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 
+  alias Integrator.TensorTypeError
   alias Integrator.Utils
 
   describe "kahan_sum" do
@@ -197,6 +198,33 @@ defmodule Integrator.UtilsTest do
 
     test "returns 0 if both quantities are zero", %{zero: zero} do
       assert Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    end
+  end
+
+  describe "convert_arg_to_nx_type" do
+    test "passes through tensors (if they are of the correct type)" do
+      arg = Nx.f64(1.0)
+      assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+    end
+
+    test "converts floats to tensors of the appropriate type" do
+      arg = 1.0
+      assert Utils.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
+
+      assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+    end
+
+    test "allows functions to pass through" do
+      arg = &Nx.sin/1
+      assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == (&Nx.sin/1)
+    end
+
+    test "raises an exception if you try to cast a tensor to a different type" do
+      arg = Nx.f64(1.0)
+
+      assert_raise TensorTypeError, fn ->
+        Utils.convert_arg_to_nx_type(arg, {:f, 32})
+      end
     end
   end
 end

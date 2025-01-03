@@ -15,9 +15,8 @@ defmodule Integrator.NonLinearEqnRoot do
 
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
-  alias Integrator.NonLinearEqnRoot.TensorTypeError
 
-  import Integrator.Utils, only: [timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
+  import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
   @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
   @type output_fn_t :: (Nx.t() -> any())
@@ -272,17 +271,6 @@ defmodule Integrator.NonLinearEqnRoot do
   end
 
   def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
-
-  # Convert the following to private functions and test with Patch:
-
-  @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer() | fun(), Nx.Type.t()) :: Nx.t()
-  def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
-    if Nx.type(arg) != type, do: raise(TensorTypeError)
-    arg
-  end
-
-  def convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
-  def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
 
   @spec convert_to_nx_options(Keyword.t()) :: NonLinearEqnRootOptions.t()
   def convert_to_nx_options(opts) do

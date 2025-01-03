@@ -5,6 +5,8 @@ defmodule Integrator.Utils do
   import Nx.Defn
   import Nx, only: [sign: 1]
 
+  alias Integrator.TensorTypeError
+
   @doc """
   Implements the Kahan summation algorithm, also known as compensated summation.
   Based on this [code in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/kahan.m).
@@ -184,4 +186,17 @@ defmodule Integrator.Utils do
   """
   @spec timestamp_μs() :: Nx.t()
   def timestamp_μs, do: Nx.s32(:os.system_time(:microsecond))
+
+  @doc """
+  A function which converts args to their Nx equivalents. Used to populate Nx.Container structs with
+  option values than safely cross the Elixir/Nx boundary safely and also be of known, expected types.
+  """
+  @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer() | fun(), Nx.Type.t()) :: Nx.t()
+  def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
+    if Nx.type(arg) != type, do: raise(TensorTypeError)
+    arg
+  end
+
+  def convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
+  def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
 end

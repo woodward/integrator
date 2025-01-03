@@ -5,12 +5,11 @@ defmodule Integrator.NonLinearEqnRootTest do
   import Nx, only: :sigils
 
   alias Integrator.DataCollector
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot.TensorTypeError
-  alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.NonLinearEqnRootOptions
   alias Integrator.RungeKutta.DormandPrince45
 
@@ -412,33 +411,6 @@ defmodule Integrator.NonLinearEqnRootTest do
       }
 
       assert InternalComputations.bracket_fx(z) == {3.14, 3.15}
-    end
-  end
-
-  describe "convert_arg_to_nx_type" do
-    test "passes through tensors (if they are of the correct type)" do
-      arg = Nx.f64(1.0)
-      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
-    end
-
-    test "converts floats to tensors of the appropriate type" do
-      arg = 1.0
-      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
-
-      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
-    end
-
-    test "allows functions to pass through" do
-      arg = &Nx.sin/1
-      assert NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 64}) == (&Nx.sin/1)
-    end
-
-    test "raises an exception if you try to cast a tensor to a different type" do
-      arg = Nx.f64(1.0)
-
-      assert_raise TensorTypeError, fn ->
-        NonLinearEqnRoot.convert_arg_to_nx_type(arg, {:f, 32})
-      end
     end
   end
 
