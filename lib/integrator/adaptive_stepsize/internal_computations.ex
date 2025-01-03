@@ -71,9 +71,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
       # retval = sqrt (sumsq ((t - x))) / sc;
 
-      max_sq_t = Nx.max(sum_sq(t), sum_sq(t_old))
+      max_sq_t = Nx.max(Nx.LinAlg.norm(t), Nx.LinAlg.norm(t_old))
       sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_t)
-      sum_sq(t - x) / sc
+      Nx.LinAlg.norm(t - x) / sc
     else
       # Octave code:
       # sc = max (AbsTol(:), RelTol .* max (abs (t), abs (t_old)));
@@ -82,11 +82,5 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
       (Nx.abs(t - x) / sc) |> Nx.reduce_max()
     end
-  end
-
-  # Sums the squares of a vector and then takes the square root (e.g., computes the norm of a vector)
-  @spec sum_sq(Nx.t()) :: Nx.t()
-  defnp sum_sq(x) do
-    Nx.dot(x, x) |> Nx.sqrt()
   end
 end

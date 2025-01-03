@@ -7,11 +7,10 @@ defmodule Integrator.RungeKuttaStep do
    containers: [
      :t_old,
      :t_new,
+     :dt,
      #
      :x_old,
      :x_new,
-     #
-     :dt,
      #
      :k_vals,
      :options_comp,
@@ -21,11 +20,10 @@ defmodule Integrator.RungeKuttaStep do
   @type t :: %__MODULE__{
           t_old: Nx.t(),
           t_new: Nx.t(),
+          dt: Nx.t(),
           #
           x_old: Nx.t(),
           x_new: Nx.t(),
-          #
-          dt: Nx.t(),
           #
           k_vals: Nx.t(),
           options_comp: Nx.t(),
@@ -35,11 +33,10 @@ defmodule Integrator.RungeKuttaStep do
   defstruct [
     :t_old,
     :t_new,
+    :dt,
     #
     :x_old,
     :x_new,
-    #
-    :dt,
     #
     :k_vals,
     :options_comp,
