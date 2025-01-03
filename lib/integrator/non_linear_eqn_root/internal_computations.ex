@@ -1,15 +1,18 @@
 defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @moduledoc """
   Functions which are internal or private to `NonLinearEqnRoot`.  These would have been just implemented as private
-  functions in the `NonLinearEqnRoot` module, but then they could not be tested, as
-  [Patch's feature for testing private functions](https://hexdocs.pm/patch/Patch.html#private/1) does
-  not seem to work for `defnp` functions, only `defp` functions.
+  functions in the `NonLinearEqnRoot` module, but then they could not be tested.
   """
 
   import Nx.Defn
 
   import Integrator.Utils,
-    only: [same_signs?: 2, same_signs_or_any_zeros?: 2, different_signs?: 2, different_signs_or_any_zeros?: 2]
+    only: [
+      different_signs?: 2,
+      different_signs_or_any_zeros?: 2,
+      same_signs?: 2,
+      same_signs_or_any_zeros?: 2
+    ]
 
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
@@ -81,6 +84,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {z, options, continue?}
       end
 
+    # I'm not 100% sure why this is not needed - is it happening somewhere else after the big refactor?
     # %{z | x: z.u, fx: z.fu}
     z
   end
@@ -407,6 +411,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     if is_nil(item), do: 1, else: 0
   end
 
+  # The NonLinearEqnRootOptions struct (with its :keep section for the &nonlinear_eqn_root_output_fn/1
+  # is used simply as a way to get the function (which is not an Nx.Container) into this function.
+  # The function cannot be passed as an arg to this function as functions are not Nx.Containers.
   @spec tap_output_fn_via_hook(NonLinearEqnRoot.t(), NonLinearEqnRootOptions.t()) :: Nx.t()
   defn tap_output_fn_via_hook(z, options) do
     if is_nil?(options.nonlinear_eqn_root_output_fn) do
@@ -541,11 +548,13 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end)
   end
 
+  # Used in tests
   @spec bracket_x(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
   def bracket_x(z) do
     {z.a, z.b}
   end
 
+  # Used in tests
   @spec bracket_fx(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
   def bracket_fx(z) do
     {z.fa, z.fb}

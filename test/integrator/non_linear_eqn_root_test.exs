@@ -206,11 +206,11 @@ defmodule Integrator.NonLinearEqnRootTest do
     end
   end
 
-  describe "convert_to_nx_options" do
+  describe "convert_to_nx_compatible_options" do
     test "uses the defaults from nimble options (and defaults for machine_eps and tolerance in the type specified)" do
       opts = []
 
-      nx_options = NonLinearEqnRoot.convert_to_nx_options(opts)
+      nx_options = NonLinearEqnRoot.convert_to_nx_compatible_options(opts)
       assert %NonLinearEqnRootOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
@@ -237,7 +237,7 @@ defmodule Integrator.NonLinearEqnRootTest do
         nonlinear_eqn_root_output_fn: output_fn
       ]
 
-      nx_options = NonLinearEqnRoot.convert_to_nx_options(opts)
+      nx_options = NonLinearEqnRoot.convert_to_nx_compatible_options(opts)
       assert %NonLinearEqnRootOptions{} = nx_options
 
       assert_all_close(nx_options.machine_eps, Nx.f32(0.1), atol: 1.0e-16, rtol: 1.0e-16)
