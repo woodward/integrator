@@ -3,6 +3,8 @@ defmodule Integrator.RungeKutta.Step do
   The results of the computation of an individual Runge-Kutta step
   """
 
+  alias Integrator.Utils
+
   @derive {Nx.Container,
    containers: [
      :t_old,
@@ -91,36 +93,7 @@ defmodule Integrator.RungeKutta.Step do
   defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, opts) do
     {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
-    error = abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
+    error = Utils.abs_rel_norm(x_next, x_old, x_est, opts[:abs_tol], opts[:rel_tol], norm_control: opts[:norm_control])
     {t_next, x_next, k_vals, options_comp, error}
-  end
-
-  # Originally based on
-  # [Octave function AbsRelNorm](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/AbsRel_norm.m)
-
-  # Options
-  # * `:norm_control` - Control error relative to norm; i.e., control the error `e` at each step using the norm of the
-  #   solution rather than its absolute value.  Defaults to true.
-
-  # See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
-  # for a description of norm control.
-  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Keyword.t()) :: Nx.t()
-  defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts \\ []) do
-    if opts[:norm_control] do
-      # Octave code
-      # sc = max (AbsTol(:), RelTol * max (sqrt (sumsq (t)), sqrt (sumsq (t_old))));
-      # retval = sqrt (sumsq ((t - x))) / sc;
-
-      max_sq_t = Nx.max(Nx.LinAlg.norm(t), Nx.LinAlg.norm(t_old))
-      sc = Nx.max(abs_tolerance, rel_tolerance * max_sq_t)
-      Nx.LinAlg.norm(t - x) / sc
-    else
-      # Octave code:
-      # sc = max (AbsTol(:), RelTol .* max (abs (t), abs (t_old)));
-      # retval = max (abs (t - x) ./ sc);
-
-      sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
-      (Nx.abs(t - x) / sc) |> Nx.reduce_max()
-    end
   end
 end
