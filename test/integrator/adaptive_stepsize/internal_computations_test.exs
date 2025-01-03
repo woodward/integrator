@@ -1,8 +1,15 @@
-defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
+defmodule Integrator.InternalComputations.InternalComputationsTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 
+  import Nx.Defn
+  import Nx, only: :sigils
+
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.RungeKutta.BogackiShampine23
+  alias Integrator.RungeKutta.DormandPrince45
+  alias Integrator.RungeKuttaStep
+  alias Integrator.SampleEqns
 
   describe "compute_step" do
     # Expected values were obtained from Octave:
@@ -12,7 +19,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
       ]f64
 
-      step = %AdaptiveStepsize{
+      step = %RungeKuttaStep{
         t_new: Nx.tensor(0.170323017264490, type: :f64),
         x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
         options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
@@ -24,7 +31,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
       opts = [type: :f64, norm_control: false, abs_tol: 1.0e-06, rel_tol: 1.0e-03]
 
-      computed_step = InternalComputations.compuete_step(step, stepper_fn, ode_fn, opts)
+      computed_step = InternalComputations.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
@@ -51,7 +58,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
 
-      step = %AdaptiveStepsize{
+      step = %RungeKuttaStep{
         t_new: Nx.tensor(3.453755516815583e-04, type: :f64),
         x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
         options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
@@ -69,7 +76,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = InternalComputations.compuete_step(step, stepper_fn, ode_fn, opts)
+      computed_step = InternalComputations.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
@@ -99,7 +106,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
       ]f64
 
-      step = %AdaptiveStepsize{
+      step = %RungeKuttaStep{
         t_new: Nx.tensor(2.395056256047516e-04, type: :f64),
         x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
         options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
@@ -117,7 +124,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = InternalComputations.compuete_step(step, stepper_fn, ode_fn, opts)
+      computed_step = InternalComputations.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.4537555168155827e-4
@@ -148,7 +155,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
+    # Inputs were obtained from InternalComputations for van der pol equation at t = 0.000239505625605:
     test "works - bug fix for Bogacki-Shampine23 - 2nd attempt - using inputs from Elixir, not Octave" do
       # Expected values are from Octave
       k_vals = ~MAT[
@@ -156,7 +163,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         -1.999224255823159     -1.9988937919269867    -1.9987286328288005     -1.9985634251635955
       ]f64
 
-      step = %AdaptiveStepsize{
+      step = %RungeKuttaStep{
         t_new: Nx.tensor(2.3950562560475164e-04, type: :f64),
         x_new: Nx.tensor([1.9999999426507922, -4.78839199013642e-4], type: :f64),
         options_comp: Nx.tensor(0.0, type: :f64),
@@ -176,7 +183,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       ]
 
-      computed_step = InternalComputations.compuete_step(step, stepper_fn, ode_fn, opts)
+      computed_step = InternalComputations.compute_step(step, stepper_fn, ode_fn, opts)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.453755 484642738e-4
@@ -217,7 +224,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       x = Nx.tensor([1.97537723429, -0.26653011403])
       expected_norm = Nx.tensor(0.00473516383083)
 
-      norm = AdaptiveStepsize.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
+      norm = InternalComputations.abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
@@ -229,7 +236,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       opts = [norm_control: false]
       x_zeros = Nx.tensor([0.0, 0.0], type: :f64)
 
-      norm = AdaptiveStepsize.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
+      norm = InternalComputations.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, opts)
 
       assert_all_close(norm, Nx.tensor(1.0e14, type: :f64), atol: 1.0e-17, rtol: 1.0e-17)
     end
@@ -260,7 +267,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       abs_tol = Nx.tensor(1.0e-12, type: :f64)
       rel_tol = Nx.tensor(1.0e-12, type: :f64)
 
-      error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      error = InternalComputations.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       assert_all_close(error, expected_error, atol: 1.0e-16, rtol: 1.0e-16)
     end
@@ -296,7 +303,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
 
       expected_error = Nx.tensor(0.259206892061492, type: :f64)
 
-      # error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      # error = InternalComputations.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
       {error, _t_minus_x} = abs_rel_norm_for_test_purposes(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       # IO.inspect(Nx.to_number(error), label: "error")
@@ -392,7 +399,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       abs_tol = Nx.tensor(1.0e-11, type: :f64)
       rel_tol = Nx.tensor(1.0e-11, type: :f64)
 
-      error = AdaptiveStepsize.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
+      error = InternalComputations.abs_rel_norm(x_next, x_old, x_est, abs_tol, rel_tol, norm_control: false)
 
       # sc:   [1.99997458501656e-11, 1.0e-11]  Elixir                Agreement!!!
       # sc:    1.999974585016559e-11 9.999999999999999e-12 Octave
@@ -427,7 +434,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       y = Nx.tensor([1.99402286380, 0.33477644992])
       expected_norm = Nx.tensor(0.77474409123)
 
-      norm = AdaptiveStepsize.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
+      norm = InternalComputations.abs_rel_norm(x, x_old, y, abs_tolerance, rel_tolerance, opts)
 
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end

@@ -836,6 +836,7 @@ defmodule Integrator.AdaptiveStepsize do
   end
 
   # Sums the squares of a vector and then takes the square root (e.g., computes the norm of a vector)
+  # Is there an Nx function which does this?
   @spec sum_sq(Nx.t()) :: Nx.t()
   defnp sum_sq(x) do
     Nx.dot(x, x) |> Nx.sqrt()

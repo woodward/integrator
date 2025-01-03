@@ -11,6 +11,8 @@ defmodule Integrator.RungeKuttaStep do
      :x_old,
      :x_new,
      #
+     :dt,
+     #
      :k_vals,
      :options_comp,
      :error_estimate
@@ -23,6 +25,8 @@ defmodule Integrator.RungeKuttaStep do
           x_old: Nx.t(),
           x_new: Nx.t(),
           #
+          dt: Nx.t(),
+          #
           k_vals: Nx.t(),
           options_comp: Nx.t(),
           error_estimate: Nx.t()
@@ -34,6 +38,8 @@ defmodule Integrator.RungeKuttaStep do
     #
     :x_old,
     :x_new,
+    #
+    :dt,
     #
     :k_vals,
     :options_comp,

@@ -5,11 +5,13 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
+  alias Integrator.RungeKutta
   alias Integrator.RungeKuttaStep
+  alias Integrator.Utils
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
-  @spec compute_step(t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: Step.t()
+  @spec compute_step(RungeKuttaStep.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), Keyword.t()) :: RungeKuttaStep.t()
   def compute_step(step, stepper_fn, ode_fn, opts) do
     x_old = step.x_new
     t_old = step.t_new
@@ -80,5 +82,11 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       sc = Nx.max(abs_tolerance, rel_tolerance * Nx.max(Nx.abs(t), Nx.abs(t_old)))
       (Nx.abs(t - x) / sc) |> Nx.reduce_max()
     end
+  end
+
+  # Sums the squares of a vector and then takes the square root (e.g., computes the norm of a vector)
+  @spec sum_sq(Nx.t()) :: Nx.t()
+  defnp sum_sq(x) do
+    Nx.dot(x, x) |> Nx.sqrt()
   end
 end
