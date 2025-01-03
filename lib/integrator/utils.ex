@@ -133,8 +133,8 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have the same sign, or if one or more of them is zero
   """
-  @spec same_signs_or_zero?(Nx.t(), Nx.t()) :: Nx.t()
-  defn same_signs_or_zero?(x1, x2) do
+  @spec same_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
+  defn same_signs_or_any_zeros?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) >= 0
 
@@ -147,8 +147,8 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have different signs, or if one or more of them is zero
   """
-  @spec different_signs_or_zero?(Nx.t(), Nx.t()) :: Nx.t()
-  defn different_signs_or_zero?(x1, x2) do
+  @spec different_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
+  defn different_signs_or_any_zeros?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) <= 0
 

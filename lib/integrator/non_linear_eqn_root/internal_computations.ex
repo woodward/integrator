@@ -7,7 +7,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   """
 
   import Nx.Defn
-  import Integrator.Utils, only: [same_signs?: 2, same_signs_or_zero?: 2, different_signs_or_zero?: 2, different_signs?: 2]
+
+  import Integrator.Utils,
+    only: [same_signs?: 2, same_signs_or_any_zeros?: 2, different_signs?: 2, different_signs_or_any_zeros?: 2]
 
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
@@ -240,7 +242,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
   @spec check_for_non_monotonicity(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn check_for_non_monotonicity(z) do
-    if same_signs_or_zero?(z.fc - z.fa, z.fc - z.fb) do
+    if same_signs_or_any_zeros?(z.fc - z.fa, z.fc - z.fb) do
       # The new point broke monotonicity.
       # Disable inverse cubic:
       %{z | fe: z.fc}
@@ -315,7 +317,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   @spec found?(search_for_2nd_point_t()) :: Nx.t()
-  defn found?(x), do: different_signs_or_zero?(x.fa, x.fb)
+  defn found?(x), do: different_signs_or_any_zeros?(x.fa, x.fb)
 
   @spec skip_bisection_if_successful_reduction(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn skip_bisection_if_successful_reduction(z) do
