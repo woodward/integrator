@@ -3,6 +3,11 @@ defmodule Integrator.RungeKutta.Step do
   The results of the computation of an individual Runge-Kutta step
   """
 
+  import Nx.Defn
+
+  alias Integrator.RungeKutta
+  alias Integrator.RungeKutta.Step
+  alias Integrator.Utils
   alias Integrator.Utils
 
   @derive {Nx.Container,
@@ -44,12 +49,6 @@ defmodule Integrator.RungeKutta.Step do
     :options_comp,
     :error_estimate
   ]
-
-  import Nx.Defn
-
-  alias Integrator.RungeKutta
-  alias Integrator.RungeKutta.Step
-  alias Integrator.Utils
 
   # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
   # perform the actual numerical computations
