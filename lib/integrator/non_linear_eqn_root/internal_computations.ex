@@ -7,6 +7,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   """
 
   import Nx.Defn
+  import Integrator.Utils, only: [same_signs?: 2, same_signs_or_zero?: 2, different_signs_or_zero?: 2, different_signs?: 2]
 
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
@@ -172,10 +173,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         {Interpolation.inverse_cubic(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.e, z.fe), @interpolation_inverse_cubic}
       else
         # The following line seems wrong: it seems like length will always be less than 4 if you're reaching here:
-        # if length < 4 or Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+        # if length < 4 or same_signs?(z.c - z.a, z.c - z.b) do
         #
         # Shouldn't it be this instead?
-        if Nx.sign(z.c - z.a) * Nx.sign(z.c - z.b) > 0 do
+        if same_signs?(z.c - z.a, z.c - z.b) do
           #
           {Interpolation.quadratic_plus_newton(z.a, z.fa, z.b, z.fb, z.d, z.fd, z.iteration_type),
            @interpolation_quadratic_plus_newton}
@@ -239,7 +240,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
   @spec check_for_non_monotonicity(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn check_for_non_monotonicity(z) do
-    if Nx.sign(z.fc - z.fa) * Nx.sign(z.fc - z.fb) >= 0 do
+    if same_signs_or_zero?(z.fc - z.fa, z.fc - z.fb) do
       # The new point broke monotonicity.
       # Disable inverse cubic:
       %{z | fe: z.fc}
@@ -314,9 +315,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   @spec found?(search_for_2nd_point_t()) :: Nx.t()
-  defn found?(x) do
-    Nx.sign(x.fa) * Nx.sign(x.fb) <= 0
-  end
+  defn found?(x), do: different_signs_or_zero?(x.fa, x.fb)
 
   @spec skip_bisection_if_successful_reduction(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn skip_bisection_if_successful_reduction(z) do
@@ -382,11 +381,11 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec bracket(NonLinearEqnRoot.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defn bracket(z) do
     {status, z} =
-      if Nx.sign(z.fa) * Nx.sign(z.fc) < 0 do
+      if different_signs?(z.fa, z.fc) do
         # Move c to b:
         {@continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
       else
-        if Nx.sign(z.fb) * Nx.sign(z.fc) < 0 do
+        if different_signs?(z.fb, z.fc) do
           {@continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
         else
           if z.fc == 0.0 do

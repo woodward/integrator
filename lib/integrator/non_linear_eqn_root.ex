@@ -17,7 +17,7 @@ defmodule Integrator.NonLinearEqnRoot do
   alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.TensorTypeError
 
-  import Integrator.Utils, only: [timestamp_μs: 0, elapsed_time_μs: 1]
+  import Integrator.Utils, only: [timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
   @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
   @type output_fn_t :: (Nx.t() -> any())
@@ -260,7 +260,7 @@ defmodule Integrator.NonLinearEqnRoot do
       mu_ba: (b - a) * InternalComputations.initial_mu()
     }
 
-    z = if Nx.sign(z.fa) * Nx.sign(z.fb) > 0.0, do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z
+    z = if same_signs?(z.fa, z.fb), do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z
 
     # case converged?(z, opts[:machine_eps], opts[:tolerance]) do
     #   :continue -> iterate(z, :continue, zero_fn, opts)
