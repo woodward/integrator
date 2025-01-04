@@ -138,7 +138,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?) do
     nx_type = Nx.type(x0)
     # Compute norm of initial conditions
-    x_zeros = zero_vector(x0)
+    x_zeros = zero_vector(Nx.size(x0), Nx.type(x0))
     d0 = Utils.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, norm_control?)
 
     x = ode_fn.(t0, x0)
@@ -175,10 +175,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   # Creates a zero vector that has the length of `x`
   # Is there a better built-in Nx way of doing this?
-  @spec zero_vector(Nx.t()) :: Nx.t()
-  defnp zero_vector(x) do
-    {length_of_x} = Nx.shape(x)
-    zero = Nx.tensor(0.0, type: Nx.type(x))
-    Nx.broadcast(zero, {length_of_x})
+  @spec zero_vector(Nx.t(), Nx.t()) :: Nx.t()
+  defnp zero_vector(size, type) do
+    0.0 |> Nx.tensor(type: type) |> Nx.broadcast({size})
   end
 end
