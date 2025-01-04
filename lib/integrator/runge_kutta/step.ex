@@ -1,6 +1,7 @@
 defmodule Integrator.RungeKutta.Step do
   @moduledoc """
-  The results of the computation of an individual Runge-Kutta step
+  The results of the computation of an individual Runge-Kutta step. `compute_step` computes
+  the next Runge-Kutta step given info from the prior step.
   """
 
   import Nx.Defn
@@ -51,6 +52,10 @@ defmodule Integrator.RungeKutta.Step do
     :dt
   ]
 
+  @doc """
+  Computes the next `Runge-Kutta.Step` struct given a prior `RungeKutta.Step` which contains info from the
+  previous Runge-Kutta computation
+  """
   @spec compute_step(Step.t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: Step.t()
   defn compute_step(step, dt, stepper_fn, ode_fn, options) do
     x_old = step.x_new
@@ -94,6 +99,7 @@ defmodule Integrator.RungeKutta.Step do
           error :: Nx.t()
         }
   defnp compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options) do
+    # This is the core of the Runge-Kutta algorithm for computing new the next step:
     {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
     error = Utils.abs_rel_norm(x_next, x_old, x_est, options.abs_tol, options.rel_tol, options.norm_control?)

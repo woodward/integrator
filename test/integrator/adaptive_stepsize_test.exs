@@ -929,7 +929,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "starting_stepsize" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works" do
       order = 5
       t0 = 0.0
@@ -943,7 +943,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - high fidelity ballode example to double precision accuracy (works!!!)" do
       order = 5
       t0 = ~VEC[  0.0  ]f64
@@ -957,7 +957,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "does NOT work for precision :f16" do
       order = 5
       t0 = ~VEC[  0.0  ]f16

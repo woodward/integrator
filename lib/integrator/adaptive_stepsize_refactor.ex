@@ -3,10 +3,11 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   Integrates a set of ODEs with an adaptive timestep.
   """
 
-  # import Nx.Defn
+  import Nx.Defn
 
   alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
+  alias Integrator.Utils
 
   @derive {Nx.Container,
            containers: [
@@ -105,5 +106,79 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   def integrate(_stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _fixed_times, _initial_tstep, _x0, _order, _opts \\ []) do
     %__MODULE__{t_old: Nx.u8(0)}
+  end
+
+  @doc """
+  Computes a good initial timestep for an ODE solver of order `order`
+  using the algorithm described in the reference below.
+
+  The input argument `ode_fn`, is the function describing the differential
+  equations, `t0` is the initial time, and `x0` is the initial
+  condition.  `abs_tol` and `rel_tol` are the absolute and relative
+  tolerance on the ODE integration.
+
+  Originally based on the Octave
+  [`starting_stepsize.m`](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/starting_stepsize.m).
+
+  Reference:
+
+  E. Hairer, S.P. Norsett and G. Wanner,
+  "Solving Ordinary Differential Equations I: Nonstiff Problems",
+  Springer.
+  """
+  @spec starting_stepsize(
+          order :: integer(),
+          ode_fn :: RungeKutta.ode_fn_t(),
+          t0 :: Nx.t(),
+          x0 :: Nx.t(),
+          abs_tol :: Nx.t(),
+          rel_tol :: Nx.t(),
+          norm_control? :: Nx.t()
+        ) :: Nx.t()
+  defn starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?) do
+    nx_type = Nx.type(x0)
+    # Compute norm of initial conditions
+    x_zeros = zero_vector(x0)
+    d0 = Utils.abs_rel_norm(x0, x0, x_zeros, abs_tol, rel_tol, norm_control?)
+
+    x = ode_fn.(t0, x0)
+
+    d1 = Utils.abs_rel_norm(x, x, x_zeros, abs_tol, rel_tol, norm_control?)
+
+    h0 =
+      if d0 < 1.0e-5 or d1 < 1.0e-5 do
+        Nx.tensor(1.0e-6, type: nx_type)
+      else
+        Nx.tensor(0.01, type: nx_type) * (d0 / d1)
+      end
+
+    # Compute one step of Explicit-Euler
+    x1 = x0 + h0 * x
+
+    # Approximate the derivative norm
+    xh = ode_fn.(t0 + h0, x1)
+
+    xh_minus_x = xh - x
+    d2 = Nx.tensor(1.0, type: nx_type) / h0 * Utils.abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, norm_control?)
+
+    one = Nx.tensor(1, type: nx_type)
+
+    h1 =
+      if max(d1, d2) <= 1.0e-15 do
+        max(Nx.tensor(1.0e-06, type: nx_type), h0 * Nx.tensor(1.0e-03, type: nx_type))
+      else
+        Nx.pow(Nx.tensor(1.0e-02, type: nx_type) / max(d1, d2), one / (order + one))
+      end
+
+    min(Nx.tensor(100.0, type: nx_type) * h0, h1)
+  end
+
+  # Creates a zero vector that has the length of `x`
+  # Is there a better built-in Nx way of doing this?
+  @spec zero_vector(Nx.t()) :: Nx.t()
+  defnp zero_vector(x) do
+    {length_of_x} = Nx.shape(x)
+    zero = Nx.tensor(0.0, type: Nx.type(x))
+    Nx.broadcast(zero, {length_of_x})
   end
 end
