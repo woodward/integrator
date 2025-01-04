@@ -1,6 +1,8 @@
 defmodule Integrator.DataCollector do
   @moduledoc """
-  Collects data from an integration (or when finding a root)
+  Collects data from an integration (or when finding a root).
+  Data is stored in reverse order in the genserver, and then its order is reversed when returned
+  to the caller.
   """
 
   use GenServer
@@ -23,6 +25,12 @@ defmodule Integrator.DataCollector do
   @impl true
   def init(_args) do
     {:ok, %{data: []}}
+  end
+
+  @impl true
+  def handle_cast({:add_data, data_points}, state) when is_list(data_points) do
+    new_data = Enum.reverse(data_points) ++ state.data
+    {:noreply, %{state | data: new_data}}
   end
 
   @impl true
