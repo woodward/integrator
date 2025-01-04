@@ -15,6 +15,7 @@ defmodule Integrator.RungeKutta.Step do
    containers: [
      :t_old,
      :t_new,
+     # Perhaps :dt should not be on this struct, and should be passed in? or be on the AdaptiveStepsize struct?
      :dt,
      #
      :x_old,
@@ -61,14 +62,16 @@ defmodule Integrator.RungeKutta.Step do
     k_vals_old = step.k_vals
     dt = step.dt
 
-    {t_next, x_next, k_vals, options_comp, error_estimate} =
+    {t_new, x_new, k_vals_new, options_comp_new, error_estimate} =
       compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
 
     %Step{
-      t_new: t_next,
-      x_new: x_next,
-      k_vals: k_vals,
-      options_comp: options_comp,
+      t_old: t_old,
+      x_old: x_old,
+      t_new: t_new,
+      x_new: x_new,
+      k_vals: k_vals_new,
+      options_comp: options_comp_new,
       error_estimate: error_estimate
     }
   end

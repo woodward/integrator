@@ -48,8 +48,12 @@ defmodule Integrator.RungeKutta.StepTest do
       expected_options_comp = Nx.tensor(0.0, type: :f64)
       expected_error = Nx.tensor(1.586715304267830e-02, type: :f64)
 
+      assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
+
       assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-07, rtol: 1.0e-07)
+
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
@@ -92,8 +96,12 @@ defmodule Integrator.RungeKutta.StepTest do
       expected_options_comp = Nx.tensor(-2.710505431213761e-20, type: :f64)
       expected_error = Nx.tensor(0.383840528805912, type: :f64)
 
+      assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
+
       assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
 
@@ -150,8 +158,12 @@ defmodule Integrator.RungeKutta.StepTest do
 
       # dbg(error)
 
+      assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
+
       assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
+
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
@@ -206,8 +218,12 @@ defmodule Integrator.RungeKutta.StepTest do
       expected_error = Nx.tensor(0.395533432395734, type: :f64)
       #                  Elixir: 0.3955334323957338
 
+      assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
+
       assert_all_close(computed_step.t_new, expected_t_next, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.x_new, expected_x_next, atol: 1.0e-11, rtol: 1.0e-11)
+
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
