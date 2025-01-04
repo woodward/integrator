@@ -92,6 +92,7 @@ defmodule Integrator.Utils do
       ~VEC[ 4  8  12 ]s8
     ]
 
+  This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
   @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
   def columns_as_list(matrix, start_index, end_index \\ nil) do
@@ -124,6 +125,8 @@ defmodule Integrator.Utils do
       vector |> Nx.as_list() |> Enum.map(& Nx.tensor(&1, type: Nx.type(vector)))
 
   seems to introduce potential precision issues
+
+  This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
   @spec vector_as_list(Nx.t()) :: [Nx.t()]
   def vector_as_list(vector) do
