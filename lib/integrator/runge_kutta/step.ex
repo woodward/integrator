@@ -15,7 +15,7 @@ defmodule Integrator.RungeKutta.Step do
    containers: [
      :t_old,
      :t_new,
-     # Perhaps :dt should not be on this struct, and should be passed in? or be on the AdaptiveStepsize struct?
+     # Perhaps :dt should not be on this struct, and should be passed in as an arg? or stay on the AdaptiveStepsize struct?
      :dt,
      #
      :x_old,
@@ -52,10 +52,8 @@ defmodule Integrator.RungeKutta.Step do
     :error_estimate
   ]
 
-  # Computes the next Runge-Kutta step. Note that this function "wraps" the Nx functions which
-  # perform the actual numerical computations
   @spec compute_step(Step.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: Step.t()
-  def compute_step(step, stepper_fn, ode_fn, options) do
+  defn compute_step(step, stepper_fn, ode_fn, options) do
     x_old = step.x_new
     t_old = step.t_new
     options_comp_old = step.options_comp
@@ -63,21 +61,26 @@ defmodule Integrator.RungeKutta.Step do
     dt = step.dt
 
     {t_new, x_new, k_vals_new, options_comp_new, error_estimate} =
-      compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
+      compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
 
-    %Step{
-      t_old: t_old,
-      x_old: x_old,
-      t_new: t_new,
-      x_new: x_new,
-      k_vals: k_vals_new,
-      options_comp: options_comp_new,
-      error_estimate: error_estimate
+    %{
+      step
+      | t_old: t_old,
+        x_old: x_old,
+        t_new: t_new,
+        x_new: x_new,
+        k_vals: k_vals_new,
+        options_comp: options_comp_new,
+        error_estimate: error_estimate,
+        #
+        # This is not computed here - setting it to NaN as an indicator that this is no longer the
+        # current/correct value
+        dt: Nx.Constants.nan(Nx.type(x_old))
     }
   end
 
   # Computes the next Runge-Kutta step and the associated error
-  @spec compute_step_nx(
+  @spec compute_step(
           stepper_fn :: RungeKutta.stepper_fn_t(),
           ode_fn :: RungeKutta.ode_fn_t(),
           t_old :: Nx.t(),
@@ -93,7 +96,7 @@ defmodule Integrator.RungeKutta.Step do
           options_comp :: Nx.t(),
           error :: Nx.t()
         }
-  defnp compute_step_nx(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options) do
+  defnp compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options) do
     {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
     {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
     error = Utils.abs_rel_norm(x_next, x_old, x_est, options.abs_tol, options.rel_tol, options.norm_control?)

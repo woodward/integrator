@@ -23,7 +23,12 @@ defmodule Integrator.RungeKutta.StepTest do
         x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
         options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
         dt: Nx.tensor(0.153290715538041, type: :f64),
-        k_vals: k_vals
+        k_vals: k_vals,
+        #
+        # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
+        x_old: Nx.f64(0.0),
+        t_old: Nx.f64(0.0),
+        error_estimate: Nx.f64(0.0)
       }
 
       stepper_fn = &DormandPrince45.integrate/6
@@ -57,6 +62,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+      assert computed_step.dt == Nx.Constants.nan(:f64)
     end
 
     # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
@@ -71,7 +77,12 @@ defmodule Integrator.RungeKutta.StepTest do
         x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
         options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
         dt: Nx.tensor(1.048148240128353e-04, type: :f64),
-        k_vals: k_vals
+        k_vals: k_vals,
+        #
+        # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
+        x_old: Nx.f64(0.0),
+        t_old: Nx.f64(0.0),
+        error_estimate: Nx.f64(0.0)
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
@@ -108,6 +119,7 @@ defmodule Integrator.RungeKutta.StepTest do
       # Note that the error is just accurate to single precision, which is ok; see the test below for abs_rel_norm
       # to see how sensitive the error is to input values:
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
+      assert computed_step.dt == Nx.Constants.nan(:f64)
     end
 
     # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
@@ -122,7 +134,12 @@ defmodule Integrator.RungeKutta.StepTest do
         x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
         options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
         dt: Nx.tensor(1.058699260768067e-04, type: :f64),
-        k_vals: k_vals
+        k_vals: k_vals,
+        #
+        # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
+        x_old: Nx.f64(0.0),
+        t_old: Nx.f64(0.0),
+        error_estimate: Nx.f64(0.0)
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
@@ -167,6 +184,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+      assert computed_step.dt == Nx.Constants.nan(:f64)
     end
 
     # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
@@ -184,7 +202,12 @@ defmodule Integrator.RungeKutta.StepTest do
         dt: Nx.tensor(1.0586992285952218e-4, type: :f64),
         # dt is WRONG!!!!
         # dt: Nx.tensor(1.058699260768067e-04, type: :f64),
-        k_vals: k_vals
+        k_vals: k_vals,
+        #
+        # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
+        x_old: Nx.f64(0.0),
+        t_old: Nx.f64(0.0),
+        error_estimate: Nx.f64(0.0)
       }
 
       stepper_fn = &BogackiShampine23.integrate/6
@@ -227,6 +250,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
+      assert computed_step.dt == Nx.Constants.nan(:f64)
     end
   end
 end
