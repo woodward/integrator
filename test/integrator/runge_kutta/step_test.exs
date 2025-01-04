@@ -277,4 +277,65 @@ defmodule Integrator.RungeKutta.StepTest do
       assert computed_step.dt == dt
     end
   end
+
+  describe "initial_step/?" do
+    @tag :skip
+    test "returns an inital step with the correct initial values" do
+      t0 = Nx.f64(1.0)
+      x0 = Nx.f64([2.0, 3.0])
+      initial_step = Step.initial_step(t0, x0)
+      assert initial_step == %Step{}
+    end
+  end
+
+  # %__MODULE__{
+  #   t_new: t_start,
+  #   x_new: x0,
+  #   # t_old must be set on the initial struct in case there's an error when computing the first step (used in t_next/2)
+  #   t_old: t_start,
+  #   dt: initial_tstep,
+  #   k_vals: initial_empty_k_vals(order, x0),
+  #   fixed_times: fixed_times,
+  #   nx_type: nx_type,
+  #   options_comp: Nx.tensor(0.0, type: nx_type),
+  #   timestamp_μs: timestamp_now,
+  #   timestamp_start_μs: timestamp_now
+  # }
+
+  describe "initial_empty_k_vals" do
+    test "returns a tensor with zeros that's the correct size, given the size of x and the order" do
+      order = 5
+      x = ~VEC[ 1.0 2.0 3.0 ]f64
+      k_vals = Step.initial_empty_k_vals(order, x)
+
+      expected_k_vals = ~MAT[
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0
+      ]f64
+
+      assert_all_close(k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-16)
+
+      # The k_vals has the Nx type of x:
+      assert Nx.type(k_vals) == {:f, 64}
+    end
+
+    test "returns a tensor that has the Nx type of x" do
+      order = 3
+      type = {:f, 32}
+      x = Nx.tensor([1.0, 2.0, 3.0], type: type)
+      k_vals = Step.initial_empty_k_vals(order, x)
+
+      expected_k_vals = ~MAT[
+        0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0
+      ]f32
+
+      assert_all_close(k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-16)
+
+      # The k_vals has the Nx type of x:
+      assert Nx.type(k_vals) == type
+    end
+  end
 end

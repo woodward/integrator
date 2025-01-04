@@ -427,11 +427,11 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "initial_empty_k_vals" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns a tensor with zeros that's the correct size" do
       order = 5
       x = ~VEC[ 1.0 2.0 3.0 ]f64
-      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(x, order: order)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -445,12 +445,12 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert Nx.type(k_vals) == {:f, 64}
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "returns a tensor that has the Nx type of x" do
       order = 3
       type = {:f, 32}
       x = Nx.tensor([1.0, 2.0, 3.0], type: type)
-      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(x, order: order)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0
