@@ -136,14 +136,6 @@ defmodule Integrator.Utils do
     |> Enum.reverse()
   end
 
-  # Perhaps this can be deleted soon?
-  def tensor_length(tensor) do
-    case Nx.shape(tensor) do
-      {} -> 1
-      {length} -> length
-    end
-  end
-
   # Paulo said these sign functions might have numerical issues in the Octave version so do this instead
 
   @doc """

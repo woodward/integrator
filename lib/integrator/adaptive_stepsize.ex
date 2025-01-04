@@ -697,7 +697,7 @@ defmodule Integrator.AdaptiveStepsize do
     t_add = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
     # Get rid of the first element (t_add[0]) via this slice:
     t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
-    t_add_length = Utils.tensor_length(t_add)
+    t_add_length = Nx.size(t_add)
     t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
     x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
     x_out_as_cols = interpolate_fn.(t, x, step.k_vals, t_add) |> Utils.columns_as_list(0, t_add_length - 1) |> Enum.reverse()
