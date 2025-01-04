@@ -8,9 +8,6 @@ defmodule Integrator.RungeKutta.Step do
 
   alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.RungeKutta
-  alias Integrator.RungeKutta.Step
-  alias Integrator.Utils
-  alias Integrator.Utils
 
   @derive {Nx.Container,
    containers: [
@@ -64,7 +61,7 @@ defmodule Integrator.RungeKutta.Step do
     k_vals_old = step.k_vals
 
     {t_new, x_new, k_vals_new, options_comp_new, error_estimate} =
-      compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
+      RungeKutta.compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options)
 
     %{
       step
@@ -79,30 +76,5 @@ defmodule Integrator.RungeKutta.Step do
         error_estimate: error_estimate,
         dt: dt
     }
-  end
-
-  # Computes the next Runge-Kutta step and the associated error
-  @spec compute_step(
-          stepper_fn :: RungeKutta.stepper_fn_t(),
-          ode_fn :: RungeKutta.ode_fn_t(),
-          t_old :: Nx.t(),
-          x_old :: Nx.t(),
-          k_vals_old :: Nx.t(),
-          options_comp_old :: Nx.t(),
-          dt :: Nx.t(),
-          options :: NxOptions.t()
-        ) :: {
-          t_next :: Nx.t(),
-          x_next :: Nx.t(),
-          k_vals :: Nx.t(),
-          options_comp :: Nx.t(),
-          error :: Nx.t()
-        }
-  defnp compute_step(stepper_fn, ode_fn, t_old, x_old, k_vals_old, options_comp_old, dt, options) do
-    # This is the core of the Runge-Kutta algorithm for computing new the next step:
-    {t_next, options_comp} = Utils.kahan_sum(t_old, options_comp_old, dt)
-    {x_next, x_est, k_vals} = stepper_fn.(ode_fn, t_old, x_old, dt, k_vals_old, t_next)
-    error = Utils.abs_rel_norm(x_next, x_old, x_est, options.abs_tol, options.rel_tol, options.norm_control?)
-    {t_next, x_next, k_vals, options_comp, error}
   end
 end
