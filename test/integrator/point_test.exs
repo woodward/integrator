@@ -7,32 +7,77 @@ defmodule Integrator.PointTest do
   alias Integrator.Point
 
   describe "new/2" do
-    test "creates a list of Points from t and x values" do
-      t = ~VEC[0.1 0.2]f64
+    test "creates a list of Points from t and x values - 1 point" do
+      t = ~VEC[0.1]f64
       x = ~MAT[
-           1.0   2.0
-           3.0   4.0
+           1.0
+           2.0
       ]f64
 
       points = Point.points_from_t_and_x(t, x)
 
-      [point1, point2] = points
+      {point1} = points
+      assert point1 == %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+    end
 
-      assert point1 == %Point{t: 0.1, x: [1.0, 3.0]}
-      assert point2 == %Point{t: 0.2, x: [2.0, 4.0]}
+    test "creates a list of Points from t and x values - 2 points" do
+      t = ~VEC[0.1 0.2]f64
+      x = ~MAT[
+           1.0   3.0
+           2.0   4.0
+      ]f64
+
+      points = Point.points_from_t_and_x(t, x)
+
+      {point1, point2} = points
+
+      assert point1 == %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+      assert point2 == %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])}
     end
   end
 
-  describe "try to convert it to nx" do
-    test "what does this do?" do
-      x = ~MAT[
-        1.0   2.0
-        3.0   4.0
+  test "creates a list of Points from t and x values - 3 points" do
+    t = ~VEC[0.1 0.2 0.3]f64
+    x = ~MAT[
+           1.0   3.0   5.0
+           2.0   4.0   6.0
       ]f64
 
-      {_x0, _x1} = Point.what_does_this_do?(x)
-      # dbg(x0)
-      # dbg(x1)
+    points = Point.points_from_t_and_x(t, x)
+
+    {point1, point2, point3} = points
+
+    assert point1 == %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+    assert point2 == %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])}
+    assert point3 == %Point{t: Nx.f64(0.3), x: Nx.f64([5.0, 6.0])}
+  end
+
+  test "creates a list of Points from t and x values - 4 points" do
+    t = ~VEC[0.1 0.2 0.3 0.4]f64
+    x = ~MAT[
+           1.0   3.0  5.0  7.0
+           2.0   4.0  6.0  8.0
+      ]f64
+
+    points = Point.points_from_t_and_x(t, x)
+
+    {point1, point2, point3, point4} = points
+
+    assert point1 == %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+    assert point2 == %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])}
+    assert point3 == %Point{t: Nx.f64(0.3), x: Nx.f64([5.0, 6.0])}
+    assert point4 == %Point{t: Nx.f64(0.4), x: Nx.f64([7.0, 8.0])}
+  end
+
+  test "raises an exception if there are 5 points" do
+    t = ~VEC[0.1 0.2 0.3 0.4 0.5]f64
+    x = ~MAT[
+           1.0   3.0  5.0  7.0  9.0
+           2.0   4.0  6.0  8.0 10.0
+      ]f64
+
+    assert_raise RuntimeError, fn ->
+      Point.points_from_t_and_x(t, x)
     end
   end
 end
