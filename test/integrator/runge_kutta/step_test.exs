@@ -18,11 +18,16 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
       ]f64
 
+      dt = Nx.tensor(0.153290715538041, type: :f64)
+
       step = %Step{
         t_new: Nx.tensor(0.170323017264490, type: :f64),
         x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
         options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
-        dt: Nx.tensor(0.153290715538041, type: :f64),
+        #
+        # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
+        dt: Nx.f64(0.0),
+        #
         k_vals: k_vals,
         #
         # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
@@ -40,7 +45,7 @@ defmodule Integrator.RungeKutta.StepTest do
         rel_tol: Nx.f64(1.0e-03)
       }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
+      computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
       expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
@@ -62,7 +67,8 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
-      assert computed_step.dt == Nx.Constants.nan(:f64)
+
+      assert computed_step.dt == dt
     end
 
     # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
@@ -72,11 +78,16 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
 
+      dt = Nx.tensor(1.048148240128353e-04, type: :f64)
+
       step = %Step{
         t_new: Nx.tensor(3.453755516815583e-04, type: :f64),
         x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
         options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
-        dt: Nx.tensor(1.048148240128353e-04, type: :f64),
+        #
+        # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
+        dt: Nx.f64(0.0),
+        #
         k_vals: k_vals,
         #
         # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
@@ -94,7 +105,7 @@ defmodule Integrator.RungeKutta.StepTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
+      computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
       expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
@@ -119,7 +130,8 @@ defmodule Integrator.RungeKutta.StepTest do
       # Note that the error is just accurate to single precision, which is ok; see the test below for abs_rel_norm
       # to see how sensitive the error is to input values:
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
-      assert computed_step.dt == Nx.Constants.nan(:f64)
+
+      assert computed_step.dt == dt
     end
 
     # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
@@ -129,11 +141,16 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
       ]f64
 
+      dt = Nx.tensor(1.058699260768067e-04, type: :f64)
+
       step = %Step{
         t_new: Nx.tensor(2.395056256047516e-04, type: :f64),
         x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
         options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
-        dt: Nx.tensor(1.058699260768067e-04, type: :f64),
+        #
+        # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
+        dt: Nx.f64(0.0),
+        #
         k_vals: k_vals,
         #
         # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
@@ -151,7 +168,7 @@ defmodule Integrator.RungeKutta.StepTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
+      computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.4537555168155827e-4
@@ -184,7 +201,8 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
-      assert computed_step.dt == Nx.Constants.nan(:f64)
+
+      assert computed_step.dt == dt
     end
 
     # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
@@ -195,13 +213,18 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.999224255823159     -1.9988937919269867    -1.9987286328288005     -1.9985634251635955
       ]f64
 
+      # dt is WRONG!!!!
+      # dt: Nx.tensor(1.058699260768067e-04, type: :f64),
+      dt = Nx.tensor(1.0586992285952218e-4, type: :f64)
+
       step = %Step{
         t_new: Nx.tensor(2.3950562560475164e-04, type: :f64),
         x_new: Nx.tensor([1.9999999426507922, -4.78839199013642e-4], type: :f64),
         options_comp: Nx.tensor(0.0, type: :f64),
-        dt: Nx.tensor(1.0586992285952218e-4, type: :f64),
-        # dt is WRONG!!!!
-        # dt: Nx.tensor(1.058699260768067e-04, type: :f64),
+        #
+        # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
+        dt: Nx.f64(0.0),
+        #
         k_vals: k_vals,
         #
         # Not used, but these need to be non-zero in order to cross the Elixir-Nx boundary:
@@ -219,7 +242,7 @@ defmodule Integrator.RungeKutta.StepTest do
         rel_tol: Nx.tensor(1.0e-12, type: :f64)
       }
 
-      computed_step = Step.compute_step(step, stepper_fn, ode_fn, nx_options)
+      computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
       expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
       #                   Elixir: 3.453755 484642738e-4
@@ -250,7 +273,8 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.k_vals, expected_k_vals, atol: 1.0e-11, rtol: 1.0e-11)
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
-      assert computed_step.dt == Nx.Constants.nan(:f64)
+
+      assert computed_step.dt == dt
     end
   end
 end
