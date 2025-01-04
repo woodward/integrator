@@ -22,4 +22,17 @@ defmodule Integrator.PointTest do
       assert point2 == %Point{t: 0.2, x: [2.0, 4.0]}
     end
   end
+
+  describe "try to convert it to nx" do
+    test "what does this do?" do
+      x = ~MAT[
+        1.0   2.0
+        3.0   4.0
+      ]f64
+
+      {_x0, _x1} = Point.what_does_this_do?(x)
+      # dbg(x0)
+      # dbg(x1)
+    end
+  end
 end

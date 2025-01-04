@@ -36,4 +36,9 @@ defmodule Integrator.Point do
       %__MODULE__{t: t, x: Nx.to_list(x)}
     end)
   end
+
+  defn what_does_this_do?(x) do
+    xt = x |> Nx.transpose()
+    {xt[0], xt[1]}
+  end
 end
