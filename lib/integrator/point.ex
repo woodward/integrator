@@ -22,8 +22,8 @@ defmodule Integrator.Point do
     :x
   ]
 
-  @spec points_from_t_and_x(Nx.t(), Nx.t()) :: t()
-  defn points_from_t_and_x(t, x) do
+  @spec convert_to_points(Nx.t(), Nx.t()) :: t()
+  defn convert_to_points(t, x) do
     size = Nx.size(t)
     x_t = Nx.transpose(x)
 

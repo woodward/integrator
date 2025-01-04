@@ -14,7 +14,7 @@ defmodule Integrator.PointTest do
            2.0
       ]f64
 
-      points = Point.points_from_t_and_x(t, x)
+      points = Point.convert_to_points(t, x)
 
       {point1} = points
       assert point1 == %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
@@ -27,7 +27,7 @@ defmodule Integrator.PointTest do
            2.0   4.0
       ]f64
 
-      points = Point.points_from_t_and_x(t, x)
+      points = Point.convert_to_points(t, x)
 
       {point1, point2} = points
 
@@ -43,7 +43,7 @@ defmodule Integrator.PointTest do
            2.0   4.0   6.0
       ]f64
 
-    points = Point.points_from_t_and_x(t, x)
+    points = Point.convert_to_points(t, x)
 
     {point1, point2, point3} = points
 
@@ -59,7 +59,7 @@ defmodule Integrator.PointTest do
            2.0   4.0  6.0  8.0
       ]f64
 
-    points = Point.points_from_t_and_x(t, x)
+    points = Point.convert_to_points(t, x)
 
     {point1, point2, point3, point4} = points
 
@@ -77,7 +77,7 @@ defmodule Integrator.PointTest do
       ]f64
 
     assert_raise RuntimeError, fn ->
-      Point.points_from_t_and_x(t, x)
+      Point.convert_to_points(t, x)
     end
   end
 end
