@@ -78,18 +78,21 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
-  defn initial_step(_t0, _x0) do
+  defn initial_step(t0, x0, opts \\ []) do
+    opts = keyword!(opts, order: 5)
+    type = Nx.type(x0)
+
     %__MODULE__{
-      t_old: 0,
-      t_new: 0,
+      t_old: Nx.Constants.nan(type),
+      t_new: t0,
       #
-      x_old: 0,
-      x_new: 0,
+      x_old: Nx.Constants.nan(type),
+      x_new: x0,
       #
-      k_vals: 0,
-      options_comp: 0,
-      error_estimate: 0,
-      dt: 0
+      k_vals: initial_empty_k_vals_defn(x0, opts),
+      options_comp: Nx.tensor(0.0, type: type),
+      error_estimate: Nx.Constants.nan(type),
+      dt: Nx.Constants.nan(type)
     }
   end
 

@@ -279,12 +279,30 @@ defmodule Integrator.RungeKutta.StepTest do
   end
 
   describe "initial_step/?" do
-    @tag :skip
     test "returns an inital step with the correct initial values" do
       t0 = Nx.f64(1.0)
       x0 = Nx.f64([2.0, 3.0])
-      initial_step = Step.initial_step(t0, x0)
-      assert initial_step == %Step{}
+      order = 5
+
+      initial_step = Step.initial_step(t0, x0, order: order)
+
+      expected_k_vals = ~MAT[
+        0.0  0.0  0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0  0.0  0.0
+      ]f64
+
+      assert initial_step == %Step{
+               t_old: Nx.Constants.nan(:f64),
+               t_new: Nx.f64(1.0),
+               #
+               x_old: Nx.Constants.nan(:f64),
+               x_new: Nx.f64([2.0, 3.0]),
+               #
+               k_vals: expected_k_vals,
+               options_comp: Nx.f64(0.0),
+               error_estimate: Nx.Constants.nan(:f64),
+               dt: Nx.Constants.nan(:f64)
+             }
     end
   end
 
