@@ -5,7 +5,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   import Nx.Defn
 
-  alias Integrator.FixedOutputTimes
+  alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
   alias Integrator.Point
   alias Integrator.RungeKutta
@@ -17,8 +17,14 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :x_at_start_of_step,
      :dt_new,
      :rk_step,
-     :fixed_output_times,
-     :output_points,
+     :fixed_output_time_next,
+     # perhaps status is not necessary, and terminal_event is used intead?
+     :status,
+     #
+     # Perhaps none of these three are needed if I push out the points out immediately?
+     :output_point,
+     :interpolated_points,
+     :fixed_output_point,
      #
      :count_loop__increment_step,
      :count_cycles__compute_step,
@@ -34,7 +40,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :step_elapsed_time_μs,
      #
      :overall_start_timestamp_μs,
-     :overall_elapsed_time_μs
+     :overall_elapsed_time_μs,
+     #
+     :non_linear_eqn_root_nx_options
    ]}
 
   @type t :: %__MODULE__{
@@ -42,8 +50,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           x_at_start_of_step: Nx.t(),
           dt_new: Nx.t(),
           rk_step: RungeKutta.Step.t(),
-          fixed_output_times: FixedOutputTimes.t(),
-          output_points: {Point.t(), Point.t(), Point.t(), Point.t()},
+          fixed_output_time_next: Nx.t(),
+          # perhaps status is not necessary, and terminal_event is used intead?
+          status: Nx.t(),
+          #
+          output_point: Point.t(),
+          interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
+          fixed_output_point: Point.t(),
           #
           count_loop__increment_step: Nx.t(),
           count_cycles__compute_step: Nx.t(),
@@ -59,15 +72,22 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           step_elapsed_time_μs: Nx.t(),
           #
           overall_start_timestamp_μs: Nx.t(),
-          overall_elapsed_time_μs: Nx.t()
+          overall_elapsed_time_μs: Nx.t(),
+          #
+          non_linear_eqn_root_nx_options: NonLinearEqnRoot.NxOptions.t()
         }
   defstruct [
     :t_at_start_of_step,
     :x_at_start_of_step,
     :dt_new,
     :rk_step,
-    :fixed_output_times,
-    :output_points,
+    :fixed_output_time_next,
+    # perhaps status is not necessary, and terminal_event is used intead?
+    :status,
+    #
+    :output_point,
+    :interpolated_points,
+    :fixed_output_point,
     #
     :count_loop__increment_step,
     :count_cycles__compute_step,
@@ -83,7 +103,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     :step_elapsed_time_μs,
     #
     :overall_start_timestamp_μs,
-    :overall_elapsed_time_μs
+    :overall_elapsed_time_μs,
+    #
+    :non_linear_eqn_root_nx_options
   ]
 
   defmodule NxOptions do
@@ -93,22 +115,59 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     """
 
     @derive {Nx.Container,
-             containers: [
-               :abs_tol,
-               :norm_control?,
-               :rel_tol
-             ],
-             keep: []}
+     containers: [
+       :abs_tol,
+       :rel_tol,
+       :norm_control?,
+       :fixed_output_times?,
+       :fixed_output_dt,
+       :speed,
+       # Formerly :max_step
+       :dt_max,
+       :max_number_of_errors,
+       #
+       :event_fn_adapter,
+       :output_fn_adapter,
+       :zero_fn_adapter
+     ],
+     keep: [
+       :order,
+       :refine,
+       :type
+     ]}
 
     @type t :: %__MODULE__{
             abs_tol: Nx.t(),
+            rel_tol: Nx.Type.t(),
             norm_control?: Nx.t(),
-            rel_tol: Nx.Type.t()
+            order: integer(),
+            fixed_output_times?: Nx.t(),
+            fixed_output_dt: Nx.t(),
+            speed: Nx.t(),
+            refine: integer(),
+            type: Nx.Type.t(),
+            dt_max: Nx.t(),
+            max_number_of_errors: Nx.t(),
+            #
+            event_fn_adapter: ExternalFnAdapter.t(),
+            output_fn_adapter: ExternalFnAdapter.t(),
+            zero_fn_adapter: ExternalFnAdapter.t()
           }
 
     defstruct abs_tol: 1.0e-06,
+              rel_tol: 1.0e-03,
               norm_control?: Nx.u8(1),
-              rel_tol: 1.0e-03
+              order: 5,
+              fixed_output_times?: Nx.u8(0),
+              fixed_output_dt: 0.0,
+              speed: Nx.Constants.infinity(:f64),
+              refine: 4,
+              type: {:f, 32},
+              dt_max: 1000.0,
+              max_number_of_errors: 1000,
+              event_fn_adapter: %ExternalFnAdapter{},
+              output_fn_adapter: %ExternalFnAdapter{},
+              zero_fn_adapter: %ExternalFnAdapter{}
   end
 
   options = [
