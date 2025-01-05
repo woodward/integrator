@@ -20,8 +20,6 @@ defmodule Integrator.NonLinearEqnRoot do
   import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
   @type zero_fn_t :: (Nx.t(), [Nx.t()] -> Nx.t())
-  @type output_fn_t :: (Nx.t() -> any())
-
   @type iteration_type :: 1 | 2 | 3 | 4 | 5
 
   @derive {Nx.Container,
