@@ -5,20 +5,85 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   import Nx.Defn
 
+  alias Integrator.FixedOutputTimes
   alias Integrator.NonLinearEqnRoot
+  alias Integrator.Point
   alias Integrator.RungeKutta
   alias Integrator.Utils
 
   @derive {Nx.Container,
-           containers: [
-             :t_old
-           ]}
+   containers: [
+     :t_at_start_of_step,
+     :x_at_start_of_step,
+     :dt_new,
+     :rk_step,
+     :fixed_output_times,
+     :output_points,
+     #
+     :count_loop__increment_step,
+     :count_cycles__compute_step,
+     #
+     # ireject in Octave:
+     :error_count,
+     :i_step,
+     #
+     :terminal_event,
+     :terminal_output,
+     #
+     :step_start_timestamp_μs,
+     :step_elapsed_time_μs,
+     #
+     :overall_start_timestamp_μs,
+     :overall_elapsed_time_μs
+   ]}
 
   @type t :: %__MODULE__{
-          t_old: Nx.t()
+          t_at_start_of_step: Nx.t(),
+          x_at_start_of_step: Nx.t(),
+          dt_new: Nx.t(),
+          rk_step: RungeKutta.Step.t(),
+          fixed_output_times: FixedOutputTimes.t(),
+          output_points: {Point.t(), Point.t(), Point.t(), Point.t()},
+          #
+          count_loop__increment_step: Nx.t(),
+          count_cycles__compute_step: Nx.t(),
+          #
+          # ireject in Octave:
+          error_count: Nx.t(),
+          i_step: Nx.t(),
+          #
+          terminal_event: Nx.t(),
+          terminal_output: Nx.t(),
+          #
+          step_start_timestamp_μs: Nx.t(),
+          step_elapsed_time_μs: Nx.t(),
+          #
+          overall_start_timestamp_μs: Nx.t(),
+          overall_elapsed_time_μs: Nx.t()
         }
   defstruct [
-    :t_old
+    :t_at_start_of_step,
+    :x_at_start_of_step,
+    :dt_new,
+    :rk_step,
+    :fixed_output_times,
+    :output_points,
+    #
+    :count_loop__increment_step,
+    :count_cycles__compute_step,
+    #
+    # ireject in Octave:
+    :error_count,
+    :i_step,
+    #
+    :terminal_event,
+    :terminal_output,
+    #
+    :step_start_timestamp_μs,
+    :step_elapsed_time_μs,
+    #
+    :overall_start_timestamp_μs,
+    :overall_elapsed_time_μs
   ]
 
   defmodule NxOptions do
@@ -105,7 +170,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         ) :: t()
 
   def integrate(_stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _fixed_times, _initial_tstep, _x0, _order, _opts \\ []) do
-    %__MODULE__{t_old: Nx.u8(0)}
+    %__MODULE__{t_at_start_of_step: Nx.u8(0)}
   end
 
   @doc """

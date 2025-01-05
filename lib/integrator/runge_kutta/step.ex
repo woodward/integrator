@@ -53,7 +53,7 @@ defmodule Integrator.RungeKutta.Step do
   Computes the next `Runge-Kutta.Step` struct given a prior `RungeKutta.Step` which contains info from the
   previous Runge-Kutta computation
   """
-  @spec compute_step(Step.t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: Step.t()
+  @spec compute_step(t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: t()
   defn compute_step(step, dt, stepper_fn, ode_fn, options) do
     x_old = step.x_new
     t_old = step.t_new
