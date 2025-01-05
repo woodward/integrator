@@ -191,7 +191,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
-    options_nx = convert_to_nx_compatible_options(opts)
+    options_nx = convert_to_nx_options(opts)
     a_nx = convert_arg_to_nx_type(a, options_nx.type)
     b_nx = convert_arg_to_nx_type(b, options_nx.type)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options_nx.type))
@@ -204,7 +204,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero_with_single_point(zero_fn, solo_point, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
-    options = convert_to_nx_compatible_options(opts)
+    options = convert_to_nx_options(opts)
     solo_point_nx = convert_arg_to_nx_type(solo_point, options.type)
     second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx, zero_fn_args)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
@@ -270,8 +270,8 @@ defmodule Integrator.NonLinearEqnRoot do
     InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
   end
 
-  @spec convert_to_nx_compatible_options(Keyword.t()) :: NxOptions.t()
-  def convert_to_nx_compatible_options(opts) do
+  @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()
+  def convert_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
 
