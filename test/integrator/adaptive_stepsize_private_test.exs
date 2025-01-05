@@ -431,7 +431,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
     test "returns a tensor with zeros that's the correct size" do
       order = 5
       x = ~VEC[ 1.0 2.0 3.0 ]f64
-      k_vals = AdaptiveStepsize.initial_empty_k_vals(x, order: order)
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -450,7 +450,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       order = 3
       type = {:f, 32}
       x = Nx.tensor([1.0, 2.0, 3.0], type: type)
-      k_vals = AdaptiveStepsize.initial_empty_k_vals(x, order: order)
+      k_vals = AdaptiveStepsize.initial_empty_k_vals(order, x)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0

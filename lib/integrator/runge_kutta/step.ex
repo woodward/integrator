@@ -93,12 +93,23 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
-  @spec initial_empty_k_vals(Nx.t(), Keyword.t()) :: Nx.t()
-  defn initial_empty_k_vals(x, opts \\ []) do
+  @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
+  deftransform initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
-    # Also note that `order` needs to be passed in as an option, otherwise I get an error about a dimension
+    k_length = order + 2
+
+    x_length = Nx.size(x)
+    zero = Nx.tensor(0.0, type: Nx.type(x))
+    Nx.broadcast(zero, {x_length, k_length})
+  end
+
+  @spec initial_empty_k_vals_defn(Nx.t(), Keyword.t()) :: Nx.t()
+  defn initial_empty_k_vals_defn(x, opts \\ []) do
+    # Note that `order` needs to be passed in as an option, otherwise I get an error about a dimension
     # being a tensor if it's passed in as a standard argument
     opts = keyword!(opts, order: 5)
+
+    # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
     k_length = opts[:order] + 2
 
     x_length = Nx.size(x)
