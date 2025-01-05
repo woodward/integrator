@@ -11,6 +11,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   alias Integrator.RungeKutta
   alias Integrator.Utils
 
+  import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
+
   @derive {Nx.Container,
    containers: [
      :t_at_start_of_step,
@@ -165,6 +167,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               type: {:f, 32},
               dt_max: 1000.0,
               max_number_of_errors: 1000,
+              #
               event_fn_adapter: %ExternalFnAdapter{},
               output_fn_adapter: %ExternalFnAdapter{},
               zero_fn_adapter: %ExternalFnAdapter{}
@@ -177,16 +180,58 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       The absolute tolerance used when computing the absolute relative norm. Defaults to 1.0e-06 in the Nx type that's been specified.
       """
     ],
-    norm_control: [
-      type: :boolean,
-      doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
-      default: true
-    ],
     rel_tol: [
       type: :any,
       doc: """
        The relative tolerance used when computing the absolute relative norm. Defaults to 1.0e-03 in the Nx type that's been specified.
       """
+    ],
+    norm_control?: [
+      type: :boolean,
+      doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
+      default: true
+    ],
+    max_number_of_errors: [
+      type: :integer,
+      doc: "The maximum number of permissible errors before the integration is halted.",
+      default: 5_000
+    ],
+    dt_max: [
+      type: :any,
+      doc: """
+      The default max time step.  The default value is determined by the start and end times.
+      """
+    ],
+    refine: [
+      type: :pos_integer,
+      doc: """
+      Indicates the number of additional interpolated points. `1` means no interpolation; `2` means one
+      additional interpolated point; etc. Note that this is ignored if there is a fixed time step.
+      """,
+      default: 4
+    ],
+    speed: [
+      type: {:or, [:atom, :float]},
+      doc: """
+      `:infinite` means to simulate as fast as possible. `1.0` means real time, `2.0` means twice as fast as real time,
+      `0.5` means half as fast as real time, etc.
+      """,
+      default: :no_delay
+    ],
+    event_fn: [
+      type: {:or, [{:fun, 2}, nil]},
+      doc: "A 2 arity function which determines whether an event has occured.  If so, the integration is halted.",
+      default: nil
+    ],
+    output_fn: [
+      type: {:or, [{:fun, 1}, nil]},
+      doc: "A 1 arity function which is called at each output point.",
+      default: nil
+    ],
+    zero_fn: [
+      type: {:or, [{:fun, 2}, nil]},
+      doc: "Finds the zero; used in conjunction with `event_fn`",
+      default: nil
     ]
   ]
 

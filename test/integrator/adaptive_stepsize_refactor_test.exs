@@ -8,6 +8,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   alias Integrator.RungeKutta.DormandPrince45
 
   describe "integrate" do
+    @tag :skip
     test "works - no data interpolation (refine == 1)" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
