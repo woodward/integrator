@@ -176,7 +176,7 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @options_schema NimbleOptions.new!(options)
   def options_schema, do: @options_schema
-  def option_keys, do: NimbleOptions.validate!([], @options_schema) |> Keyword.keys()
+  def option_keys, do: options_schema() |> Map.get(:schema) |> Keyword.keys() |> Enum.sort()
 
   @doc """
   Finds a zero for a function in an interval `a, b`  or

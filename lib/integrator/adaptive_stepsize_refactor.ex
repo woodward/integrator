@@ -389,6 +389,20 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         some_number -> some_number |> Utils.convert_arg_to_nx_type(nx_type)
       end
 
+    event_fn_adapter =
+      if external_fn = nimble_opts[:event_fn] do
+        %ExternalFnAdapter{external_fn: external_fn}
+      else
+        %ExternalFnAdapter{}
+      end
+
+    zero_fn_adapter =
+      if external_fn = nimble_opts[:zero_fn] do
+        %ExternalFnAdapter{external_fn: external_fn}
+      else
+        %ExternalFnAdapter{}
+      end
+
     output_fn_adapter =
       if external_fn = nimble_opts[:output_fn] do
         %ExternalFnAdapter{external_fn: external_fn}
@@ -416,6 +430,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       fixed_output_dt: fixed_output_dt,
       max_number_of_errors: max_number_of_errors,
       output_fn_adapter: output_fn_adapter,
+      event_fn_adapter: event_fn_adapter,
+      zero_fn_adapter: zero_fn_adapter,
       non_linear_eqn_root_nx_options: non_linear_eqn_root_nx_options
     }
   end

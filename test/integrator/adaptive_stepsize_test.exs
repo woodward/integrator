@@ -958,7 +958,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     @tag transferred_to_refactor?: true
-    test "does NOT work for precision :f16" do
+    test "does KNOT work for precision :f16" do
       order = 5
       t0 = ~VEC[  0.0  ]f16
       x0 = ~VEC[  2.0  0.0  ]f16

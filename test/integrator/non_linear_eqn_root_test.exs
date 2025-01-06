@@ -419,10 +419,12 @@ defmodule Integrator.NonLinearEqnRootTest do
   describe "option_keys" do
     test "returns the option keys" do
       assert NonLinearEqnRoot.option_keys() == [
-               :nonlinear_eqn_root_output_fn,
-               :type,
+               :machine_eps,
                :max_fn_eval_count,
-               :max_iterations
+               :max_iterations,
+               :nonlinear_eqn_root_output_fn,
+               :tolerance,
+               :type
              ]
     end
   end
