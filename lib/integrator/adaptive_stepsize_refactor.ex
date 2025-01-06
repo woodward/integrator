@@ -57,8 +57,10 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           status: Nx.t(),
           #
           output_point: Point.t(),
-          interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
-          fixed_output_point: Point.t(),
+          interpolated_points: {},
+          fixed_output_point: {},
+          # interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
+          # fixed_output_point: Point.t(),
           #
           count_loop__increment_step: Nx.t(),
           count_cycles__compute_step: Nx.t(),
@@ -81,29 +83,29 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     :x_at_start_of_step,
     :dt_new,
     :rk_step,
-    :fixed_output_time_next,
+    fixed_output_time_next: Nx.f64(0),
     # perhaps status is not necessary, and terminal_event is used intead?
-    :status,
+    status: Nx.u8(1),
     #
-    :output_point,
-    :interpolated_points,
-    :fixed_output_point,
+    output_point: %Point{},
+    interpolated_points: {},
+    fixed_output_point: {},
     #
-    :count_loop__increment_step,
-    :count_cycles__compute_step,
+    count_loop__increment_step: Nx.s32(0),
+    count_cycles__compute_step: Nx.s32(0),
     #
     # ireject in Octave:
-    :error_count,
-    :i_step,
+    error_count: Nx.s32(0),
+    i_step: Nx.s32(0),
     #
-    :terminal_event,
-    :terminal_output,
+    terminal_event: Nx.s32(0),
+    terminal_output: Nx.s32(0),
     #
-    :step_start_timestamp_μs,
-    :step_elapsed_time_μs,
+    step_start_timestamp_μs: Nx.s32(0),
+    step_elapsed_time_μs: Nx.s32(0),
     #
-    :overall_start_timestamp_μs,
-    :overall_elapsed_time_μs
+    overall_start_timestamp_μs: Nx.s32(0),
+    overall_elapsed_time_μs: Nx.s32(0)
   ]
 
   defmodule NxOptions do
@@ -308,21 +310,25 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     initial_tstep = to_tensor(initial_tstep, type)
     t_start = to_tensor(t_start, type)
     t_end = to_tensor(t_end, type)
+    x0 = to_tensor(x0, type)
     initial_tstep = Nx.min(Nx.abs(initial_tstep), options.dt_max)
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
 
     # Fill this in!  or compute it!!!
-    rk_step = %RungeKutta.Step{}
+    initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: order)
 
     integration = %__MODULE__{
-      t_at_start_of_step: Nx.tensor(t_start, type: options.type),
-      x_at_start_of_step: Nx.tensor(x0, type: options.type),
+      t_at_start_of_step: t_start,
+      x_at_start_of_step: x0,
       dt_new: initial_tstep,
       step_start_timestamp_μs: timestamp_now,
       overall_start_timestamp_μs: timestamp_now,
-      rk_step: rk_step
+      rk_step: initial_rk_step,
+      #
+      # These are just junk values in Point right now to give it the right size and shape
+      output_point: %Point{t: t_start, x: x0}
     }
 
     # From AdaptiveStepsize:
@@ -343,6 +349,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # |> store_first_point(t_start, x0, opts[:store_results?])
     # |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
 
+    dbg(integration)
+
     InternalComputations.integrate_step(
       integration,
       stepper_fn,
@@ -352,7 +360,6 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       t_end,
       initial_tstep,
       x0,
-      order,
       options
     )
   end

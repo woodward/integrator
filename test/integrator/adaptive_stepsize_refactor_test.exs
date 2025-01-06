@@ -59,7 +59,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      all_points = DataCollector.all_data(pid)
+      all_points = DataCollector.get_data(pid)
       output_t = all_points |> Enum.map(& &1.t)
       output_x = all_points |> Enum.map(& &1.x)
       assert length(output_t) == 51
