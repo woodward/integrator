@@ -389,20 +389,6 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         some_number -> some_number |> Utils.convert_arg_to_nx_type(nx_type)
       end
 
-    # machine_eps =
-    #   if Map.has_key?(nimble_opts, :machine_eps) do
-    #     Nx.tensor(Map.get(nimble_opts, :machine_eps), type: nx_type)
-    #   else
-    #     Nx.Constants.epsilon(nx_type)
-    #   end
-
-    # tolerance =
-    #   if Map.has_key?(nimble_opts, :tolerance) do
-    #     Nx.tensor(Map.get(nimble_opts, :tolerance), type: nx_type)
-    #   else
-    #     Nx.Constants.epsilon(nx_type)
-    #   end
-
     output_fn_adapter =
       if external_fn = nimble_opts[:output_fn] do
         %ExternalFnAdapter{external_fn: external_fn}
@@ -410,14 +396,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         %ExternalFnAdapter{}
       end
 
-    # %NxOptions{
-    #   machine_eps: machine_eps,
-    #   max_fn_eval_count: nimble_opts[:max_fn_eval_count],
-    #   max_iterations: nimble_opts[:max_iterations],
-    #   output_fn_adapter: output_fn_adapter,
-    #   tolerance: tolerance,
-    #   type: nx_type
-    # }
+    non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
+
+    non_linear_eqn_root_nx_options =
+      opts
+      |> Enum.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
+      |> NonLinearEqnRoot.convert_to_nx_options()
+
     %NxOptions{
       type: nx_type,
       dt_max: dt_max,
@@ -430,7 +415,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       fixed_output_times?: fixed_output_times?,
       fixed_output_dt: fixed_output_dt,
       max_number_of_errors: max_number_of_errors,
-      output_fn_adapter: output_fn_adapter
+      output_fn_adapter: output_fn_adapter,
+      non_linear_eqn_root_nx_options: non_linear_eqn_root_nx_options
     }
   end
 

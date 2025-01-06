@@ -129,8 +129,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   end
 
   describe "convert_to_nx_options" do
-    # non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
-
     test "uses the defaults from nimble options (and defaults for machine_eps and tolerance in the type specified)" do
       use_default_opts = []
       t_start = 0.0
@@ -162,19 +160,21 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.zero_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
 
       # --------------------------------------
+      # Values are passed on to NonLinearEqnRoot.NxOptions:
       non_linear_eqn_root_nx_options = nx_options.non_linear_eqn_root_nx_options
       assert %NonLinearEqnRoot.NxOptions{} = non_linear_eqn_root_nx_options
 
-      # assert_all_close(non_linear_eqn_root_nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
-      # assert Nx.type(non_linear_eqn_root_nx_options.machine_eps) == {:f, 64}
+      assert_all_close(non_linear_eqn_root_nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert Nx.type(non_linear_eqn_root_nx_options.machine_eps) == {:f, 64}
 
-      # assert_all_close(non_linear_eqn_root_nx_options.tolerance, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
-      # assert Nx.type(non_linear_eqn_root_nx_options.tolerance) == {:f, 64}
+      assert_all_close(non_linear_eqn_root_nx_options.tolerance, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
+      assert Nx.type(non_linear_eqn_root_nx_options.tolerance) == {:f, 64}
 
-      # assert non_linear_eqn_root_nx_options.type == {:f, 64}
-      # assert non_linear_eqn_root_nx_options.max_iterations == 1_000
-      # assert non_linear_eqn_root_nx_options.max_fn_eval_count == 1_000
-      # assert non_linear_eqn_root_nx_options.output_fn_adapter == %ExternalFnAdapter{}
+      assert non_linear_eqn_root_nx_options.type == {:f, 64}
+      assert non_linear_eqn_root_nx_options.max_iterations == 1_000
+      assert non_linear_eqn_root_nx_options.max_fn_eval_count == 1_000
+      assert non_linear_eqn_root_nx_options.output_fn_adapter == %ExternalFnAdapter{}
+      assert non_linear_eqn_root_nx_options.output_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
     end
   end
 end
