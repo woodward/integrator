@@ -292,7 +292,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
   end
 
   describe "compute_next_timestep" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "basic case" do
       dt = Nx.tensor(0.068129, type: :f64)
       error = Nx.tensor(0.0015164936598390992, type: :f64)
@@ -307,7 +307,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "uses option :max_step" do
       dt = Nx.tensor(0.068129, type: :f64)
       error = Nx.tensor(0.0015164936598390992, type: :f64)
@@ -322,7 +322,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "does not go past t_end" do
       dt = Nx.tensor(0.3039, type: :f64)
       error = Nx.tensor(0.4414, type: :f64)
@@ -337,7 +337,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above)" do
       dt = Nx.tensor(2.020515504676623e-4, type: :f64)
       error = Nx.tensor(2.7489475539627106, type: :f64)
@@ -353,7 +353,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Octave:
     test "2nd bug fix for Bogacki-Shampine high fidelity (see high fidelity Bogacki-Shampine test above) - compare Elixir input" do
       #   format long
@@ -384,7 +384,7 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     # Octave:
     test "bug fix for 'works - high fidelity - playback speed of 0.5'" do
       #   format long

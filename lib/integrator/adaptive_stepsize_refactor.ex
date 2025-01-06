@@ -325,7 +325,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # Fill this in!  or compute it!!!
     initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: order)
 
-    integration = %__MODULE__{
+    step = %__MODULE__{
       t_at_start_of_step: t_start,
       x_at_start_of_step: x0,
       dt_new: initial_tstep,
@@ -360,10 +360,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # |> store_first_point(t_start, x0, opts[:store_results?])
     # |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
 
-    dbg(integration)
-
     InternalComputations.integrate_step(
-      integration,
+      step,
       stepper_fn,
       interpolate_fn,
       ode_fn,
