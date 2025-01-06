@@ -180,6 +180,18 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert non_linear_eqn_root_nx_options.output_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
     end
 
+    test "works and does not blow up if t_start and t_end are tensors, not floats" do
+      use_default_opts = []
+      t_start = Nx.f32(0.0)
+      t_end = Nx.f32(10.0)
+      order = 5
+
+      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, use_default_opts)
+      assert %NxOptions{} = nx_options
+
+      assert nx_options.dt_max == Nx.f32(1.0)
+    end
+
     test "overrides the defaults if provided, including those in the NonLinearEqnRoot.NxOptions" do
       opts = [
         type: :f64,
