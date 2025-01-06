@@ -21,7 +21,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :x_at_start_of_step,
      :dt_new,
      :rk_step,
-     :fixed_output_time_next,
+     :fixed_output_t_next,
+     :fixed_output_t_within_step?,
      # perhaps status is not necessary, and terminal_event is used intead?
      :status,
      #
@@ -53,7 +54,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           x_at_start_of_step: Nx.t(),
           dt_new: Nx.t(),
           rk_step: RungeKutta.Step.t(),
-          fixed_output_time_next: Nx.t(),
+          fixed_output_t_next: Nx.t(),
+          fixed_output_t_within_step?: Nx.t(),
           # perhaps status is not necessary, and terminal_event is used intead?
           status: Nx.t(),
           #
@@ -85,7 +87,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     :x_at_start_of_step,
     :dt_new,
     :rk_step,
-    fixed_output_time_next: Nx.f64(0),
+    fixed_output_t_next: Nx.f64(0),
+    fixed_output_t_within_step?: Nx.u8(0),
     # perhaps status is not necessary, and terminal_event is used intead?
     status: Nx.u8(1),
     #
