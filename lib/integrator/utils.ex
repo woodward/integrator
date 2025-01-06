@@ -201,15 +201,19 @@ defmodule Integrator.Utils do
 
   @doc """
   Returns the elapsed time (in microseconds) given a starting timestamp (also in microseconds)
+
+  Will this need to be a hook in order to work inside of defn?
   """
   @spec elapsed_time_μs(Nx.t()) :: Nx.t()
-  def elapsed_time_μs(start_time_μs), do: Nx.subtract(Nx.s32(:os.system_time(:microsecond)), start_time_μs)
+  deftransform elapsed_time_μs(start_time_μs), do: Nx.subtract(Nx.s32(timestamp_μs()), start_time_μs)
 
   @doc """
   Returns the timestamp in microseconds as an Nx :s32 tensor
+
+  Will this need to be a hook in order to work inside of defn?
   """
   @spec timestamp_μs() :: Nx.t()
-  def timestamp_μs, do: Nx.s32(:os.system_time(:microsecond))
+  deftransform timestamp_μs, do: Nx.s32(:os.system_time(:microsecond))
 
   @doc """
   A function which converts args to their Nx equivalents. Used to populate Nx.Container structs with
