@@ -213,8 +213,13 @@ defmodule Integrator.UtilsTest do
     test "converts floats to tensors of the appropriate type" do
       arg = 1.0
       assert Utils.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
-
       assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+    end
+
+    test "converts integers to :s32 or :s64 tensors" do
+      arg = 10
+      assert Utils.convert_arg_to_nx_type(arg, {:s, 32}) == Nx.s32(10)
+      assert Utils.convert_arg_to_nx_type(arg, {:s, 64}) == Nx.s64(10)
     end
 
     test "allows functions to pass through" do

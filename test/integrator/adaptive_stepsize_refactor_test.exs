@@ -4,8 +4,12 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   import Nx, only: :sigils
 
   alias Integrator.AdaptiveStepsizeRefactor
-  alias Integrator.SampleEqns
+  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.DataCollector
+  alias Integrator.ExternalFnAdapter
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta.DormandPrince45
+  alias Integrator.SampleEqns
 
   describe "integrate" do
     @tag :skip
@@ -35,7 +39,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
-      result =
+      _result =
         AdaptiveStepsizeRefactor.integrate(
           stepper_fn,
           interpolate_fn,
@@ -49,21 +53,21 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
           opts
         )
 
-      assert result.count_cycles__compute_step == 78
-      assert result.count_loop__increment_step == 50
-      assert length(result.ode_t) == 51
-      assert length(result.ode_x) == 51
-      assert length(result.output_t) == 51
-      assert length(result.output_x) == 51
+      # assert result.count_cycles__compute_step == 78
+      # assert result.count_loop__increment_step == 50
+      # assert length(result.ode_t) == 51
+      # assert length(result.ode_x) == 51
+      # assert length(result.output_t) == 51
+      # assert length(result.output_x) == 51
 
-      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
-      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
+      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
+      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
-      assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
-      assert result.overall_elapsed_time_μs(result) > 1
-      assert result.step_elapsed_time_μs(result) > 1
+      # assert result.overall_elapsed_time_μs(result) > 1
+      # assert result.step_elapsed_time_μs(result) > 1
     end
   end
 
@@ -121,6 +125,56 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       d2 = Nx.divide(one, h0) |> Nx.multiply(abs_rel_norm)
       # d2 being infinity causes the starting_stepsize to be zero:
       assert_all_close(d2, Nx.Constants.infinity(), atol: 1.0e-14, rtol: 1.0e-14)
+    end
+  end
+
+  describe "convert_to_nx_options" do
+    # non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
+
+    test "uses the defaults from nimble options (and defaults for machine_eps and tolerance in the type specified)" do
+      use_default_opts = []
+      t_start = 0.0
+      t_end = 10.0
+      order = 5
+
+      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, use_default_opts)
+      assert %NxOptions{} = nx_options
+
+      assert nx_options.type == {:f, 32}
+      assert nx_options.max_number_of_errors == Nx.s32(5_000)
+      assert nx_options.dt_max == Nx.f32(10.0)
+      assert nx_options.refine == 4
+      assert nx_options.speed == Nx.Constants.infinity(:f32)
+      assert nx_options.fixed_output_times? == Nx.u8(0)
+      assert nx_options.fixed_output_dt == Nx.f32(0.0)
+      assert nx_options.order == 5
+      assert nx_options.norm_control? == Nx.u8(1)
+      assert nx_options.abs_tol == Nx.f32(1.0e-06)
+      assert nx_options.rel_tol == Nx.f32(1.0e-03)
+
+      assert nx_options.event_fn_adapter == %ExternalFnAdapter{}
+      assert nx_options.event_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
+
+      assert nx_options.output_fn_adapter == %ExternalFnAdapter{}
+      assert nx_options.output_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
+
+      assert nx_options.zero_fn_adapter == %ExternalFnAdapter{}
+      assert nx_options.zero_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
+
+      # --------------------------------------
+      non_linear_eqn_root_nx_options = nx_options.non_linear_eqn_root_nx_options
+      assert %NonLinearEqnRoot.NxOptions{} = non_linear_eqn_root_nx_options
+
+      # assert_all_close(non_linear_eqn_root_nx_options.machine_eps, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
+      # assert Nx.type(non_linear_eqn_root_nx_options.machine_eps) == {:f, 64}
+
+      # assert_all_close(non_linear_eqn_root_nx_options.tolerance, Nx.Constants.epsilon(:f64), atol: 1.0e-16, rtol: 1.0e-16)
+      # assert Nx.type(non_linear_eqn_root_nx_options.tolerance) == {:f, 64}
+
+      # assert non_linear_eqn_root_nx_options.type == {:f, 64}
+      # assert non_linear_eqn_root_nx_options.max_iterations == 1_000
+      # assert non_linear_eqn_root_nx_options.max_fn_eval_count == 1_000
+      # assert non_linear_eqn_root_nx_options.output_fn_adapter == %ExternalFnAdapter{}
     end
   end
 end

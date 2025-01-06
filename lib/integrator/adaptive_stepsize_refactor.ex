@@ -11,7 +11,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   alias Integrator.RungeKutta
   alias Integrator.Utils
 
-  import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
+  # import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
   @derive {Nx.Container,
    containers: [
@@ -42,9 +42,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :step_elapsed_time_μs,
      #
      :overall_start_timestamp_μs,
-     :overall_elapsed_time_μs,
-     #
-     :non_linear_eqn_root_nx_options
+     :overall_elapsed_time_μs
    ]}
 
   @type t :: %__MODULE__{
@@ -74,9 +72,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           step_elapsed_time_μs: Nx.t(),
           #
           overall_start_timestamp_μs: Nx.t(),
-          overall_elapsed_time_μs: Nx.t(),
-          #
-          non_linear_eqn_root_nx_options: NonLinearEqnRoot.NxOptions.t()
+          overall_elapsed_time_μs: Nx.t()
         }
   defstruct [
     :t_at_start_of_step,
@@ -105,9 +101,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     :step_elapsed_time_μs,
     #
     :overall_start_timestamp_μs,
-    :overall_elapsed_time_μs,
-    #
-    :non_linear_eqn_root_nx_options
+    :overall_elapsed_time_μs
   ]
 
   defmodule NxOptions do
@@ -130,7 +124,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
        #
        :event_fn_adapter,
        :output_fn_adapter,
-       :zero_fn_adapter
+       :zero_fn_adapter,
+       #
+       :non_linear_eqn_root_nx_options
      ],
      keep: [
        :order,
@@ -153,43 +149,66 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
             #
             event_fn_adapter: ExternalFnAdapter.t(),
             output_fn_adapter: ExternalFnAdapter.t(),
-            zero_fn_adapter: ExternalFnAdapter.t()
+            zero_fn_adapter: ExternalFnAdapter.t(),
+            #
+            non_linear_eqn_root_nx_options: NonLinearEqnRoot.NxOptions.t()
           }
 
-    defstruct abs_tol: 1.0e-06,
-              rel_tol: 1.0e-03,
+    # The default values here are just placeholders; the actual defaults come from NimbleOpts
+    # (and are then converted to Nx in convert_to_nx_options/3)
+    defstruct abs_tol: 1000.0,
+              rel_tol: 1000.0,
               norm_control?: Nx.u8(1),
-              order: 5,
+              order: 0,
               fixed_output_times?: Nx.u8(0),
-              fixed_output_dt: 0.0,
-              speed: Nx.Constants.infinity(:f64),
-              refine: 4,
-              type: {:f, 32},
-              dt_max: 1000.0,
-              max_number_of_errors: 1000,
+              fixed_output_dt: 1000.0,
+              speed: Nx.Constants.nan(:f64),
+              refine: 0,
+              type: {:f, 64},
+              dt_max: 0.0,
+              max_number_of_errors: 0,
               #
               event_fn_adapter: %ExternalFnAdapter{},
               output_fn_adapter: %ExternalFnAdapter{},
-              zero_fn_adapter: %ExternalFnAdapter{}
+              zero_fn_adapter: %ExternalFnAdapter{},
+              #
+              non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
   end
 
   options = [
     abs_tol: [
-      type: :any,
+      type: :float,
       doc: """
       The absolute tolerance used when computing the absolute relative norm. Defaults to 1.0e-06 in the Nx type that's been specified.
-      """
+      """,
+      default: 1.0e-06
     ],
     rel_tol: [
-      type: :any,
+      type: :float,
       doc: """
        The relative tolerance used when computing the absolute relative norm. Defaults to 1.0e-03 in the Nx type that's been specified.
-      """
+      """,
+      default: 1.0e-03
     ],
     norm_control?: [
       type: :boolean,
       doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
       default: true
+    ],
+    fixed_output_times?: [
+      type: :boolean,
+      doc: "Indicates whether output is to be generated at some fixed interval",
+      default: false
+    ],
+    fixed_output_dt: [
+      type: :float,
+      doc: "The fixed output timestep",
+      default: 0.0
+    ],
+    type: [
+      type: {:in, [:f32, :f64]},
+      doc: "The Nx type.",
+      default: :f32
     ],
     max_number_of_errors: [
       type: :integer,
@@ -216,7 +235,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       `:infinite` means to simulate as fast as possible. `1.0` means real time, `2.0` means twice as fast as real time,
       `0.5` means half as fast as real time, etc.
       """,
-      default: :no_delay
+      default: :infinite
     ],
     event_fn: [
       type: {:or, [{:fun, 2}, nil]},
@@ -340,6 +359,79 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       end
 
     min(Nx.tensor(100.0, type: nx_type) * h0, h1)
+  end
+
+  @spec convert_to_nx_options(Nx.t() | float(), Nx.t() | float(), integer(), Keyword.t()) :: NxOptions.t()
+  deftransform convert_to_nx_options(t_start, t_end, order, opts) do
+    nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
+    nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
+
+    max_number_of_errors = nimble_opts[:max_number_of_errors] |> Utils.convert_arg_to_nx_type({:s, 32})
+
+    dt_max =
+      if dt_max = nimble_opts[:dt_max] do
+        dt_max
+      else
+        t_end - t_start
+      end
+      |> Utils.convert_arg_to_nx_type(nx_type)
+
+    refine = nimble_opts[:refine]
+    fixed_output_times? = nimble_opts[:fixed_output_times?] |> Utils.convert_arg_to_nx_type({:u, 8})
+    fixed_output_dt = nimble_opts[:fixed_output_dt] |> Utils.convert_arg_to_nx_type(nx_type)
+    norm_control? = nimble_opts[:norm_control?] |> Utils.convert_arg_to_nx_type({:u, 8})
+    abs_tol = nimble_opts[:abs_tol] |> Utils.convert_arg_to_nx_type(nx_type)
+    rel_tol = nimble_opts[:rel_tol] |> Utils.convert_arg_to_nx_type(nx_type)
+
+    speed =
+      case nimble_opts[:speed] do
+        :infinite -> Nx.Constants.infinity(nx_type)
+        some_number -> some_number |> Utils.convert_arg_to_nx_type(nx_type)
+      end
+
+    # machine_eps =
+    #   if Map.has_key?(nimble_opts, :machine_eps) do
+    #     Nx.tensor(Map.get(nimble_opts, :machine_eps), type: nx_type)
+    #   else
+    #     Nx.Constants.epsilon(nx_type)
+    #   end
+
+    # tolerance =
+    #   if Map.has_key?(nimble_opts, :tolerance) do
+    #     Nx.tensor(Map.get(nimble_opts, :tolerance), type: nx_type)
+    #   else
+    #     Nx.Constants.epsilon(nx_type)
+    #   end
+
+    output_fn_adapter =
+      if external_fn = nimble_opts[:output_fn] do
+        %ExternalFnAdapter{external_fn: external_fn}
+      else
+        %ExternalFnAdapter{}
+      end
+
+    # %NxOptions{
+    #   machine_eps: machine_eps,
+    #   max_fn_eval_count: nimble_opts[:max_fn_eval_count],
+    #   max_iterations: nimble_opts[:max_iterations],
+    #   output_fn_adapter: output_fn_adapter,
+    #   tolerance: tolerance,
+    #   type: nx_type
+    # }
+    %NxOptions{
+      type: nx_type,
+      dt_max: dt_max,
+      refine: refine,
+      speed: speed,
+      order: order,
+      abs_tol: abs_tol,
+      rel_tol: rel_tol,
+      norm_control?: norm_control?,
+      fixed_output_times?: fixed_output_times?,
+      fixed_output_dt: fixed_output_dt,
+      max_number_of_errors: max_number_of_errors,
+      output_fn_adapter: output_fn_adapter
+    }
   end
 
   # Creates a zero vector that has the length of `x`

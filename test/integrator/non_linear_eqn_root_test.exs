@@ -224,6 +224,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert nx_options.max_iterations == 1_000
       assert nx_options.max_fn_eval_count == 1_000
       assert nx_options.output_fn_adapter == %ExternalFnAdapter{}
+      assert nx_options.output_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
     end
 
     test "allows overrides" do
