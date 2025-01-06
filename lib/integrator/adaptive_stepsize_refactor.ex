@@ -455,8 +455,12 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       end
       |> Utils.convert_arg_to_nx_type(nx_type)
 
-    refine = nimble_opts[:refine]
     fixed_output_times? = nimble_opts[:fixed_output_times?] |> Utils.convert_arg_to_nx_type({:u, 8})
+
+    # If you are using fixed output times, then interpolation is turned off (of course the fixed output
+    # point itself is inteprolated):)
+    refine = if nimble_opts[:fixed_output_times?], do: 1, else: nimble_opts[:refine]
+
     fixed_output_dt = nimble_opts[:fixed_output_dt] |> Utils.convert_arg_to_nx_type(nx_type)
     norm_control? = nimble_opts[:norm_control?] |> Utils.convert_arg_to_nx_type({:u, 8})
     abs_tol = nimble_opts[:abs_tol] |> Utils.convert_arg_to_nx_type(nx_type)

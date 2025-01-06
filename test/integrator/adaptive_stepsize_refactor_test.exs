@@ -190,6 +190,18 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.dt_max == Nx.f32(1.0)
     end
 
+    test "sets :refine to 1 if using fixed sizes, regardless of the value" do
+      opts = [refine: 4, fixed_output_times?: true]
+      t_start = Nx.f32(0.0)
+      t_end = Nx.f32(10.0)
+      order = 5
+
+      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, opts)
+      assert %NxOptions{} = nx_options
+
+      assert nx_options.refine == 1
+    end
+
     test "overrides the defaults if provided, including those in the NonLinearEqnRoot.NxOptions" do
       opts = [
         type: :f64,
@@ -224,7 +236,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.type == {:f, 64}
       assert nx_options.max_number_of_errors == Nx.s32(2)
       assert nx_options.dt_max == Nx.f64(3.0)
-      assert nx_options.refine == 3
+      assert nx_options.refine == 1
       assert nx_options.speed == Nx.f64(0.5)
       assert nx_options.fixed_output_times? == Nx.u8(1)
       assert nx_options.fixed_output_dt == Nx.f64(0.5)
