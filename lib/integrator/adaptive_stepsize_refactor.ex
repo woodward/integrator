@@ -29,6 +29,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :output_point,
      :interpolated_points,
      :fixed_output_point,
+     :output_t_and_x,
      #
      :count_loop__increment_step,
      :count_cycles__compute_step,
@@ -59,6 +60,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           output_point: Point.t(),
           interpolated_points: {},
           fixed_output_point: {},
+          output_t_and_x: {Nx.t(), Nx.t()},
           # interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
           # fixed_output_point: Point.t(),
           #
@@ -90,6 +92,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     output_point: %Point{},
     interpolated_points: {},
     fixed_output_point: {},
+    output_t_and_x: {},
     #
     count_loop__increment_step: Nx.s32(0),
     count_cycles__compute_step: Nx.s32(0),
@@ -328,7 +331,12 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       rk_step: initial_rk_step,
       #
       # These are just junk values in Point right now to give it the right size and shape
-      output_point: %Point{t: t_start, x: x0}
+      output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
+      output_t_and_x: {Nx.tensor(0.0, type: type), x0}
+      #
+      # This is not working for some reason:
+      # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
+      # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
     }
 
     # From AdaptiveStepsize:
