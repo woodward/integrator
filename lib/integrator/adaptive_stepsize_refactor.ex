@@ -393,7 +393,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       if dt_max = nimble_opts[:max_step] do
         dt_max
       else
-        t_end - t_start
+        default_max_step(t_start, t_end)
       end
       |> Utils.convert_arg_to_nx_type(nx_type)
 
@@ -445,5 +445,11 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   @spec zero_vector(Nx.t(), Nx.t()) :: Nx.t()
   defnp zero_vector(size, type) do
     0.0 |> Nx.tensor(type: type) |> Nx.broadcast({size})
+  end
+
+  @spec default_max_step(Nx.t(), Nx.t()) :: Nx.t()
+  deftransformp default_max_step(t_start, t_end) do
+    # See Octave: integrate_adaptive.m:89
+    0.1 * abs(t_start - t_end)
   end
 end

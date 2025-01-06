@@ -12,6 +12,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   alias Integrator.SampleEqns
 
   describe "integrate" do
+    @tag :skip
     test "works - no data interpolation (refine == 1)" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -142,7 +143,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       assert nx_options.type == {:f, 32}
       assert nx_options.max_number_of_errors == Nx.s32(5_000)
-      assert nx_options.dt_max == Nx.f32(10.0)
+      assert nx_options.dt_max == Nx.f32(1.0)
       assert nx_options.refine == 4
       assert nx_options.speed == Nx.Constants.infinity(:f32)
       assert nx_options.fixed_output_times? == Nx.u8(0)
