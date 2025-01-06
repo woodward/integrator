@@ -15,11 +15,11 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
     test "works - no data interpolation (refine == 1)" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
+      ode_fn = &SampleEqns.van_der_pol_fn/2
       order = DormandPrince45.order()
+
       {:ok, pid} = DataCollector.start_link()
       output_fn = &DataCollector.add_data(pid, &1)
-
-      ode_fn = &SampleEqns.van_der_pol_fn/2
 
       t_start = Nx.tensor(0.0, type: :f64)
       t_end = Nx.tensor(20.0, type: :f64)
@@ -28,7 +28,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       opts = [
         refine: 1,
         type: :f64,
-        norm_control: false,
+        norm_control?: false,
         abs_tol: Nx.tensor(1.0e-06, type: :f64),
         rel_tol: Nx.tensor(1.0e-03, type: :f64),
         max_step: Nx.tensor(2.0, type: :f64),
@@ -38,7 +38,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
-      _result =
+      result =
         AdaptiveStepsizeRefactor.integrate(
           stepper_fn,
           interpolate_fn,
@@ -51,21 +51,25 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
           opts
         )
 
-      # assert result.count_cycles__compute_step == 78
-      # assert result.count_loop__increment_step == 50
+      assert result.count_cycles__compute_step == Nx.s32(78)
+      assert result.count_loop__increment_step == Nx.s32(50)
       # assert length(result.ode_t) == 51
       # assert length(result.ode_x) == 51
-      # assert length(result.output_t) == 51
-      # assert length(result.output_x) == 51
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
-      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
-      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+      all_points = DataCollector.all_data(pid)
+      output_t = all_points |> Enum.map(& &1.t)
+      output_x = all_points |> Enum.map(& &1.x)
+      assert length(output_t) == 51
+      assert length(output_x) == 51
 
-      # assert result.overall_elapsed_time_μs(result) > 1
-      # assert result.step_elapsed_time_μs(result) > 1
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+
+      assert result.overall_elapsed_time_μs(result) > 1
+      assert result.step_elapsed_time_μs(result) > 1
     end
   end
 

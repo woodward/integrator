@@ -5,6 +5,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   import Nx.Defn
 
+  alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
   alias Integrator.Point
@@ -175,33 +176,39 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
   end
 
+  # How do I make the NimbleOptions handle both float values and tensors?
   options = [
     abs_tol: [
-      type: :float,
+      # type: :float,
+      type: :any,
       doc: """
       The absolute tolerance used when computing the absolute relative norm. Defaults to 1.0e-06 in the Nx type that's been specified.
       """,
       default: 1.0e-06
     ],
     rel_tol: [
-      type: :float,
+      # type: :float,
+      type: :any,
       doc: """
        The relative tolerance used when computing the absolute relative norm. Defaults to 1.0e-03 in the Nx type that's been specified.
       """,
       default: 1.0e-03
     ],
     norm_control?: [
-      type: :boolean,
+      # type: :boolean,
+      type: :any,
       doc: "Indicates whether norm control is to be used when computing the absolute relative norm.",
       default: true
     ],
     fixed_output_times?: [
-      type: :boolean,
+      # type: :boolean,
+      type: :any,
       doc: "Indicates whether output is to be generated at some fixed interval",
       default: false
     ],
     fixed_output_dt: [
-      type: :float,
+      # type: :float,
+      type: :any,
       doc: "The fixed output timestep",
       default: 0.0
     ],
@@ -230,7 +237,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       default: 4
     ],
     speed: [
-      type: {:or, [:atom, :float]},
+      # type: {:or, [:atom, :float]},
+      type: :any,
       doc: """
       `:infinite` means to simulate as fast as possible. `1.0` means real time, `2.0` means twice as fast as real time,
       `0.5` means half as fast as real time, etc.
@@ -291,8 +299,22 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           opts :: Keyword.t()
         ) :: t()
 
-  deftransform integrate(_stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _initial_tstep, _x0, _order, _opts \\ []) do
-    %__MODULE__{t_at_start_of_step: Nx.u8(0)}
+  deftransform integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
+    integration = %__MODULE__{t_at_start_of_step: Nx.u8(0)}
+    options = convert_to_nx_options(t_start, t_end, order, opts)
+
+    InternalComputations.integrate_step(
+      integration,
+      stepper_fn,
+      interpolate_fn,
+      ode_fn,
+      t_start,
+      t_end,
+      initial_tstep,
+      x0,
+      order,
+      options
+    )
   end
 
   @doc """
