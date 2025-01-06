@@ -285,14 +285,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           ode_fn :: RungeKutta.ode_fn_t(),
           t_start :: Nx.t(),
           t_end :: Nx.t(),
-          fixed_times :: [Nx.t()] | nil,
           initial_tstep :: Nx.t(),
           x0 :: Nx.t(),
           order :: integer(),
           opts :: Keyword.t()
         ) :: t()
 
-  def integrate(_stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _fixed_times, _initial_tstep, _x0, _order, _opts \\ []) do
+  deftransform integrate(_stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _initial_tstep, _x0, _order, _opts \\ []) do
     %__MODULE__{t_at_start_of_step: Nx.u8(0)}
   end
 
