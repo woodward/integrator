@@ -289,12 +289,7 @@ defmodule Integrator.NonLinearEqnRoot do
         Nx.Constants.epsilon(nx_type)
       end
 
-    output_fn_adapter =
-      if external_fn = nimble_opts[:nonlinear_eqn_root_output_fn] do
-        %ExternalFnAdapter{external_fn: external_fn}
-      else
-        %ExternalFnAdapter{}
-      end
+    output_fn_adapter = ExternalFnAdapter.wrap_external_fn(nimble_opts[:nonlinear_eqn_root_output_fn])
 
     %NxOptions{
       machine_eps: machine_eps,

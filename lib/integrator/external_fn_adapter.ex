@@ -36,4 +36,7 @@ defmodule Integrator.ExternalFnAdapter do
 
     z
   end
+
+  deftransform wrap_external_fn(nil = _external_fn), do: %__MODULE__{}
+  deftransform wrap_external_fn(external_fn), do: %__MODULE__{external_fn: external_fn}
 end
