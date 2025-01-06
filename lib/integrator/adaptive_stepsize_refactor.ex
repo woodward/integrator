@@ -215,7 +215,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       doc: "The maximum number of permissible errors before the integration is halted.",
       default: 5_000
     ],
-    dt_max: [
+    max_step: [
       type: :any,
       doc: """
       The default max time step.  The default value is determined by the start and end times.
@@ -368,7 +368,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     max_number_of_errors = nimble_opts[:max_number_of_errors] |> Utils.convert_arg_to_nx_type({:s, 32})
 
     dt_max =
-      if dt_max = nimble_opts[:dt_max] do
+      if dt_max = nimble_opts[:max_step] do
         dt_max
       else
         t_end - t_start

@@ -179,7 +179,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       opts = [
         type: :f64,
         max_number_of_errors: 2,
-        dt_max: 3.0,
+        max_step: 3.0,
         refine: 3,
         speed: 0.5,
         fixed_output_times?: true,
