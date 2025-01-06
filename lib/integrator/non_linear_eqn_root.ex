@@ -271,24 +271,11 @@ defmodule Integrator.NonLinearEqnRoot do
   end
 
   @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()
-  def convert_to_nx_options(opts) do
+  deftransform convert_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
-
-    machine_eps =
-      if Map.has_key?(nimble_opts, :machine_eps) do
-        Nx.tensor(Map.get(nimble_opts, :machine_eps), type: nx_type)
-      else
-        Nx.Constants.epsilon(nx_type)
-      end
-
-    tolerance =
-      if Map.has_key?(nimble_opts, :tolerance) do
-        Nx.tensor(Map.get(nimble_opts, :tolerance), type: nx_type)
-      else
-        Nx.Constants.epsilon(nx_type)
-      end
-
+    machine_eps = default_to_epsilon(nimble_opts[:machine_eps], nx_type)
+    tolerance = default_to_epsilon(nimble_opts[:tolerance], nx_type)
     output_fn_adapter = ExternalFnAdapter.wrap_external_fn(nimble_opts[:nonlinear_eqn_root_output_fn])
 
     %NxOptions{
@@ -300,4 +287,7 @@ defmodule Integrator.NonLinearEqnRoot do
       type: nx_type
     }
   end
+
+  deftransformp default_to_epsilon(nil, type), do: Nx.Constants.epsilon(type)
+  deftransformp default_to_epsilon(value, type), do: Nx.tensor(value, type: type)
 end
