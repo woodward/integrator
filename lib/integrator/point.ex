@@ -22,6 +22,12 @@ defmodule Integrator.Point do
     :x
   ]
 
+  def split_points_into_t_and_x(points) do
+    t = points |> Enum.map(& &1.t)
+    x = points |> Enum.map(& &1.x)
+    {t, x}
+  end
+
   @spec convert_to_points(Nx.t(), Nx.t()) :: t()
   defn convert_to_points(t, x) do
     x_t = Nx.transpose(x)

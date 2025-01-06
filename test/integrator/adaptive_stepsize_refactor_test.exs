@@ -8,6 +8,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   alias Integrator.DataCollector
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
+  alias Integrator.Point
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.SampleEqns
 
@@ -59,9 +60,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      all_points = DataCollector.get_data(pid)
-      output_t = all_points |> Enum.map(& &1.t)
-      output_x = all_points |> Enum.map(& &1.x)
+      {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
       assert length(output_t) == 51
       assert length(output_x) == 51
 
