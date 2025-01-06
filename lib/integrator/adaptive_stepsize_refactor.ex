@@ -13,6 +13,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   alias Integrator.Utils
 
   # import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
+  import Integrator.Utils, only: [timestamp_μs: 0]
 
   @derive {Nx.Container,
    containers: [
@@ -300,8 +301,47 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         ) :: t()
 
   deftransform integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
-    integration = %__MODULE__{t_at_start_of_step: Nx.u8(0)}
+    timestamp_now = timestamp_μs()
     options = convert_to_nx_options(t_start, t_end, order, opts)
+    type = options.type
+
+    initial_tstep = to_tensor(initial_tstep, type)
+    t_start = to_tensor(t_start, type)
+    t_end = to_tensor(t_end, type)
+    initial_tstep = Nx.min(Nx.abs(initial_tstep), options.dt_max)
+
+    # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
+    %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
+
+    # Fill this in!  or compute it!!!
+    rk_step = %RungeKutta.Step{}
+
+    integration = %__MODULE__{
+      t_at_start_of_step: Nx.tensor(t_start, type: options.type),
+      x_at_start_of_step: Nx.tensor(x0, type: options.type),
+      dt_new: initial_tstep,
+      step_start_timestamp_μs: timestamp_now,
+      overall_start_timestamp_μs: timestamp_now,
+      rk_step: rk_step
+    }
+
+    # From AdaptiveStepsize:
+    #
+    # %__MODULE__{
+    #   t_new: t_start,
+    #   x_new: x0,
+    #   # t_old must be set on the initial struct in case there's an error when computing the first step (used in t_next/2)
+    #   t_old: t_start,
+    #   dt: initial_tstep,
+    #   k_vals: initial_empty_k_vals(order, x0),
+    #   fixed_times: fixed_times,
+    #   nx_type: nx_type,
+    #   options_comp: Nx.tensor(0.0, type: nx_type),
+    #   timestamp_μs: timestamp_now,
+    #   timestamp_start_μs: timestamp_now
+    # }
+    # |> store_first_point(t_start, x0, opts[:store_results?])
+    # |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
 
     InternalComputations.integrate_step(
       integration,
@@ -456,5 +496,17 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   deftransformp default_max_step(t_start, t_end) do
     # See Octave: integrate_adaptive.m:89
     0.1 * abs(t_start - t_end)
+  end
+
+  deftransform to_tensor(%Nx.Tensor{} = tensor, type) do
+    if Nx.type(tensor) != type do
+      raise "tensor #{inspect(tensor)} is of incorrect type, #{inspect(type)} expected}"
+    else
+      tensor
+    end
+  end
+
+  deftransform to_tensor(value, type) do
+    Nx.tensor(value, type: type)
   end
 end
