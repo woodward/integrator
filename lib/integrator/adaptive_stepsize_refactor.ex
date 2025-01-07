@@ -128,8 +128,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
        :fixed_output_times?,
        :fixed_output_dt,
        :speed,
-       # Formerly :max_step
-       :dt_max,
+       :max_step,
        :max_number_of_errors,
        #
        :event_fn_adapter,
@@ -154,7 +153,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
             speed: Nx.t(),
             refine: integer(),
             type: Nx.Type.t(),
-            dt_max: Nx.t(),
+            max_step: Nx.t(),
             max_number_of_errors: Nx.t(),
             #
             event_fn_adapter: ExternalFnAdapter.t(),
@@ -175,7 +174,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               speed: Nx.Constants.nan(:f64),
               refine: 0,
               type: {:f, 64},
-              dt_max: 0.0,
+              max_step: 0.0,
               max_number_of_errors: 0,
               #
               event_fn_adapter: %ExternalFnAdapter{},
@@ -317,7 +316,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     t_start = to_tensor(t_start, type)
     t_end = to_tensor(t_end, type)
     x0 = to_tensor(x0, type)
-    initial_tstep = Nx.min(Nx.abs(initial_tstep), options.dt_max)
+    initial_tstep = Nx.min(Nx.abs(initial_tstep), options.max_step)
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
@@ -445,9 +444,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
     max_number_of_errors = nimble_opts[:max_number_of_errors] |> Utils.convert_arg_to_nx_type({:s, 32})
 
-    dt_max =
-      if dt_max = nimble_opts[:max_step] do
-        dt_max
+    max_step =
+      if max_step = nimble_opts[:max_step] do
+        max_step
       else
         default_max_step(t_start, t_end)
       end
@@ -483,7 +482,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
     %NxOptions{
       type: nx_type,
-      dt_max: dt_max,
+      max_step: max_step,
       refine: refine,
       speed: speed,
       order: order,
