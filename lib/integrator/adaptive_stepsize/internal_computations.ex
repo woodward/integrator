@@ -16,19 +16,21 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         step = step |> increment_compute_counter()
 
         step =
-          if rk_step.error_estimate < 1.0 do
-            %{
-              step
-              | rk_step: rk_step,
-                error_count: 0,
-                count_loop__increment_step: step.count_loop__increment_step + 1,
-                i_step: step.i_step + 1,
-                t_at_start_of_step: rk_step.t_new,
-                x_at_start_of_step: rk_step.x_new
-            }
+          if error_less_than_one?(rk_step) do
+            step
+            |> reset_error_count_to_zero()
+            |> increment_counters()
+            |> merge_rk_step_into_integration_step(rk_step)
+            |> call_event_fn()
+            |> interpolate_intermediate_points()
+            |> interpolate_fixed_points()
+            |> call_output_fn()
+            |> compute_next_success_timestep()
+            |> possibly_delay_playback_speed()
           else
             step
             |> bump_error_count(options)
+            |> compute_next_error_timestep()
           end
 
         dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
@@ -71,6 +73,85 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # step
     # # recursive call:
     # |> step(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
+  end
+
+  defn error_less_than_one?(rk_step) do
+    rk_step.error_estimate < 1.0
+  end
+
+  defn reset_error_count_to_zero(step) do
+    %{step | error_count: 0}
+  end
+
+  defn increment_counters(step) do
+    %{
+      step
+      | count_loop__increment_step: step.count_loop__increment_step + 1,
+        i_step: step.i_step + 1
+    }
+  end
+
+  defn merge_rk_step_into_integration_step(step, rk_step) do
+    %{
+      step
+      | rk_step: rk_step,
+        t_at_start_of_step: rk_step.t_new,
+        x_at_start_of_step: rk_step.x_new
+    }
+  end
+
+  defn interpolate_intermediate_points(step) do
+    step
+  end
+
+  defn interpolate_fixed_points(step) do
+    step
+  end
+
+  defn call_output_fn(step) do
+    step
+  end
+
+  defn possibly_delay_playback_speed(step) do
+    step
+  end
+
+  defn call_event_fn(step) do
+    step
+  end
+
+  defn compute_next_success_timestep(step) do
+    step
+  end
+
+  defn compute_next_error_timestep(step) do
+    step
+  end
+
+  defn my_print_value(step, value) do
+    step =
+      hook(step, fn s ->
+        IO.puts("foooo")
+        s
+      end)
+
+    # {step, _value} =
+    #   hook({step, value}, fn {s, v} ->
+    #     IO.puts("foooo")
+    #     s
+    #   end)
+
+    step
+  end
+
+  defn print_computing_iteration_type(z) do
+    hook(z, fn step ->
+      IO.puts("Computing iteration type")
+      # IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
+      step
+    end)
+
+    # z
   end
 
   # Base zero_tolerance on precision?
