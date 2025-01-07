@@ -5,6 +5,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
+  # Get rid of t_start, initial_step, and x0 as args
   defn integrate_step(step_start, _stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _initial_tstep, _x0, _options) do
     {updated_step} =
       while {step = step_start}, finished?(step) do
@@ -37,20 +38,20 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   # Formula taken from Hairer
   @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
-  defn compute_next_timestep(dt, error, order, t_old, t_end, opts) do
-    nx_type = opts[:type]
+  defn compute_next_timestep(dt, error, order, t_old, t_end, options) do
+    type = options.type
 
     # Avoid divisions by zero:
-    # error = error + Nx.Constants.epsilon(nx_type)
-    error = error + Nx.Constants.epsilon(nx_type)
+    # error = error + Nx.Constants.epsilon(type)
+    error = error + Nx.Constants.epsilon(type)
 
     # Octave:
     #   dt *= min (facmax, max (facmin, fac * (1 / err)^(1 / (order + 1))));
 
-    one = Nx.tensor(1.0, type: nx_type)
-    foo = factor(order, nx_type) * (one / error) ** exponent(order, nx_type)
-    dt = dt * min(Nx.tensor(@stepsize_factor_max, type: nx_type), max(Nx.tensor(@stepsize_factor_min, type: nx_type), foo))
-    dt = min(Nx.abs(dt), opts[:max_step])
+    one = Nx.tensor(1.0, type: type)
+    foo = factor(order, type) * (one / error) ** exponent(order, type)
+    dt = dt * min(Nx.tensor(@stepsize_factor_max, type: type), max(Nx.tensor(@stepsize_factor_min, type: type), foo))
+    dt = min(Nx.abs(dt), options.max_step)
 
     # Make sure we don't go past t_end:
     min(Nx.abs(dt), Nx.abs(t_end - t_old))

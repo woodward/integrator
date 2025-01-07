@@ -3,6 +3,7 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
   use Integrator.TestCase, async: true
 
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
 
   describe "compute_next_timestep" do
     test "basic case" do
@@ -11,9 +12,9 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       order = 5
       t_old = Nx.f64(0.0)
       t_end = Nx.f64(2.0)
-      opts = [type: :f64, max_step: 2.0]
+      options = %NxOptions{type: {:f, 64}, max_step: 2.0}
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       expected_dt = Nx.f64(0.1022)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -25,9 +26,9 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       order = 5
       t_old = Nx.f64(0.0)
       t_end = Nx.f64(2.0)
-      opts = [max_step: 0.05, type: :f64]
+      options = %NxOptions{max_step: 0.05, type: {:f, 64}}
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       expected_dt = Nx.f64(0.05)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -39,9 +40,9 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       order = 5
       t_old = Nx.f64(19.711)
       t_end = Nx.f64(20.0)
-      opts = [type: :f64, max_step: 2.0]
+      options = %NxOptions{type: :f64, max_step: 2.0}
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       expected_dt = Nx.f64(0.289)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-05, rtol: 1.0e-05)
@@ -53,9 +54,9 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       order = 3
       t_old = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
-      opts = [type: :f64, max_step: Nx.f64(2.0)]
+      options = %NxOptions{type: :f64, max_step: Nx.f64(2.0)}
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       # From Octave:
       expected_dt = Nx.f64(1.616412403741299e-04)
@@ -83,9 +84,9 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       order = 3
       t_old = Nx.f64(2.3950562560475164e-04)
       t_end = Nx.f64(0.1)
-      opts = [type: :f64, max_step: Nx.f64(2.0)]
+      options = %NxOptions{type: {:f, 64}, max_step: Nx.f64(2.0)}
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       # Expected dt from Octave:
       expected_dt = Nx.f64(1.058699260768067e-04)
@@ -117,15 +118,15 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
 
       t_end = Nx.f64(0.1)
 
-      opts = [
+      options = %NxOptions{
         type: :f64,
         max_step: Nx.f64(0.01),
         rel_tol: Nx.f64(1.0e-11),
         abs_tol: Nx.f64(1.0e-11),
-        norm_control: false
-      ]
+        norm_control?: Nx.u8(0)
+      }
 
-      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, opts)
+      new_dt = InternalComputations.compute_next_timestep(dt, error, order, t_old, t_end, options)
 
       # Expected dt from Octave:
       expected_dt = Nx.f64(0.007895960916517373)
