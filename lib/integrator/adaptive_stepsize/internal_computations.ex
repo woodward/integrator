@@ -10,8 +10,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
 
   defn integrate_step(step_start, t_end, options) do
-    {updated_step, _t_end, _options} =
-      while {step = step_start, t_end, options}, finished?(step, t_end) do
+    {updated_step, _t_end, _options, debug1, debug2, debug3} =
+      while {step = step_start, t_end, options, debug1 = Nx.f64(0.0), debug2 = Nx.u8(0), debug3 = Nx.u8(0)},
+            continue_stepping?(step, t_end) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
         step = step |> increment_compute_counter()
 
@@ -37,10 +38,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         # Needs to be converted to Nx:
         # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
 
-        {step, t_end, options}
+        # debug1 = Nx.abs(step.t_at_start_of_step - t_end)
+        # debug2 = Nx.abs(step.t_at_start_of_step - t_end) < @zero_tolerance
+        # debug3 = step.t_at_start_of_step > t_end
+
+        {step, t_end, options, debug1, debug2, debug3}
       end
 
-    updated_step
+    {updated_step, debug1, debug2, debug3}
 
     # ------------------------------------
     # Old code:
@@ -171,14 +176,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @spec finished?(AdaptiveStepsizeRefactor.t(), Nx.t()) :: Nx.t()
-  defnp finished?(step, t_end) do
-    # if Nx.abs(step.t_at_start_of_step - t_end < @zero_tolerance) or step.t_at_start_of_step > t_end do
-    #   Nx.u8(1)
-    # else
-    #   Nx.u8(0)
-    # end
-    step.count_cycles__compute_step < 78
+  @spec continue_stepping?(AdaptiveStepsizeRefactor.t(), Nx.t()) :: Nx.t()
+  defnp continue_stepping?(step, t_end) do
+    # Also check the step's status here
+
+    if Nx.abs(step.t_at_start_of_step - t_end) <= @zero_tolerance or step.t_at_start_of_step > t_end do
+      Nx.u8(0)
+    else
+      Nx.u8(1)
+    end
   end
 
   defnp increment_compute_counter(step) do
