@@ -6,13 +6,22 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   import Nx.Defn
 
   alias Integrator.RungeKutta
+  alias Integrator.AdaptiveStepsizeRefactor
 
   defn integrate_step(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
       while {step = step_start, t_end, options}, finished?(step) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
-        step = step |> increment_counters()
-        step = %{step | rk_step: rk_step}
+        step = %{step | rk_step: rk_step} |> increment_compute_counter()
+
+        step =
+          if rk_step.error_estimate < 1.0 do
+            step
+            |> reset_error_counter()
+            |> increment_counters()
+          else
+            step
+          end
 
         dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
 
@@ -64,7 +73,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step.count_cycles__compute_step < 78
   end
 
-  defnp increment_counters(step) do
+  defnp increment_compute_counter(step) do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
@@ -99,5 +108,19 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
     # Make sure we don't go past t_end:
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
+  end
+
+  @spec increment_counters(AdaptiveStepsizeRefactor.t()) :: AdaptiveStepsizeRefactor.t()
+  defnp increment_counters(step) do
+    %{
+      step
+      | count_loop__increment_step: step.count_loop__increment_step + 1,
+        i_step: step.i_step + 1
+    }
+  end
+
+  @spec reset_error_counter(AdaptiveStepsizeRefactor.t()) :: AdaptiveStepsizeRefactor.t()
+  defnp reset_error_counter(step) do
+    %{step | error_count: 0}
   end
 end
