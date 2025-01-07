@@ -21,16 +21,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> reset_error_count_to_zero()
             |> increment_counters()
             |> merge_rk_step_into_integration_step(rk_step)
-            |> call_event_fn()
-            |> interpolate_intermediate_points()
-            |> interpolate_fixed_points()
-            |> call_output_fn()
-            |> compute_next_success_timestep()
-            |> possibly_delay_playback_speed()
+            |> call_event_fn(options)
+            |> interpolate_points(options)
+            |> call_output_fn(options)
+            |> compute_next_timestep_success_case(options)
+            |> possibly_delay_playback_speed(options)
           else
             step
             |> bump_error_count(options)
-            |> compute_next_error_timestep()
+            |> compute_next_timestep_error_case(options)
           end
 
         dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
@@ -100,31 +99,46 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     }
   end
 
-  defn interpolate_intermediate_points(step) do
+  defn interpolate_points(step, options) do
+    # This is actually more of an if statement or a case statement
+    step
+    |> interpolate_intermediate_points(options)
+    |> interpolate_fixed_points(options)
+  end
+
+  defn interpolate_intermediate_points(step, _options) do
     step
   end
 
-  defn interpolate_fixed_points(step) do
+  defn interpolate_fixed_points(step, _options) do
     step
   end
 
-  defn call_output_fn(step) do
+  defn call_output_fn(step, _options) do
     step
   end
 
-  defn possibly_delay_playback_speed(step) do
+  defn possibly_delay_playback_speed(step, _options) do
     step
   end
 
-  defn call_event_fn(step) do
+  defn call_event_fn(step, _options) do
+    # First check if an event function is present
+    called_fn_output = Nx.u8(1)
+    event_happened? = called_fn_output
+
+    if event_happened? do
+      step
+    else
+      step
+    end
+  end
+
+  defn compute_next_timestep_success_case(step, _options) do
     step
   end
 
-  defn compute_next_success_timestep(step) do
-    step
-  end
-
-  defn compute_next_error_timestep(step) do
+  defn compute_next_timestep_error_case(step, _options) do
     step
   end
 
