@@ -7,24 +7,31 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   alias Integrator.RungeKutta
   alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
 
   defn integrate_step(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
-      while {step = step_start, t_end, options}, finished?(step) do
+      while {step = step_start, t_end, options}, finished?(step, t_end) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
-        step = %{step | rk_step: rk_step} |> increment_compute_counter()
+        step = step |> increment_compute_counter()
 
         step =
           if rk_step.error_estimate < 1.0 do
-            step
-            |> reset_error_counter()
-            |> increment_counters()
+            %{
+              step
+              | rk_step: rk_step,
+                error_count: 0,
+                count_loop__increment_step: step.count_loop__increment_step + 1,
+                i_step: step.i_step + 1,
+                t_at_start_of_step: rk_step.t_new,
+                x_at_start_of_step: rk_step.x_new
+            }
           else
             step
+            |> bump_error_count(options)
           end
 
         dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
-
         step = %{step | dt_new: dt_new}
         # Needs to be converted to Nx:
         # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
@@ -43,17 +50,17 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
     # # could easily be made into Nx:
     # step =
-    #   if less_than_one?(new_step.error_estimate) do
-    #     step
-    #     |> increment_and_reset_counters()
+    # DONE  if less_than_one?(new_step.error_estimate) do
+    # DONE    step
+    # DONE    |> increment_and_reset_counters()
     #     |> merge_new_step(new_step)
     #     |> call_event_fn(opts[:event_fn], opts[:zero_fn], interpolate_fn, opts)
     #     |> interpolate(interpolate_fn, opts[:refine])
     #     |> store_resuts(opts[:store_results?])
     #     |> call_output_fn(opts[:output_fn])
     #   else
-    #     bump_error_count(step, opts)
-    #   end
+    # DONE     bump_error_count(step, opts)
+    # DONE   end
 
     # # This is Nx:
     # dt = compute_next_timestep(step.dt, new_step.error_estimate, order, step.t_new, t_end, opts)
@@ -66,10 +73,16 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # |> step(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
-  defnp finished?(step) do
-    # when abs(t_old - t_end) < @zero_tolerance or t_old > t_end   ->  halt
-    # when status == :halt       -> halt
+  # Base zero_tolerance on precision?
+  @zero_tolerance 1.0e-07
 
+  @spec finished?(AdaptiveStepsizeRefactor.t(), Nx.t()) :: Nx.t()
+  defnp finished?(step, t_end) do
+    # if Nx.abs(step.t_at_start_of_step - t_end < @zero_tolerance) or step.t_at_start_of_step > t_end do
+    #   Nx.u8(1)
+    # else
+    #   Nx.u8(0)
+    # end
     step.count_cycles__compute_step < 78
   end
 
@@ -110,17 +123,25 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
   end
 
-  @spec increment_counters(AdaptiveStepsizeRefactor.t()) :: AdaptiveStepsizeRefactor.t()
-  defnp increment_counters(step) do
-    %{
-      step
-      | count_loop__increment_step: step.count_loop__increment_step + 1,
-        i_step: step.i_step + 1
-    }
-  end
+  @spec bump_error_count(AdaptiveStepsizeRefactor.t(), Keyword.t()) :: AdaptiveStepsizeRefactor.t()
+  defnp bump_error_count(step, options) do
+    step = %{step | error_count: step.error_count + 1}
 
-  @spec reset_error_counter(AdaptiveStepsizeRefactor.t()) :: AdaptiveStepsizeRefactor.t()
-  defnp reset_error_counter(step) do
-    %{step | error_count: 0}
+    {step, _options} =
+      if step.error_count > options.max_number_of_errors do
+        hook({step, options}, fn {s, opts} ->
+          raise MaxErrorsExceededError,
+            message: "Too many errors",
+            error_count: s.error_count,
+            max_number_of_errors: opts.max_number_of_errors,
+            step: s
+
+          {s, opts}
+        end)
+      else
+        {step, options}
+      end
+
+    step
   end
 end
