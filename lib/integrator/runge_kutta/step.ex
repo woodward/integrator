@@ -81,18 +81,21 @@ defmodule Integrator.RungeKutta.Step do
   defn initial_step(t0, x0, opts \\ []) do
     opts = keyword!(opts, order: 5)
     type = Nx.type(x0)
+    # The NaN values are just to allocate space for these values, and to also indicate that
+    # for the moment they are not legitimate values (they will be swapped out later with computed values):
+    nan = Nx.Constants.nan(type)
 
     %__MODULE__{
-      t_old: Nx.Constants.nan(type),
+      t_old: nan,
       t_new: t0,
       #
-      x_old: Nx.Constants.nan(type),
+      x_old: Nx.tensor(0.0, type: type) |> Nx.broadcast({Nx.size(x0)}),
       x_new: x0,
       #
       k_vals: initial_empty_k_vals_defn(x0, opts),
       options_comp: Nx.tensor(0.0, type: type),
-      error_estimate: Nx.Constants.nan(type),
-      dt: Nx.Constants.nan(type)
+      error_estimate: nan,
+      dt: nan
     }
   end
 

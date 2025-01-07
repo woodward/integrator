@@ -10,8 +10,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn integrate_step(step_start, _t_end, options) do
     {updated_step, _options} =
       while {step = step_start, options}, finished?(step) do
-        _rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
+        rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
         step = step |> increment_counters()
+        step = %{step | rk_step: rk_step}
         {step, options}
       end
 

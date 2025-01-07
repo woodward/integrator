@@ -291,17 +291,19 @@ defmodule Integrator.RungeKutta.StepTest do
         0.0  0.0  0.0  0.0  0.0  0.0  0.0
       ]f64
 
+      nan = Nx.Constants.nan(:f64)
+
       assert initial_step == %Step{
-               t_old: Nx.Constants.nan(:f64),
+               t_old: nan,
                t_new: Nx.f64(1.0),
                #
-               x_old: Nx.Constants.nan(:f64),
+               x_old: Nx.tensor([0.0, 0.0], type: :f64),
                x_new: Nx.f64([2.0, 3.0]),
                #
                k_vals: expected_k_vals,
                options_comp: Nx.f64(0.0),
-               error_estimate: Nx.Constants.nan(:f64),
-               dt: Nx.Constants.nan(:f64)
+               error_estimate: nan,
+               dt: nan
              }
     end
   end
