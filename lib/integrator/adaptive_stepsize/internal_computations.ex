@@ -5,18 +5,54 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
-  # Get rid of t_start, initial_step, and x0 as args
-  defn integrate_step(step_start, _stepper_fn, _interpolate_fn, _ode_fn, _t_start, _t_end, _initial_tstep, _x0, _options) do
-    {updated_step} =
-      while {step = step_start}, finished?(step) do
+  alias Integrator.RungeKutta
+
+  defn integrate_step(step_start, _interpolate_fn, ode_fn, _t_end, options) do
+    {updated_step, _ode_fn, _options} =
+      while {step = step_start, ode_fn, options}, finished?(step) do
+        _rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, ode_fn, options)
         step = step |> increment_counters()
-        {step}
+        {step, ode_fn, options}
       end
 
     updated_step
+
+    # ------------------------------------
+    # Old code:
+    # # wrapper around compute_step_nx:
+    # new_step = compute_step(step, stepper_fn, ode_fn, opts)
+
+    # step = step |> increment_compute_counter()
+
+    # # could easily be made into Nx:
+    # step =
+    #   if less_than_one?(new_step.error_estimate) do
+    #     step
+    #     |> increment_and_reset_counters()
+    #     |> merge_new_step(new_step)
+    #     |> call_event_fn(opts[:event_fn], opts[:zero_fn], interpolate_fn, opts)
+    #     |> interpolate(interpolate_fn, opts[:refine])
+    #     |> store_resuts(opts[:store_results?])
+    #     |> call_output_fn(opts[:output_fn])
+    #   else
+    #     bump_error_count(step, opts)
+    #   end
+
+    # # This is Nx:
+    # dt = compute_next_timestep(step.dt, new_step.error_estimate, order, step.t_new, t_end, opts)
+
+    # # Needs to be converted to Nx:
+    # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
+
+    # step
+    # # recursive call:
+    # |> step(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
   end
 
   defnp finished?(step) do
+    # when abs(t_old - t_end) < @zero_tolerance or t_old > t_end   ->  halt
+    # when status == :halt       -> halt
+
     step.count_cycles__compute_step < 78
   end
 

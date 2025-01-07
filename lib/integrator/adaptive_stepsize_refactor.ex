@@ -47,6 +47,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      #
      :overall_start_timestamp_μs,
      :overall_elapsed_time_μs
+   ],
+   keep: [
+     :stepper_fn
    ]}
 
   @type t :: %__MODULE__{
@@ -80,13 +83,18 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           step_elapsed_time_μs: Nx.t(),
           #
           overall_start_timestamp_μs: Nx.t(),
-          overall_elapsed_time_μs: Nx.t()
+          overall_elapsed_time_μs: Nx.t(),
+          #
+          stepper_fn: fun()
         }
   defstruct [
     :t_at_start_of_step,
     :x_at_start_of_step,
     :dt_new,
     :rk_step,
+    #
+    :stepper_fn,
+    #
     fixed_output_t_next: Nx.f64(0),
     fixed_output_t_within_step?: Nx.u8(0),
     # perhaps status is not necessary, and terminal_event is used intead?
@@ -316,15 +324,14 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     t_start = to_tensor(t_start, type)
     t_end = to_tensor(t_end, type)
     x0 = to_tensor(x0, type)
+
     initial_tstep = Nx.min(Nx.abs(initial_tstep), options.max_step)
+    initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: order)
 
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
 
-    # Fill this in!  or compute it!!!
-    initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: order)
-
-    step = %__MODULE__{
+    %__MODULE__{
       t_at_start_of_step: t_start,
       x_at_start_of_step: x0,
       dt_new: initial_tstep,
@@ -334,40 +341,18 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       #
       # These are just junk values in Point right now to give it the right size and shape
       output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
-      output_t_and_x: {Nx.tensor(0.0, type: type), x0}
+      output_t_and_x: {Nx.tensor(0.0, type: type), x0},
+      #
+      stepper_fn: stepper_fn
       #
       # This is not working for some reason:
       # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
       # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
     }
-
-    # From AdaptiveStepsize:
-    #
-    # %__MODULE__{
-    #   t_new: t_start,
-    #   x_new: x0,
-    #   # t_old must be set on the initial struct in case there's an error when computing the first step (used in t_next/2)
-    #   t_old: t_start,
-    #   dt: initial_tstep,
-    #   k_vals: initial_empty_k_vals(order, x0),
-    #   fixed_times: fixed_times,
-    #   nx_type: nx_type,
-    #   options_comp: Nx.tensor(0.0, type: nx_type),
-    #   timestamp_μs: timestamp_now,
-    #   timestamp_start_μs: timestamp_now
-    # }
-    # |> store_first_point(t_start, x0, opts[:store_results?])
-    # |> step(Nx.to_number(t_start), Nx.to_number(t_end), :continue, stepper_fn, interpolate_fn, ode_fn, order, opts)
-
-    InternalComputations.integrate_step(
-      step,
-      stepper_fn,
+    |> InternalComputations.integrate_step(
       interpolate_fn,
       ode_fn,
-      t_start,
       t_end,
-      initial_tstep,
-      x0,
       options
     )
   end
