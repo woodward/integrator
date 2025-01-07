@@ -3,6 +3,8 @@ defmodule Integrator.ExternalFnAdapter do
   An adapter which wraps an external, non-defn (i.e., Elixir) function (such as for generating side
   effects, like output) in an Nx.Container struct so that it can be passed as an argument to functions.
   It also encapsulutes the Nx [hook/3](https://hexdocs.pm/nx/Nx.Defn.Kernel.html#hook/3) logic in one spot.
+  The main reason for this is so that the function can be passed into a hook (in this wrapped form);
+  otherwise, there's no way to pass a function into a hook (to my knowledge).
   """
 
   import Nx.Defn

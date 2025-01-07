@@ -5,6 +5,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
+  alias Integrator.ExternalFnAdapter
+  alias Integrator.Point
   alias Integrator.RungeKutta
   alias Integrator.AdaptiveStepsizeRefactor
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
@@ -100,7 +102,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       step
       | rk_step: rk_step,
         t_at_start_of_step: rk_step.t_new,
-        x_at_start_of_step: rk_step.x_new
+        x_at_start_of_step: rk_step.x_new,
+        output_t_and_x: {rk_step.t_new, rk_step.x_new}
     }
   end
 
@@ -119,7 +122,25 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  defn call_output_fn(step, _options) do
+  defn call_output_fn(step, options) do
+    # step = ExternalFnAdapter.invoke_external_fn(step, options.output_fn_adapter)
+    # t = Nx.f64(3)
+    # x = Nx.f64([4, 5])
+    # point = %Point{t: t, x: x}
+    # point = Nx.f64(3)
+    # {step, _point} = ExternalFnAdapter.invoke_external_fn({step, point}, options.output_fn_adapter)
+    # step
+    # point = Nx.f64(3)
+    # ExternalFnAdapter.invoke_external_fn(step, options.output_fn_adapter)
+
+    {step, _} =
+      hook({step, options.output_fn_adapter}, fn {s, adapter} ->
+        {t, x} = s.output_t_and_x
+        point = %Point{t: t, x: x}
+        adapter.external_fn.(point)
+        {s, adapter}
+      end)
+
     step
   end
 
