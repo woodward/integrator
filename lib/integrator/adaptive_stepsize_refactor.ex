@@ -49,7 +49,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
      :overall_elapsed_time_μs
    ],
    keep: [
-     :stepper_fn
+     :stepper_fn,
+     :ode_fn,
+     :interpolate_fn
    ]}
 
   @type t :: %__MODULE__{
@@ -85,7 +87,9 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           overall_start_timestamp_μs: Nx.t(),
           overall_elapsed_time_μs: Nx.t(),
           #
-          stepper_fn: fun()
+          stepper_fn: fun(),
+          ode_fn: fun(),
+          interpolate_fn: fun()
         }
   defstruct [
     :t_at_start_of_step,
@@ -94,6 +98,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     :rk_step,
     #
     :stepper_fn,
+    :ode_fn,
+    :interpolate_fn,
     #
     fixed_output_t_next: Nx.f64(0),
     fixed_output_t_within_step?: Nx.u8(0),
@@ -343,15 +349,15 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
       output_t_and_x: {Nx.tensor(0.0, type: type), x0},
       #
-      stepper_fn: stepper_fn
+      stepper_fn: stepper_fn,
+      ode_fn: ode_fn,
+      interpolate_fn: interpolate_fn
       #
       # This is not working for some reason:
       # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
       # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
     }
     |> InternalComputations.integrate_step(
-      interpolate_fn,
-      ode_fn,
       t_end,
       options
     )

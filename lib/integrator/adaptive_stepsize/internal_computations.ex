@@ -7,12 +7,12 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   alias Integrator.RungeKutta
 
-  defn integrate_step(step_start, _interpolate_fn, ode_fn, _t_end, options) do
-    {updated_step, _ode_fn, _options} =
-      while {step = step_start, ode_fn, options}, finished?(step) do
-        _rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, ode_fn, options)
+  defn integrate_step(step_start, _t_end, options) do
+    {updated_step, _options} =
+      while {step = step_start, options}, finished?(step) do
+        _rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
         step = step |> increment_counters()
-        {step, ode_fn, options}
+        {step, options}
       end
 
     updated_step
