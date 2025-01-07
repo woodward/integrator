@@ -7,13 +7,20 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   alias Integrator.RungeKutta
 
-  defn integrate_step(step_start, _t_end, options) do
-    {updated_step, _options} =
-      while {step = step_start, options}, finished?(step) do
+  defn integrate_step(step_start, t_end, options) do
+    {updated_step, _t_end, _options} =
+      while {step = step_start, t_end, options}, finished?(step) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
         step = step |> increment_counters()
         step = %{step | rk_step: rk_step}
-        {step, options}
+
+        dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
+
+        step = %{step | dt_new: dt_new}
+        # Needs to be converted to Nx:
+        # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
+
+        {step, t_end, options}
       end
 
     updated_step
@@ -21,9 +28,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # ------------------------------------
     # Old code:
     # # wrapper around compute_step_nx:
-    # new_step = compute_step(step, stepper_fn, ode_fn, opts)
+    # DONE new_step = compute_step(step, stepper_fn, ode_fn, opts)
 
-    # step = step |> increment_compute_counter()
+    # DONE step = step |> increment_compute_counter()
 
     # # could easily be made into Nx:
     # step =
