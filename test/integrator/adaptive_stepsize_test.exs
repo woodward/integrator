@@ -141,11 +141,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      File.write!(
-        "test/fixtures/octave_results/van_der_pol/no_interpolation/junk_old_t.csv",
-        result.output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
-      )
-
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end

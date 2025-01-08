@@ -5,11 +5,13 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
-  alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.Point
   alias Integrator.RungeKutta
 
+  @spec integrate_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   defn integrate_step(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
       while {step = step_start, t_end, options}, continue_stepping?(step, t_end) do
@@ -25,18 +27,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> call_event_fn(options)
             |> interpolate_points(options)
             |> call_output_fn(options)
-            |> compute_next_timestep_success_case(options)
-            |> possibly_delay_playback_speed(options)
           else
             step
             |> bump_error_count(options)
-            |> compute_next_timestep_error_case(options)
           end
 
         dt_new =
           compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_at_start_of_step, t_end, options)
 
-        step = %{step | dt_new: dt_new}
+        step = %{step | dt_new: dt_new} |> possibly_delay_playback_speed(options)
 
         {step, t_end, options}
       end
@@ -61,14 +60,17 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   #     step
   #   end
 
+  @spec error_less_than_one?(IntegrationStep.t()) :: Nx.t()
   defn error_less_than_one?(rk_step) do
     rk_step.error_estimate < 1.0
   end
 
+  @spec reset_error_count_to_zero(IntegrationStep.t()) :: IntegrationStep.t()
   defn reset_error_count_to_zero(step) do
     %{step | error_count: 0}
   end
 
+  @spec increment_counters(IntegrationStep.t()) :: IntegrationStep.t()
   defn increment_counters(step) do
     %{
       step
@@ -77,12 +79,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     }
   end
 
+  @spec merge_rk_step_into_integration_step(IntegrationStep.t(), RungeKutta.Step.t()) :: IntegrationStep.t()
   defn merge_rk_step_into_integration_step(step, rk_step) do
     %{
       step
       | rk_step: rk_step,
         t_at_start_of_step: rk_step.t_new,
         x_at_start_of_step: rk_step.x_new,
+        #
+        # output_t_and_x will change soon with interpolation and fixed times
         output_t_and_x: {rk_step.t_new, rk_step.x_new}
     }
   end
@@ -102,23 +107,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
+  @spec call_output_fn(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn call_output_fn(step, options) do
-    # step = ExternalFnAdapter.invoke_external_fn(step, options.output_fn_adapter)
-    # t = Nx.f64(3)
-    # x = Nx.f64([4, 5])
-    # point = %Point{t: t, x: x}
-    # point = Nx.f64(3)
-    # {step, _point} = ExternalFnAdapter.invoke_external_fn({step, point}, options.output_fn_adapter)
-    # step
-    # point = Nx.f64(3)
-    # ExternalFnAdapter.invoke_external_fn(step, options.output_fn_adapter)
-
     {step, _} =
       hook({step, options.output_fn_adapter}, fn {s, adapter} ->
+        # Possibly add a toggle to send the entire step and not just the point?
         {t, x} = s.output_t_and_x
         point = %Point{t: t, x: x}
         adapter.external_fn.(point)
-        # IO.inspect(Nx.to_number(s.dt_new))
         {s, adapter}
       end)
 
@@ -130,7 +126,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   defn call_event_fn(step, _options) do
-    # First check if an event function is present
+    # Psuedo-code: first check if an event function is present
     called_fn_output = Nx.u8(1)
     event_happened? = called_fn_output
 
@@ -141,47 +137,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  defn compute_next_timestep_success_case(step, _options) do
-    step
-  end
-
-  defn compute_next_timestep_error_case(step, _options) do
-    step
-  end
-
-  defn my_print_value(step, value) do
-    # step =
-    #   hook(step, fn s ->
-    #     IO.puts("foooo")
-    #     s
-    #   end)
-
-    {step, _value} =
-      hook({step, value}, fn {s, v} ->
-        IO.puts("Value: #{inspect(v)}")
-        s
-      end)
-
-    step
-  end
-
-  defn print_computing_iteration_type(z) do
-    hook(z, fn step ->
-      IO.puts("Computing iteration type")
-      # IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
-      step
-    end)
-
-    # z
-  end
-
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @spec continue_stepping?(AdaptiveStepsizeRefactor.t(), Nx.t()) :: Nx.t()
+  @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
   defnp continue_stepping?(step, t_end) do
     # Also check the step's status here
 
+    #    if    close to end time                                  or past end time
     if Nx.abs(step.t_at_start_of_step - t_end) <= @zero_tolerance or step.t_at_start_of_step > t_end do
       Nx.u8(0)
     else
@@ -189,6 +152,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
+  @spec increment_compute_counter(IntegrationStep.t()) :: IntegrationStep.t()
   defnp increment_compute_counter(step) do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
@@ -206,7 +170,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   @stepsize_factor_max 1.5
 
   # Formula taken from Hairer
-  @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), Keyword.t()) :: Nx.t()
+  @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), NxOptions.t()) :: Nx.t()
   defn compute_next_timestep(dt, error, order, t_old, t_end, options) do
     type = options.type
 
@@ -226,7 +190,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
   end
 
-  @spec bump_error_count(AdaptiveStepsizeRefactor.t(), Keyword.t()) :: AdaptiveStepsizeRefactor.t()
+  @spec bump_error_count(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defnp bump_error_count(step, options) do
     step = %{step | error_count: step.error_count + 1}
 

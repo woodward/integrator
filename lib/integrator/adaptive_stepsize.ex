@@ -451,23 +451,8 @@ defmodule Integrator.AdaptiveStepsize do
         bump_error_count(step, opts)
       end
 
-    dt_last = step.dt
-
-    if dt_last == Nx.f64(0.6746869564907434) do
-      IO.puts("Before: ")
-      IO.inspect(Nx.to_number(step.dt), label: "step.dt")
-      IO.inspect(Nx.to_number(new_step.error_estimate), label: "new_step.error_estimate")
-      IO.inspect(Nx.to_number(step.t_new), label: "step.t_new")
-      IO.puts("---------------------------------------")
-    end
-
     # This is Nx:
     dt = compute_next_timestep(step.dt, new_step.error_estimate, order, step.t_new, t_end, opts)
-
-    if dt_last == Nx.f64(0.6746869564907434) do
-      IO.puts("After: ")
-      IO.inspect(Nx.to_number(dt), label: "dt")
-    end
 
     # IO.inspect(Nx.to_number(dt))
 

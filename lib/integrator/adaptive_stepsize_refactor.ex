@@ -6,6 +6,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
   import Nx.Defn
 
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
   alias Integrator.Point
@@ -14,119 +15,6 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   # import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
   import Integrator.Utils, only: [timestamp_μs: 0]
-
-  @derive {Nx.Container,
-   containers: [
-     :t_at_start_of_step,
-     :x_at_start_of_step,
-     :dt_new,
-     :rk_step,
-     :fixed_output_t_next,
-     :fixed_output_t_within_step?,
-     # perhaps status is not necessary, and terminal_event is used intead?
-     :status,
-     #
-     # Perhaps none of these three are needed if I push out the points out immediately?
-     :output_point,
-     :interpolated_points,
-     :fixed_output_point,
-     :output_t_and_x,
-     #
-     :count_loop__increment_step,
-     :count_cycles__compute_step,
-     #
-     # ireject in Octave:
-     :error_count,
-     :i_step,
-     #
-     :terminal_event,
-     :terminal_output,
-     #
-     :step_start_timestamp_μs,
-     :step_elapsed_time_μs,
-     #
-     :overall_start_timestamp_μs,
-     :overall_elapsed_time_μs
-   ],
-   keep: [
-     :stepper_fn,
-     :ode_fn,
-     :interpolate_fn
-   ]}
-
-  @type t :: %__MODULE__{
-          t_at_start_of_step: Nx.t(),
-          x_at_start_of_step: Nx.t(),
-          dt_new: Nx.t(),
-          rk_step: RungeKutta.Step.t(),
-          fixed_output_t_next: Nx.t(),
-          fixed_output_t_within_step?: Nx.t(),
-          # perhaps status is not necessary, and terminal_event is used intead?
-          status: Nx.t(),
-          #
-          output_point: Point.t(),
-          interpolated_points: {},
-          fixed_output_point: {},
-          output_t_and_x: {Nx.t(), Nx.t()},
-          # interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
-          # fixed_output_point: Point.t(),
-          #
-          count_loop__increment_step: Nx.t(),
-          count_cycles__compute_step: Nx.t(),
-          #
-          # ireject in Octave:
-          error_count: Nx.t(),
-          i_step: Nx.t(),
-          #
-          terminal_event: Nx.t(),
-          terminal_output: Nx.t(),
-          #
-          step_start_timestamp_μs: Nx.t(),
-          step_elapsed_time_μs: Nx.t(),
-          #
-          overall_start_timestamp_μs: Nx.t(),
-          overall_elapsed_time_μs: Nx.t(),
-          #
-          stepper_fn: fun(),
-          ode_fn: fun(),
-          interpolate_fn: fun()
-        }
-  defstruct [
-    :t_at_start_of_step,
-    :x_at_start_of_step,
-    :dt_new,
-    :rk_step,
-    #
-    :stepper_fn,
-    :ode_fn,
-    :interpolate_fn,
-    #
-    fixed_output_t_next: Nx.f64(0),
-    fixed_output_t_within_step?: Nx.u8(0),
-    # perhaps status is not necessary, and terminal_event is used intead?
-    status: Nx.u8(1),
-    #
-    output_point: %Point{},
-    interpolated_points: {},
-    fixed_output_point: {},
-    output_t_and_x: {},
-    #
-    count_loop__increment_step: Nx.s32(0),
-    count_cycles__compute_step: Nx.s32(0),
-    #
-    # ireject in Octave:
-    error_count: Nx.s32(0),
-    i_step: Nx.s32(0),
-    #
-    terminal_event: Nx.s32(0),
-    terminal_output: Nx.s32(0),
-    #
-    step_start_timestamp_μs: Nx.s32(0),
-    step_elapsed_time_μs: Nx.s32(0),
-    #
-    overall_start_timestamp_μs: Nx.s32(0),
-    overall_elapsed_time_μs: Nx.s32(0)
-  ]
 
   defmodule NxOptions do
     @moduledoc """
@@ -319,7 +207,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
           x0 :: Nx.t(),
           order :: integer(),
           opts :: Keyword.t()
-        ) :: t()
+        ) :: IntegrationStep.t()
 
   deftransform integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
     timestamp_now = timestamp_μs()
@@ -337,7 +225,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
 
-    %__MODULE__{
+    %IntegrationStep{
       t_at_start_of_step: t_start,
       x_at_start_of_step: x0,
       dt_new: initial_tstep,
@@ -503,11 +391,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     Nx.subtract(t_start, t_end) |> Nx.abs() |> Nx.multiply(Nx.tensor(0.1, type: Nx.type(t_start)))
   end
 
+  @spec default_max_step(Nx.t(), Nx.t()) :: Nx.t()
   deftransformp default_max_step(t_start, t_end) do
     # See Octave: integrate_adaptive.m:89
     0.1 * abs(t_start - t_end)
   end
 
+  @spec to_tensor(Nx.t() | float(), Nx.Type.t()) :: Nx.t()
   deftransform to_tensor(%Nx.Tensor{} = tensor, type) do
     if Nx.type(tensor) != type do
       raise "tensor #{inspect(tensor)} is of incorrect type, #{inspect(type)} expected}"

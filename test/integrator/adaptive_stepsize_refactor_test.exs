@@ -53,11 +53,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         )
 
       assert result.count_cycles__compute_step == Nx.s32(78)
-
-      # This one is off by one for some reason (it comes back as 51 - why? FIX!!! OR RESOLVE WHY DIFFERENT!)
-      # Is it because I'm not counting the original rk step computation? i.e., should the counter start
-      # at 1 not 0?
-      # assert result.count_loop__increment_step == Nx.s32(50)
+      assert result.count_loop__increment_step == Nx.s32(50)
+      assert result.error_count == Nx.s32(0)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")

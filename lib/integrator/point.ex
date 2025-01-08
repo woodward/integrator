@@ -22,6 +22,7 @@ defmodule Integrator.Point do
     :x
   ]
 
+  @spec split_points_into_t_and_x([Point.t()]) :: {[Nx.t()], [Nx.t()]}
   def split_points_into_t_and_x(points) do
     t = points |> Enum.map(& &1.t)
     x = points |> Enum.map(& &1.x)
