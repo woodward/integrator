@@ -39,7 +39,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.tensor(0.068129, type: :f64)
 
-      {result, debug1, debug2, debug3} =
+      result =
         AdaptiveStepsizeRefactor.integrate(
           stepper_fn,
           interpolate_fn,
@@ -62,14 +62,12 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      data = DataCollector.get_data(pid)
-
       {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
-      # assert length(output_t) == 51
-      # assert length(output_x) == 51
+      assert length(output_t) == 51
+      assert length(output_x) == 51
 
-      # assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
-      # assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
       # assert result.overall_elapsed_time_μs(result) > 1
       # assert result.step_elapsed_time_μs(result) > 1

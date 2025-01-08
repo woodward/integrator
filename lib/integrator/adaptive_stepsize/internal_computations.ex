@@ -5,16 +5,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
-  alias Integrator.ExternalFnAdapter
+  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
+  alias Integrator.AdaptiveStepsizeRefactor
   alias Integrator.Point
   alias Integrator.RungeKutta
-  alias Integrator.AdaptiveStepsizeRefactor
-  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
 
   defn integrate_step(step_start, t_end, options) do
-    {updated_step, _t_end, _options, debug1, debug2, debug3} =
-      while {step = step_start, t_end, options, debug1 = Nx.f64(0.0), debug2 = Nx.u8(0), debug3 = Nx.u8(0)},
-            continue_stepping?(step, t_end) do
+    {updated_step, _t_end, _options} =
+      while {step = step_start, t_end, options}, continue_stepping?(step, t_end) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
         step = step |> increment_compute_counter()
 
@@ -35,51 +33,33 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> compute_next_timestep_error_case(options)
           end
 
-        dt_new = compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, rk_step.t_new, t_end, options)
+        dt_new =
+          compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_at_start_of_step, t_end, options)
+
         step = %{step | dt_new: dt_new}
-        # Needs to be converted to Nx:
-        # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
 
-        # debug1 = Nx.abs(step.t_at_start_of_step - t_end)
-        # debug2 = Nx.abs(step.t_at_start_of_step - t_end) < @zero_tolerance
-        # debug3 = step.t_at_start_of_step > t_end
-
-        {step, t_end, options, debug1, debug2, debug3}
+        {step, t_end, options}
       end
 
-    {updated_step, debug1, debug2, debug3}
-
-    # ------------------------------------
-    # Old code:
-    # # wrapper around compute_step_nx:
-    # DONE new_step = compute_step(step, stepper_fn, ode_fn, opts)
-
-    # DONE step = step |> increment_compute_counter()
-
-    # # could easily be made into Nx:
-    # step =
-    # DONE  if less_than_one?(new_step.error_estimate) do
-    # DONE    step
-    # DONE    |> increment_and_reset_counters()
-    #     |> merge_new_step(new_step)
-    #     |> call_event_fn(opts[:event_fn], opts[:zero_fn], interpolate_fn, opts)
-    #     |> interpolate(interpolate_fn, opts[:refine])
-    #     |> store_resuts(opts[:store_results?])
-    #     |> call_output_fn(opts[:output_fn])
-    #   else
-    # DONE     bump_error_count(step, opts)
-    # DONE   end
-
-    # # This is Nx:
-    # dt = compute_next_timestep(step.dt, new_step.error_estimate, order, step.t_new, t_end, opts)
-
-    # # Needs to be converted to Nx:
-    # step = %{step | dt: dt} |> delay_simulation(opts[:speed])
-
-    # step
-    # # recursive call:
-    # |> step(t_next(step, dt), t_end, halt?(step), stepper_fn, interpolate_fn, ode_fn, order, opts)
+    updated_step
   end
+
+  # Printing example:
+  # step =
+  #   if dt_last == Nx.f64(0.6746869564907434) do
+  #     {step, _} =
+  #       hook({step, options.output_fn_adapter}, fn {s, adapter} ->
+  #         {t, x} = s.output_t_and_x
+  #         point = %Point{t: t, x: x}
+  #         adapter.external_fn.(point)
+  #         IO.inspect(Nx.to_number(s.dt_new), label: "step.dt_new - after")
+  #         {s, adapter}
+  #       end)
+
+  #     step
+  #   else
+  #     step
+  #   end
 
   defn error_less_than_one?(rk_step) do
     rk_step.error_estimate < 1.0
@@ -138,6 +118,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         {t, x} = s.output_t_and_x
         point = %Point{t: t, x: x}
         adapter.external_fn.(point)
+        # IO.inspect(Nx.to_number(s.dt_new))
         {s, adapter}
       end)
 
@@ -169,17 +150,17 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   defn my_print_value(step, value) do
-    step =
-      hook(step, fn s ->
-        IO.puts("foooo")
-        s
-      end)
-
-    # {step, _value} =
-    #   hook({step, value}, fn {s, v} ->
+    # step =
+    #   hook(step, fn s ->
     #     IO.puts("foooo")
     #     s
     #   end)
+
+    {step, _value} =
+      hook({step, value}, fn {s, v} ->
+        IO.puts("Value: #{inspect(v)}")
+        s
+      end)
 
     step
   end
