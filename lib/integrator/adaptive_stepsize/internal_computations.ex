@@ -32,13 +32,13 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> call_output_fn(options.output_fn_adapter)
           else
             step
-            |> bump_error_count(options)
+            |> bump_error_count(options.max_number_of_errors)
           end
 
         dt_new =
           compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_at_start_of_step, t_end, options)
 
-        step = %{step | dt_new: dt_new} |> possibly_delay_playback_speed(options)
+        step = %{step | dt_new: dt_new} |> possibly_delay_playback_speed(options.speed)
 
         {step, t_end, options}
       end
@@ -124,7 +124,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  defn possibly_delay_playback_speed(step, _options) do
+  defn possibly_delay_playback_speed(step, _speed) do
     step
   end
 
@@ -193,23 +193,23 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
   end
 
-  @spec bump_error_count(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
-  defnp bump_error_count(step, options) do
+  @spec bump_error_count(IntegrationStep.t(), Nx.t() | integer()) :: IntegrationStep.t()
+  defnp bump_error_count(step, max_number_of_errors) do
     step = %{step | error_count: step.error_count + 1}
 
     {step, _options} =
-      if step.error_count > options.max_number_of_errors do
-        hook({step, options}, fn {s, opts} ->
+      if step.error_count > max_number_of_errors do
+        hook({step, max_number_of_errors}, fn {s, max_errors} ->
           raise MaxErrorsExceededError,
             message: "Too many errors",
             error_count: s.error_count,
-            max_number_of_errors: opts.max_number_of_errors,
+            max_number_of_errors: max_errors,
             step: s
 
-          {s, opts}
+          {s, max_errors}
         end)
       else
-        {step, options}
+        {step, max_number_of_errors}
       end
 
     step
