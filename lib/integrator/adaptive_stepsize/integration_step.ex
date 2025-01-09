@@ -3,7 +3,6 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
   Integrates a set of ODEs with an adaptive timestep.
   """
 
-  alias Integrator.Point
   alias Integrator.RungeKutta
 
   @derive {Nx.Container,
@@ -18,7 +17,6 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      :status,
      #
      # Perhaps none of these three are needed if I push out the points out immediately?
-     :output_point,
      :interpolated_points,
      :fixed_output_point,
      :output_t_and_x,
@@ -52,7 +50,6 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           # perhaps status is not necessary, and terminal_event is used intead?
           status: Nx.t(),
           #
-          output_point: Point.t(),
           interpolated_points: {},
           fixed_output_point: {},
           output_t_and_x: {Nx.t(), Nx.t()},
@@ -91,7 +88,6 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     # perhaps status is not necessary, and terminal_event is used intead?
     status: Nx.u8(1),
     #
-    output_point: %Point{},
     interpolated_points: {},
     fixed_output_point: {},
     output_t_and_x: {},

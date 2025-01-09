@@ -232,18 +232,12 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         dt_new: initial_tstep,
         start_timestamp_μs: start_timestamp_μs,
         rk_step: initial_rk_step,
-        #
-        # These are just junk values in Point right now to give it the right size and shape
-        output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
+        # These are just junk values in :output_t_and_x right now to allocate the right size and shape
         output_t_and_x: {Nx.tensor(0.0, type: type), x0},
         #
         stepper_fn: stepper_fn,
         ode_fn: ode_fn,
         interpolate_fn: interpolate_fn
-        #
-        # This is not working for some reason:
-        # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
-        # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
       }
 
     InternalComputations.integrate_step(initial_step, t_end, options)
