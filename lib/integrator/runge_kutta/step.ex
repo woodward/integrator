@@ -99,6 +99,23 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
+  defn interpolate_multiple_points(interpolate_fn, rk_step, options) do
+    refine = options.refine
+    type = options.type
+    t_add = Nx.linspace(rk_step.t_old, rk_step.t_new, n: refine + 1, type: type)
+
+    # Get rid of the first element (t_add[0]) via this slice:
+    t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
+
+    t = Nx.stack([rk_step.t_old, rk_step.t_new])
+    x = Nx.stack([rk_step.x_old, rk_step.x_new]) |> Nx.transpose()
+    x_out = interpolate_fn.(t, x, rk_step.k_vals, t_add)
+    # x_add = Nx.slice(x_out, [])
+    # %{step | output_t_and_x: {t_add, x_out}}
+    {t_add, x_out}
+    # t_add
+  end
+
   @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
   deftransform initial_empty_k_vals(order, x) do
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?

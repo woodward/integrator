@@ -22,22 +22,22 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       {:ok, pid} = DataCollector.start_link()
       output_fn = &DataCollector.add_data(pid, &1)
 
-      t_start = Nx.tensor(0.0, type: :f64)
-      t_end = Nx.tensor(20.0, type: :f64)
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
 
       opts = [
         refine: 1,
         type: :f64,
         norm_control?: false,
-        abs_tol: Nx.tensor(1.0e-06, type: :f64),
-        rel_tol: Nx.tensor(1.0e-03, type: :f64),
-        max_step: Nx.tensor(2.0, type: :f64),
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03),
+        max_step: Nx.f64(2.0),
         output_fn: output_fn
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
-      initial_tstep = Nx.tensor(0.068129, type: :f64)
+      initial_tstep = Nx.f64(0.068129)
 
       result =
         AdaptiveStepsizeRefactor.integrate(
@@ -67,6 +67,75 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
       assert result.elapsed_time_μs > 1
+    end
+
+    test "works - data interpolation (refine = 4)" do
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        refine: 4,
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(0.068129)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      assert result.count_cycles__compute_step == Nx.s32(78)
+      assert result.count_loop__increment_step == Nx.s32(50)
+
+      {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
+
+      assert length(output_t) == 201
+      assert length(output_x) == 201
+      assert is_integer(result.timestamp_start_μs)
+      assert result.elapsed_time_μs > 1
+
+      # # Verify the last time step is correct (bug fix!):
+      # [last_time | _rest] = result.output_t |> Enum.reverse()
+      # assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
+      # assert last_time.__struct__ == Nx.Tensor
+      # [start_time | _rest] = result.output_t
+      # assert start_time.__struct__ == Nx.Tensor
+
+      # [last_ode_time | _rest] = result.ode_t |> Enum.reverse()
+      # assert last_ode_time.__struct__ == Nx.Tensor
+      # [start_ode_time | _rest] = result.ode_t
+      # assert start_ode_time.__struct__ == Nx.Tensor
+
+      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
+
+      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
   end
 

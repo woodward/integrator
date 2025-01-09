@@ -88,10 +88,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       step
       | rk_step: rk_step,
         t_at_start_of_step: rk_step.t_new,
-        x_at_start_of_step: rk_step.x_new,
-        #
-        # output_t_and_x will change soon with interpolation and fixed times
-        output_t_and_x: {rk_step.t_new, rk_step.x_new}
+        x_at_start_of_step: rk_step.x_new
     }
   end
 
@@ -102,8 +99,39 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     |> interpolate_fixed_points(options)
   end
 
-  defn interpolate_intermediate_points(step, _options) do
-    step
+  defn interpolate_intermediate_points(step, options) do
+    if options.refine == 1 do
+      %{step | output_t_and_x: {step.rk_step.t_new, step.rk_step.x_new}}
+    else
+      # {t_out, x_out} = Step.interpolate_multiple_points(interpolate_fn, rk_step, options)
+
+      # rk_step = step.rk_step
+      # refine = options.refine
+      # type = options.type
+
+      # t_add = Nx.linspace(rk_step.t_old, rk_step.t_new, n: refine + 1, type: type)
+
+      # # Get rid of the first element (t_add[0]) via this slice:
+      # t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
+      # t = Nx.stack([rk_step.t_old, rk_step.t_new])
+      # x = Nx.stack([rk_step.x_old, rk_step.x_new]) |> Nx.transpose()
+      # x_out = step.interpolate_fn.(t, x, rk_step.k_vals, t_add)
+      # x_add = Nx.slice(x_out, [])
+      # %{step | output_t_and_x: {t_add, x_out}}
+      step
+
+      # Old code:
+      # t_add = Nx.linspace(step.t_old, step.t_new, n: refine + 1, type: Nx.type(step.x_old))
+      # # Get rid of the first element (t_add[0]) via this slice:
+      # t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)
+      # t_add_length = Nx.size(t_add)
+      # t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+      # x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+      # x_out_as_cols = interpolate_fn.(t, x, step.k_vals, t_add) |> Utils.columns_as_list(0, t_add_length - 1) |> Enum.reverse()
+
+      # t_new_chunk = t_add |> Utils.vector_as_list() |> Enum.reverse()
+      # %{step | x_new_chunk: x_out_as_cols, t_new_chunk: t_new_chunk}
+    end
   end
 
   defn interpolate_fixed_points(step, _options) do
