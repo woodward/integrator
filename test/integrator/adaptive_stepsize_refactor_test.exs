@@ -66,8 +66,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
 
-      # assert result.overall_elapsed_time_μs(result) > 1
-      # assert result.step_elapsed_time_μs(result) > 1
+      assert result.elapsed_time_μs > 1
     end
   end
 

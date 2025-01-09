@@ -11,6 +11,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   alias Integrator.Point
   alias Integrator.RungeKutta
 
+  import Integrator.Utils, only: [timestamp_μs: 0]
+
   @spec integrate_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   defn integrate_step(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
@@ -40,7 +42,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         {step, t_end, options}
       end
 
-    updated_step
+    updated_step |> record_elapsed_time()
   end
 
   # Printing example:
@@ -210,5 +212,10 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       end
 
     step
+  end
+
+  @spec record_elapsed_time(IntegrationStep.t()) :: IntegrationStep.t()
+  defn record_elapsed_time(step) do
+    %{step | elapsed_time_μs: timestamp_μs() - step.start_timestamp_μs}
   end
 end

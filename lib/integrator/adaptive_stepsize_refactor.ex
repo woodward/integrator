@@ -210,7 +210,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         ) :: IntegrationStep.t()
 
   deftransform integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
-    timestamp_now = timestamp_μs()
+    start_timestamp_μs = timestamp_μs()
     options = convert_to_nx_options(t_start, t_end, order, opts)
     type = options.type
 
@@ -225,30 +225,28 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
 
-    %IntegrationStep{
-      t_at_start_of_step: t_start,
-      x_at_start_of_step: x0,
-      dt_new: initial_tstep,
-      step_start_timestamp_μs: timestamp_now,
-      overall_start_timestamp_μs: timestamp_now,
-      rk_step: initial_rk_step,
-      #
-      # These are just junk values in Point right now to give it the right size and shape
-      output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
-      output_t_and_x: {Nx.tensor(0.0, type: type), x0},
-      #
-      stepper_fn: stepper_fn,
-      ode_fn: ode_fn,
-      interpolate_fn: interpolate_fn
-      #
-      # This is not working for some reason:
-      # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
-      # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
-    }
-    |> InternalComputations.integrate_step(
-      t_end,
-      options
-    )
+    initial_step =
+      %IntegrationStep{
+        t_at_start_of_step: t_start,
+        x_at_start_of_step: x0,
+        dt_new: initial_tstep,
+        start_timestamp_μs: start_timestamp_μs,
+        rk_step: initial_rk_step,
+        #
+        # These are just junk values in Point right now to give it the right size and shape
+        output_point: %Point{t: Nx.tensor(0.0, type: type), x: x0},
+        output_t_and_x: {Nx.tensor(0.0, type: type), x0},
+        #
+        stepper_fn: stepper_fn,
+        ode_fn: ode_fn,
+        interpolate_fn: interpolate_fn
+        #
+        # This is not working for some reason:
+        # output_point: %Point{t: Nx.tensor(0.0, type: type), x: zero_vector(Nx.size(x0), type)},
+        # output_t_and_x: {Nx.tensor(0.0, type: type), zero_vector(Nx.size(x0), type)}
+      }
+
+    InternalComputations.integrate_step(initial_step, t_end, options)
   end
 
   @doc """

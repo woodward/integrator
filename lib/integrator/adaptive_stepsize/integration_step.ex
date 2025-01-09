@@ -33,11 +33,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      :terminal_event,
      :terminal_output,
      #
-     :step_start_timestamp_μs,
-     :step_elapsed_time_μs,
-     #
-     :overall_start_timestamp_μs,
-     :overall_elapsed_time_μs
+     :start_timestamp_μs,
+     :elapsed_time_μs
    ],
    keep: [
      :stepper_fn,
@@ -72,11 +69,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           terminal_event: Nx.t(),
           terminal_output: Nx.t(),
           #
-          step_start_timestamp_μs: Nx.t(),
-          step_elapsed_time_μs: Nx.t(),
-          #
-          overall_start_timestamp_μs: Nx.t(),
-          overall_elapsed_time_μs: Nx.t(),
+          start_timestamp_μs: Nx.t(),
+          elapsed_time_μs: Nx.t(),
           #
           stepper_fn: fun(),
           ode_fn: fun(),
@@ -112,10 +106,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     terminal_event: Nx.s32(0),
     terminal_output: Nx.s32(0),
     #
-    step_start_timestamp_μs: Nx.s32(0),
-    step_elapsed_time_μs: Nx.s32(0),
-    #
-    overall_start_timestamp_μs: Nx.s32(0),
-    overall_elapsed_time_μs: Nx.s32(0)
+    start_timestamp_μs: Nx.s32(0),
+    elapsed_time_μs: Nx.s32(0)
   ]
 end
