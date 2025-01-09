@@ -5,6 +5,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Nx.Defn
 
+  alias Integrator.ExternalFnAdapter
   alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
   alias Integrator.AdaptiveStepsizeRefactor.NxOptions
@@ -28,7 +29,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> merge_rk_step_into_integration_step(rk_step)
             |> call_event_fn(options)
             |> interpolate_points(options)
-            |> call_output_fn(options)
+            |> call_output_fn(options.output_fn_adapter)
           else
             step
             |> bump_error_count(options)
@@ -109,10 +110,10 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  @spec call_output_fn(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
-  defn call_output_fn(step, options) do
+  @spec call_output_fn(IntegrationStep.t(), ExternalFnAdapter.t()) :: IntegrationStep.t()
+  defn call_output_fn(step, output_fn_adapter) do
     {step, _} =
-      hook({step, options.output_fn_adapter}, fn {s, adapter} ->
+      hook({step, output_fn_adapter}, fn {s, adapter} ->
         # Possibly add a toggle to send the entire step and not just the point?
         {t, x} = s.output_t_and_x
         point = %Point{t: t, x: x}
