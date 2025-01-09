@@ -109,6 +109,23 @@ defmodule Integrator.RungeKutta.Step do
     Nx.broadcast(zero, {x_length, k_length})
   end
 
+  deftransform initial_output_t_and_x(x0, options) do
+    # I tried doing this function originally as a defn, but had problems getting the broadcast below to work; why???
+    size_x = Nx.size(x0)
+    zero = Nx.tensor(0.0, type: options.type)
+
+    if options.fixed_output_times? == Nx.u8(1) or options.refine == 1 do
+      t_ouptut = Nx.broadcast(zero, {1})
+      x_output = Nx.broadcast(zero, {size_x})
+      {t_ouptut, x_output}
+    else
+      add_points = options.refine - 1
+      t_ouptut = Nx.broadcast(zero, {add_points})
+      x_output = Nx.broadcast(zero, {size_x, add_points})
+      {t_ouptut, x_output}
+    end
+  end
+
   @spec initial_empty_k_vals_defn(Nx.t(), Keyword.t()) :: Nx.t()
   defn initial_empty_k_vals_defn(x, opts \\ []) do
     # Note that `order` needs to be passed in as an option, otherwise I get an error about a dimension

@@ -12,7 +12,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   alias Integrator.SampleEqns
 
   describe "integrate" do
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4

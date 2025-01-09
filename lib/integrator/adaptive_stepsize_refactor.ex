@@ -234,7 +234,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         start_timestamp_μs: start_timestamp_μs,
         rk_step: initial_rk_step,
         # These are just junk values in :output_t_and_x right now to allocate the right size and shape
-        output_t_and_x: {Nx.tensor(0.0, type: type), x0},
+        output_t_and_x: RungeKutta.Step.initial_output_t_and_x(x0, options),
         #
         stepper_fn: stepper_fn,
         ode_fn: ode_fn,
