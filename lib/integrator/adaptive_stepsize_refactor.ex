@@ -5,8 +5,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
   import Nx.Defn
 
-  alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.AdaptiveStepsize.IntegrationStep
+  alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
   alias Integrator.Point
@@ -86,7 +86,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
   end
 
-  # How do I make the NimbleOptions handle both float values and tensors?
+  # How do I make the NimbleOptions handle both float values and tensors? Right now I'm handling this by
+  # setting the :type below to :any, which is not great...
   options = [
     abs_tol: [
       # type: :float,
@@ -222,7 +223,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     initial_tstep = Nx.min(Nx.abs(initial_tstep), options.max_step)
     initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: order)
 
-    # Broadcast the starting conditions (t_start & x0) as the first output point (if there is an output function):
+    # Broadcast the initial conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
 
     initial_step =

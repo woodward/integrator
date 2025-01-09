@@ -1,6 +1,6 @@
 defmodule Integrator.AdaptiveStepsize.IntegrationStep do
   @moduledoc """
-  Integrates a set of ODEs with an adaptive timestep.
+  A struct which represents the state of the integration as it proceeds through time
   """
 
   alias Integrator.RungeKutta
@@ -13,12 +13,6 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      :rk_step,
      :fixed_output_t_next,
      :fixed_output_t_within_step?,
-     # perhaps status is not necessary, and terminal_event is used intead?
-     :status,
-     #
-     # Perhaps none of these three are needed if I push out the points out immediately?
-     :interpolated_points,
-     :fixed_output_point,
      :output_t_and_x,
      #
      :count_loop__increment_step,
@@ -47,11 +41,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           rk_step: RungeKutta.Step.t(),
           fixed_output_t_next: Nx.t(),
           fixed_output_t_within_step?: Nx.t(),
-          # perhaps status is not necessary, and terminal_event is used intead?
-          status: Nx.t(),
           #
-          interpolated_points: {},
-          fixed_output_point: {},
           output_t_and_x: {Nx.t(), Nx.t()},
           # interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
           # fixed_output_point: Point.t(),
@@ -85,11 +75,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     #
     fixed_output_t_next: Nx.f64(0),
     fixed_output_t_within_step?: Nx.u8(0),
-    # perhaps status is not necessary, and terminal_event is used intead?
-    status: Nx.u8(1),
     #
-    interpolated_points: {},
-    fixed_output_point: {},
     output_t_and_x: {},
     #
     count_loop__increment_step: Nx.s32(0),
