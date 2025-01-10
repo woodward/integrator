@@ -237,4 +237,15 @@ defmodule Integrator.Utils do
 
   def convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
   def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
+
+  @spec first_column(Nx.t()) :: Nx.t()
+  defn first_column(x) do
+    x |> Nx.slice_along_axis(0, 1, axis: 1) |> Nx.flatten()
+  end
+
+  @spec last_column(Nx.t()) :: Nx.t()
+  defn last_column(x) do
+    {_num_rows, num_colums} = Nx.shape(x)
+    x |> Nx.slice_along_axis(num_colums - 1, 1, axis: 1) |> Nx.flatten()
+  end
 end

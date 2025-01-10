@@ -8,6 +8,7 @@ defmodule Integrator.RungeKutta.Step do
 
   alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.RungeKutta
+  alias Integrator.Utils
 
   @derive {Nx.Container,
    containers: [
@@ -119,11 +120,7 @@ defmodule Integrator.RungeKutta.Step do
   defn interpolate_single_specified_point(interpolate_fn, rk_step, t_add) do
     t = Nx.stack([rk_step.t_old, rk_step.t_new])
     x = Nx.stack([rk_step.x_old, rk_step.x_new]) |> Nx.transpose()
-
-    # There's probably a better Nx way of slicing rather than transposing and getting element zero;
-    # try and figure that out:
-    x_out = interpolate_fn.(t, x, rk_step.k_vals, t_add) |> Nx.transpose()
-    x_out[0]
+    interpolate_fn.(t, x, rk_step.k_vals, t_add) |> Utils.last_column()
   end
 
   @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()

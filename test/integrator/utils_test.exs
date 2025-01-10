@@ -483,4 +483,27 @@ defmodule Integrator.UtilsTest do
       assert_all_close(norm, expected_norm, atol: 1.0e-04, rtol: 1.0e-04)
     end
   end
+
+  describe "first_column/1 and last_column/1" do
+    setup do
+      x = ~MAT[
+        1  5  9   13  17
+        2  6  10  14  18
+        3  7  11  15  19
+        4  8  12  16  20
+      ]s32
+
+      [x: x]
+    end
+
+    test "first_column/1 retrieves the first column", %{x: x} do
+      x0 = Utils.first_column(x)
+      assert x0 == Nx.s32([1, 2, 3, 4])
+    end
+
+    test "last_column/1 gets the last column", %{x: x} do
+      x0 = Utils.last_column(x)
+      assert x0 == Nx.s32([17, 18, 19, 20])
+    end
+  end
 end
