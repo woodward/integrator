@@ -129,6 +129,68 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
+
+    test "works - fixed stepsize output that's a tensor with specific values" do
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn,
+        fixed_output_times?: true,
+        fixed_output_dt: 0.1
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(6.812920690579614e-02)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      assert result.count_cycles__compute_step == Nx.s32(78)
+      assert result.count_loop__increment_step == Nx.s32(50)
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      assert length(output_t) == 21
+      assert length(output_x) == 21
+      assert result.elapsed_time_μs > 1
+
+      # # Verify the last time step is correct (bug fix!):
+      last_point = points |> List.last()
+      assert_in_delta(Nx.to_number(last_point.t), 20.0, 1.0e-10)
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+    end
   end
 
   describe "starting_stepsize" do

@@ -601,7 +601,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - fixed stepsize output that's a tensor with specific values" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
