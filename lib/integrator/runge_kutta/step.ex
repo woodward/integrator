@@ -78,6 +78,7 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
+  @spec initial_step(Nx.t(), Nx.t(), Keyword.t()) :: t()
   defn initial_step(t0, x0, opts \\ []) do
     opts = keyword!(opts, order: 5)
     type = Nx.type(x0)
@@ -99,6 +100,7 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
+  @spec interpolate_multiple_points(fun(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
   defn interpolate_multiple_points(interpolate_fn, rk_step, options) do
     refine = options.refine
     type = options.type
@@ -110,10 +112,7 @@ defmodule Integrator.RungeKutta.Step do
     t = Nx.stack([rk_step.t_old, rk_step.t_new])
     x = Nx.stack([rk_step.x_old, rk_step.x_new]) |> Nx.transpose()
     x_out = interpolate_fn.(t, x, rk_step.k_vals, t_add)
-    # x_add = Nx.slice(x_out, [])
-    # %{step | output_t_and_x: {t_add, x_out}}
     {t_add, x_out}
-    # t_add
   end
 
   @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
@@ -126,6 +125,7 @@ defmodule Integrator.RungeKutta.Step do
     Nx.broadcast(zero, {x_length, k_length})
   end
 
+  @spec initial_output_t_and_x(Nx.t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
   deftransform initial_output_t_and_x(x0, options) do
     # I tried doing this function originally as a defn, but had problems getting the broadcast below to work; why???
     size_x = Nx.size(x0)
@@ -136,7 +136,7 @@ defmodule Integrator.RungeKutta.Step do
       x_output = Nx.broadcast(zero, {size_x})
       {t_ouptut, x_output}
     else
-      add_points = options.refine - 1
+      add_points = options.refine
       t_ouptut = Nx.broadcast(zero, {add_points})
       x_output = Nx.broadcast(zero, {size_x, add_points})
       {t_ouptut, x_output}

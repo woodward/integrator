@@ -112,30 +112,22 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert result.count_cycles__compute_step == Nx.s32(78)
       assert result.count_loop__increment_step == Nx.s32(50)
 
-      {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert length(output_t) == 201
       assert length(output_x) == 201
-      assert is_integer(result.timestamp_start_μs)
       assert result.elapsed_time_μs > 1
 
-      # # Verify the last time step is correct (bug fix!):
-      # [last_time | _rest] = result.output_t |> Enum.reverse()
-      # assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
-      # assert last_time.__struct__ == Nx.Tensor
-      # [start_time | _rest] = result.output_t
-      # assert start_time.__struct__ == Nx.Tensor
+      # Verify the last time step is correct (bug fix!):
+      last_point = points |> List.last()
+      assert_all_close(last_point.t, Nx.f64(20.0), atol: 1.0e-10, rtol: 1.0e-10)
 
-      # [last_ode_time | _rest] = result.ode_t |> Enum.reverse()
-      # assert last_ode_time.__struct__ == Nx.Tensor
-      # [start_ode_time | _rest] = result.ode_t
-      # assert start_ode_time.__struct__ == Nx.Tensor
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
-      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
-
-      # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
-      # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-03, rtol: 1.0e-03)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
   end
 

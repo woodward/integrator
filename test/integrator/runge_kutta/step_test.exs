@@ -336,10 +336,10 @@ defmodule Integrator.RungeKutta.StepTest do
 
       {output_t, output_x} = Step.initial_output_t_and_x(x0, options)
 
-      assert output_t == Nx.f64([0.0, 0.0, 0.0])
+      assert output_t == Nx.f64([0.0, 0.0, 0.0, 0.0])
       assert output_x == ~MAT[
-        0.0  0.0  0.0
-        0.0  0.0  0.0
+        0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0
       ]f64
     end
   end
