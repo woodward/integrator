@@ -48,7 +48,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     updated_step |> record_elapsed_time()
   end
 
-  # Printing example:
+  # Printing example - paste in where necessary:
   # step =
   #   if dt_last == Nx.f64(0.6746869564907434) do
   #     {step, _} =

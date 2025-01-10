@@ -481,4 +481,62 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_nx_f64(x_out)
     end
   end
+
+  describe "interpolate_single_specified_point/3" do
+    test "returns the x vector associated with this specified time point" do
+      # These test values were obtained from Octave:
+      # Generated using:
+      # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      # opts = odeset("AbsTol", 1.0e-14, "RelTol", 1.0e-14)
+      # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opts);
+
+      # Note that this test just interpolates a single specified point. It uses data from the
+      # multi-point test case, though, namely at t = 19.97375136734619 (purely for ease of setting up the test)
+
+      t_old = Nx.f64(19.97226029930081)
+      t_new = Nx.f64(19.97424839002798)
+      x_old = Nx.f64([2.008585111348593e+00, 1.188547490189183e-02])
+      x_new = Nx.f64([2.008604708104012e+00, 7.832739209072674e-03])
+
+      der = ~MAT[
+        1.188547490189183e-02   1.107248473635211e-02   1.066709096215445e-02   8.641324907205110e-03   8.281808253394873e-03     7.832711009917654e-03   7.832739209072674e-03
+       -2.044650564564792e+00  -2.042188551791212e+00  -2.040960496435665e+00  -2.034823361858414e+00  -2.033733968850626e+00    -2.032373024665618e+00  -2.032373099413282e+00
+      ]f64
+
+      rk_step = %Step{
+        t_old: t_old,
+        t_new: t_new,
+        x_old: x_old,
+        x_new: x_new,
+        k_vals: der,
+        #
+        # These values just need to be something other than nil:
+        options_comp: Nx.f64(0.0),
+        error_estimate: Nx.f64(0.0),
+        dt: Nx.f64(0.0)
+      }
+
+      # Expected x_out from the multi-point interpolation test:
+      # expected_x_out = ~MAT[
+      #   2.008590766279272e+00   2.008595916876415e+00   2.008600563898753e+00   2.008604708104012e+00
+      #   1.087000165112446e-02   9.856055965852775e-03   8.843635825513105e-03   7.832739209072674e-03
+      #  ]f64
+
+      # Note that expected_x_out for this test is the 3rd column of the above matrix:
+      expected_x_out = Nx.f64([2.008600563898753e+00, 8.843635825513105e-03])
+
+      # Expected t_out from the multi-point interpolation test:
+      # expected_t_out = ~VEC[ 19.97275732198261   19.97325434466440   19.97375136734619   19.97424839002798 ]f64
+      # Note that the epxected t_add for this test is the next-to-last entry in the above vector.
+      # Also note that t_add could be *anything*, though; it's just being used here because this data has already been verified.
+      t_add = Nx.f64(19.97375136734619)
+
+      interpolate_fn = &DormandPrince45.interpolate/4
+
+      x_out = Step.interpolate_single_specified_point(interpolate_fn, rk_step, t_add)
+
+      assert_all_close(x_out, expected_x_out, atol: 1.0e-13, rtol: 1.0e-13)
+      assert_nx_f64(x_out)
+    end
+  end
 end
