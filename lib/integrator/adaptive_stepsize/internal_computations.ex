@@ -120,8 +120,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       hook({step, output_fn_adapter}, fn {s, adapter} ->
         # Possibly add a toggle to send the entire step and not just the point?
         {t, x} = s.output_t_and_x
-        x_list = Utils.columns_as_list(x, 0)
         t_list = Utils.vector_as_list(t)
+        x_list = Utils.columns_as_list(x, 0)
 
         points =
           Enum.zip(t_list, x_list)

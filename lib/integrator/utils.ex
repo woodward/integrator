@@ -95,23 +95,29 @@ defmodule Integrator.Utils do
   This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
   @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
-  def columns_as_list(matrix, start_index, end_index \\ nil) do
-    matrix_t = Nx.transpose(matrix)
+  deftransform columns_as_list(matrix, start_index, end_index \\ nil) do
+    case Nx.shape(matrix) do
+      {_size} ->
+        [matrix |> Nx.transpose()]
 
-    end_index =
-      if end_index do
-        end_index
-      else
-        {_n_rows, n_cols} = Nx.shape(matrix)
-        n_cols - 1
-      end
+      _ ->
+        matrix_t = Nx.transpose(matrix)
 
-    start_index..end_index
-    |> Enum.reduce([], fn i, acc ->
-      col = Nx.slice_along_axis(matrix_t, i, 1, axis: 0) |> Nx.flatten()
-      [col | acc]
-    end)
-    |> Enum.reverse()
+        end_index =
+          if end_index do
+            end_index
+          else
+            {_n_rows, n_cols} = Nx.shape(matrix)
+            n_cols - 1
+          end
+
+        start_index..end_index
+        |> Enum.reduce([], fn i, acc ->
+          col = Nx.slice_along_axis(matrix_t, i, 1, axis: 0) |> Nx.flatten()
+          [col | acc]
+        end)
+        |> Enum.reverse()
+    end
   end
 
   @doc """
@@ -129,14 +135,18 @@ defmodule Integrator.Utils do
   This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
   @spec vector_as_list(Nx.t()) :: [Nx.t()]
-  def vector_as_list(vector) do
-    {length} = Nx.shape(vector)
+  deftransform vector_as_list(vector) do
+    case Nx.shape(vector) do
+      {} ->
+        [vector]
 
-    0..(length - 1)
-    |> Enum.reduce([], fn i, acc ->
-      [vector[i] | acc]
-    end)
-    |> Enum.reverse()
+      {length} ->
+        0..(length - 1)
+        |> Enum.reduce([], fn i, acc ->
+          [vector[i] | acc]
+        end)
+        |> Enum.reverse()
+    end
   end
 
   # Paulo said these sign functions might have numerical issues in the Octave version so do this instead

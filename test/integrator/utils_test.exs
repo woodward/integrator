@@ -62,6 +62,15 @@ defmodule Integrator.UtilsTest do
       assert cols_as_list == expected_cols_as_list
     end
 
+    test "works if it's just a single column" do
+      matrix = Nx.f64([1.0, 2.0])
+      cols_as_list = Utils.columns_as_list(matrix, 0)
+
+      expected_cols_as_list = [Nx.f64([1.0, 2.0])]
+
+      assert cols_as_list == expected_cols_as_list
+    end
+
     test "goes all the way to the end if the end_index is left out" do
       matrix = Nx.iota({2, 5})
       cols_as_list = Utils.columns_as_list(matrix, 1)
@@ -79,20 +88,32 @@ defmodule Integrator.UtilsTest do
   end
 
   describe "vector_as_list" do
-    test "works" do
+    test "works for a vector" do
       vector = Nx.tensor([1, 2, 3], type: :f64)
       vector_as_list = vector |> Utils.vector_as_list()
 
       assert vector_as_list == [
-               Nx.tensor(1, type: :f64),
-               Nx.tensor(2, type: :f64),
-               Nx.tensor(3, type: :f64)
+               Nx.f64(1),
+               Nx.f64(2),
+               Nx.f64(3)
              ]
 
       [first | [second | [third]]] = vector_as_list
       assert_nx_f64(first)
       assert_nx_f64(second)
       assert_nx_f64(third)
+    end
+
+    test "works for an individual tensor" do
+      vector = Nx.f64(1)
+      vector_as_list = vector |> Utils.vector_as_list()
+
+      assert vector_as_list == [
+               Nx.f64(1)
+             ]
+
+      [first] = vector_as_list
+      assert_nx_f64(first)
     end
   end
 
