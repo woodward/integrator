@@ -14,6 +14,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      :fixed_output_t_next,
      :fixed_output_t_within_step?,
      :output_t_and_x,
+     :output_t_and_x_single,
      #
      :count_loop__increment_step,
      :count_cycles__compute_step,
@@ -43,6 +44,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           fixed_output_t_within_step?: Nx.t(),
           #
           output_t_and_x: {Nx.t(), Nx.t()},
+          output_t_and_x_single: {Nx.t(), Nx.t()},
           # interpolated_points: {Point.t(), Point.t(), Point.t(), Point.t()},
           # fixed_output_point: Point.t(),
           #
@@ -77,6 +79,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     fixed_output_t_within_step?: Nx.u8(0),
     #
     output_t_and_x: {},
+    output_t_and_x_single: {},
     #
     count_loop__increment_step: Nx.s32(0),
     count_cycles__compute_step: Nx.s32(0),

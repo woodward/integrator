@@ -134,7 +134,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       %{
         step
         | fixed_output_t_within_step?: Nx.u8(1),
-          output_t_and_x: {fixed_output_t_next, x_out},
+          output_t_and_x_single: {fixed_output_t_next, x_out},
           fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
       }
     else
@@ -152,14 +152,26 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # fixed_output_t_within_step?: Nx.t(),
     # fixed_output_times?
 
-    generate_output? =
-      if fixed_output_times? do
-        if step.fixed_output_t_within_step?, do: Nx.u8(1), else: Nx.u8(0)
-      else
-        Nx.u8(1)
-      end
+    if fixed_output_times? do
+      generate_output? = if step.fixed_output_t_within_step?, do: Nx.u8(1), else: Nx.u8(0)
 
-    if generate_output? do
+      step =
+        if generate_output? do
+          {step, _} =
+            hook({step, output_fn_adapter}, fn {s, adapter} ->
+              {t, x} = s.output_t_and_x_single
+              point = %Point{t: t, x: x}
+              adapter.external_fn.(point)
+              {s, adapter}
+            end)
+
+          step
+        else
+          step
+        end
+
+      step
+    else
       {step, _} =
         hook({step, output_fn_adapter}, fn {s, adapter} ->
           {t, x} = s.output_t_and_x
@@ -176,8 +188,6 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
           {s, adapter}
         end)
 
-      step
-    else
       step
     end
   end
