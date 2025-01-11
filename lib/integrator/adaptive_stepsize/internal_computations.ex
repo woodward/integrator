@@ -16,6 +16,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   import Integrator.Utils, only: [timestamp_μs: 0]
 
+  # Base zero_tolerance on precision?
+  @zero_tolerance 1.0e-07
+
   @spec integrate_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   defn integrate_step(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
@@ -31,7 +34,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
             |> merge_rk_step_into_integration_step(rk_step)
             |> call_event_fn(options)
             |> interpolate_points(options)
-            |> call_output_fn(options.output_fn_adapter)
+            |> call_output_fn(options.output_fn_adapter, options.fixed_output_times?)
           else
             step
             |> bump_error_count(options.max_number_of_errors)
@@ -49,6 +52,16 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   # Printing example - paste in where necessary:
+
+  # {step, _} =
+  #   hook({step, options}, fn {s, opts} ->
+  #     IO.inspect(s.rk_step.t_new)
+  #     IO.inspect(s.rk_step.x_new)
+  #     {s, opts}
+  #   end)
+
+  # Another example with an output function:
+
   # step =
   #   if dt_last == Nx.f64(0.6746869564907434) do
   #     {step, _} =
@@ -80,7 +93,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     %{
       step
       | count_loop__increment_step: step.count_loop__increment_step + 1,
-        i_step: step.i_step + 1
+        i_step: step.i_step + 1,
+        fixed_output_t_within_step?: Nx.u8(0)
     }
   end
 
@@ -95,10 +109,11 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   defn interpolate_points(step, options) do
-    # This is actually more of an if statement or a case statement
-    step
-    |> interpolate_intermediate_points(options)
-    |> interpolate_fixed_points(options)
+    if options.fixed_output_times? do
+      step |> interpolate_fixed_points(options)
+    else
+      step |> interpolate_intermediate_points(options)
+    end
   end
 
   defn interpolate_intermediate_points(step, options) do
@@ -110,30 +125,61 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  defn interpolate_fixed_points(step, _options) do
-    step
+  defn interpolate_fixed_points(step, options) do
+    fixed_output_t_next = step.fixed_output_t_next
+
+    if add_fixed_point?(fixed_output_t_next, step.rk_step.t_new) == Nx.tensor(1, type: :u8) do
+      x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
+
+      %{
+        step
+        | fixed_output_t_within_step?: Nx.u8(1),
+          output_t_and_x: {fixed_output_t_next, x_out},
+          fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
+      }
+    else
+      %{step | fixed_output_t_within_step?: Nx.u8(0)}
+    end
   end
 
-  @spec call_output_fn(IntegrationStep.t(), ExternalFnAdapter.t()) :: IntegrationStep.t()
-  defn call_output_fn(step, output_fn_adapter) do
-    {step, _} =
-      hook({step, output_fn_adapter}, fn {s, adapter} ->
-        # Possibly add a toggle to send the entire step and not just the point?
-        {t, x} = s.output_t_and_x
-        t_list = Utils.vector_as_list(t)
-        x_list = Utils.columns_as_list(x, 0)
+  defnp add_fixed_point?(fixed_time, t_new) do
+    fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
+  end
 
-        points =
-          Enum.zip(t_list, x_list)
-          |> Enum.map(fn {t_i, x_i} ->
-            %Point{t: t_i, x: x_i}
-          end)
+  @spec call_output_fn(IntegrationStep.t(), ExternalFnAdapter.t(), Nx.t()) :: IntegrationStep.t()
+  defn call_output_fn(step, output_fn_adapter, fixed_output_times?) do
+    # fixed_output_t_next: Nx.t(),
+    # fixed_output_t_within_step?: Nx.t(),
+    # fixed_output_times?
 
-        adapter.external_fn.(points)
-        {s, adapter}
-      end)
+    generate_output? =
+      if fixed_output_times? do
+        if step.fixed_output_t_within_step?, do: Nx.u8(1), else: Nx.u8(0)
+      else
+        Nx.u8(1)
+      end
 
-    step
+    if generate_output? do
+      {step, _} =
+        hook({step, output_fn_adapter}, fn {s, adapter} ->
+          {t, x} = s.output_t_and_x
+          t_list = Utils.vector_as_list(t)
+          x_list = Utils.columns_as_list(x, 0)
+
+          points =
+            Enum.zip(t_list, x_list)
+            |> Enum.map(fn {t_i, x_i} ->
+              %Point{t: t_i, x: x_i}
+            end)
+
+          adapter.external_fn.(points)
+          {s, adapter}
+        end)
+
+      step
+    else
+      step
+    end
   end
 
   defn possibly_delay_playback_speed(step, _speed) do
@@ -151,9 +197,6 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       step
     end
   end
-
-  # Base zero_tolerance on precision?
-  @zero_tolerance 1.0e-07
 
   @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
   defnp continue_stepping?(step, t_end) do

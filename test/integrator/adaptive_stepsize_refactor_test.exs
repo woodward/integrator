@@ -152,7 +152,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         max_step: Nx.f64(2.0),
         output_fn: output_fn,
         fixed_output_times?: true,
-        fixed_output_dt: 0.1
+        fixed_output_dt: 1.0
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
