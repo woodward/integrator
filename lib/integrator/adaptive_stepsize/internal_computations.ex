@@ -213,14 +213,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       #     {s, result, t}
       #   end)
 
-      step = step |> compute_new_event_fn_step(options)
-
-      %{
-        step
-        | terminal_event: halt()
-          #     x_new: new_step.x_new,
-          #     t_new: new_step.t_new
-      }
+      new_rk_step = step |> compute_new_event_fn_rk_step(options)
+      %{step | terminal_event: halt(), rk_step: new_rk_step}
     end
 
     # Psuedo-code: first check if an event function is present
@@ -234,8 +228,10 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # end
   end
 
-  defn compute_new_event_fn_step(step, options) do
-    step
+  defn compute_new_event_fn_rk_step(step, options) do
+    # ==========================================
+    # Find t for zero:
+
     # t_old = step.t_old
     # t_new = step.t_new_rk_interpolate
     # x_old = step.x_old
@@ -254,13 +250,22 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     #     only_non_linear_eqn_root_opts(opts)
     #   )
 
+    # ==========================================
+    # Find x which corresponds to t zero via interpolation:
+
     # type = Nx.type(root.x)
     # t_add = Nx.tensor(root.x, type: type)
     # t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
     # x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
     # x_new = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
 
+    # ==========================================
+    # Update t_new and x_new in a new rk_step (which has k_vals and options_comp from the old rk_step)
+    # IS THIS RIGHT????  MAYBE!!!
+    # Or should I compute a new rk_step?
+
     # %OldStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+    step.rk_step
   end
 
   @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
