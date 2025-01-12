@@ -66,7 +66,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   #   if dt_last == Nx.f64(0.6746869564907434) do
   #     {step, _} =
   #       hook({step, options.output_fn_adapter}, fn {s, adapter} ->
-  #         {t, x} = s.output_t_and_x
+  #         {t, x} = s.output_t_and_x_multi
   #         point = %Point{t: t, x: x}
   #         adapter.external_fn.(point)
   #         IO.inspect(Nx.to_number(s.dt_new), label: "step.dt_new - after")
@@ -123,7 +123,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       %{step | output_t_and_x_single: {step.rk_step.t_new, step.rk_step.x_new}}
     else
       {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.rk_step, options)
-      %{step | output_t_and_x: {t_add, x_out}}
+      %{step | output_t_and_x_multi: {t_add, x_out}}
     end
   end
 
@@ -181,7 +181,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn output_multiple_points(step, output_fn_adapter) do
     {step, _} =
       hook({step, output_fn_adapter}, fn {s, adapter} ->
-        {t, x} = s.output_t_and_x
+        {t, x} = s.output_t_and_x_multi
         t_list = Utils.vector_as_list(t)
         x_list = Utils.columns_as_list(x, 0)
 
