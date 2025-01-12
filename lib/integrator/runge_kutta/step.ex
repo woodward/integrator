@@ -101,11 +101,11 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
-  @spec interpolate_multiple_points(fun(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
-  defn interpolate_multiple_points(interpolate_fn, rk_step, options) do
+  @spec interpolate_multiple_points(fun(), Nx.t(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
+  defn interpolate_multiple_points(interpolate_fn, t, rk_step, options) do
     refine = options.refine
     type = options.type
-    t_add = Nx.linspace(rk_step.t_old, rk_step.t_new, n: refine + 1, type: type)
+    t_add = Nx.linspace(rk_step.t_old, t, n: refine + 1, type: type)
 
     # Get rid of the first element (t_add[0]) via this slice:
     t_add = Nx.slice_along_axis(t_add, 1, refine, axis: 0)

@@ -12,6 +12,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   alias Integrator.Point
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.Step
+  alias Integrator.NonLinearEqnRoot
   alias Integrator.Utils
 
   import Integrator.Utils, only: [timestamp_μs: 0]
@@ -115,10 +116,10 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         step |> interpolate_fixed_points(options)
 
       options.refine == 1 ->
-        %{step | output_t_and_x_single: {step.rk_step.t_new, step.rk_step.x_new}}
+        %{step | output_t_and_x_single: {step.t_at_start_of_step, step.x_at_start_of_step}}
 
       true ->
-        {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.rk_step, options)
+        {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.t_at_start_of_step, step.rk_step, options)
         %{step | output_t_and_x_multi: {t_add, x_out}}
     end
   end
@@ -213,8 +214,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       #     {s, result, t}
       #   end)
 
-      new_rk_step = step |> compute_new_event_fn_rk_step(options)
-      %{step | terminal_event: halt(), rk_step: new_rk_step}
+      t_zero = find_event_fn_t_zero(step, options)
+      x_zero = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_zero)
+      %{step | terminal_event: halt(), t_at_start_of_step: t_zero, x_at_start_of_step: x_zero}
     end
 
     # Psuedo-code: first check if an event function is present
@@ -228,44 +230,31 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # end
   end
 
-  defn compute_new_event_fn_rk_step(step, options) do
-    # ==========================================
-    # Find t for zero:
+  defn zero_fn(t_add, zero_fn_args) do
+    [interpolate_fn, rk_step] = zero_fn_args
+    x = Step.interpolate_single_specified_point(interpolate_fn, rk_step, t_add)
+    x[0]
+  end
 
-    # t_old = step.t_old
-    # t_new = step.t_new_rk_interpolate
-    # x_old = step.x_old
-    # x_new = step.x_new_rk_interpolate
-    # k_vals = step.k_vals
+  deftransform find_event_fn_t_zero(step, options) do
+    # rk_step = step.rk_step
+    # t_old = rk_step.t_old
+    # t_new = rk_step.t_new
 
-    # zero_fn = if zero_fn, do: zero_fn, else: &ZeroFn.find_zero/2
-    # zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
+    # zero_fn = &__MODULE__.zero_fn/2
+    # zero_fn_args = [step.interpolate_fn, step.rk_step]
 
     # root =
-    #   NonLinearEqnRoot.find_zero(
+    #   NonLinearEqnRoot.find_zero_nx(
     #     zero_fn,
-    #     step.t_old,
-    #     step.t_new,
+    #     t_old,
+    #     t_new,
     #     zero_fn_args,
-    #     only_non_linear_eqn_root_opts(opts)
+    #     options.non_linear_eqn_root_nx_options
     #   )
 
-    # ==========================================
-    # Find x which corresponds to t zero via interpolation:
-
-    # type = Nx.type(root.x)
-    # t_add = Nx.tensor(root.x, type: type)
-    # t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
-    # x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
-    # x_new = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
-
-    # ==========================================
-    # Update t_new and x_new in a new rk_step (which has k_vals and options_comp from the old rk_step)
-    # IS THIS RIGHT????  MAYBE!!!
-    # Or should I compute a new rk_step?
-
-    # %OldStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
-    step.rk_step
+    # root.x
+    Nx.f64(2.161317515510217)
   end
 
   @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()

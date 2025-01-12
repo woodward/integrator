@@ -465,7 +465,7 @@ defmodule Integrator.RungeKutta.StepTest do
       interpolate_fn = &DormandPrince45.interpolate/4
       options = %NxOptions{refine: 4, type: {:f, 64}}
 
-      {t_out, x_out} = Step.interpolate_multiple_points(interpolate_fn, rk_step, options)
+      {t_out, x_out} = Step.interpolate_multiple_points(interpolate_fn, t_new, rk_step, options)
 
       assert_all_close(t_out, expected_t_out, atol: 1.0e-14, rtol: 1.0e-14)
 

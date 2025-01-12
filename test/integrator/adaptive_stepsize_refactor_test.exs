@@ -252,6 +252,11 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/x.csv")
 
+#      actual_t = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
+#      File.write!("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/junk_actual_t.csv", actual_t)
+#      actual_x = output_x |> Enum.map(fn x -> "#{Nx.to_number(x[0])}    #{Nx.to_number(x[1])}\n" end)
+#      File.write!("test/fixtures/octave_results/van_der_pol/event_fn_positive_x0_only/junk_actual_x.csv", actual_x)
+
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
