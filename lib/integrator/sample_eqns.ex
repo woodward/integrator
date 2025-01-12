@@ -62,9 +62,9 @@ defmodule Integrator.SampleEqns do
   """
   @spec falling_particle_event_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn falling_particle_event_fn(_t, x) do
-    type = Nx.type(x)
-    zero = Nx.tensor(0, type: type)
-    one = Nx.tensor(1, type: type)
-    if x[0] < 0.0, do: zero, else: one
+    # type = Nx.type(x)
+    # zero = Nx.tensor(0, type: type)
+    # one = Nx.tensor(1, type: type)
+    if x[0] < 0.0, do: Nx.u8(0), else: Nx.u8(1)
   end
 end

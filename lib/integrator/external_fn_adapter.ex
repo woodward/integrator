@@ -22,6 +22,9 @@ defmodule Integrator.ExternalFnAdapter do
   @spec no_op_fn(any()) :: any()
   defn no_op_fn(arg), do: arg
 
+  @spec no_op_double_arity_fn(any(), any()) :: any()
+  defn no_op_double_arity_fn(arg1, _arg2), do: arg1
+
   # Note that just doing &(&1) did not work here; the no_op_fn/1 had to be defined above instead
   defstruct external_fn: &__MODULE__.no_op_fn/1
 
@@ -41,4 +44,9 @@ defmodule Integrator.ExternalFnAdapter do
 
   deftransform wrap_external_fn(nil = _external_fn), do: %__MODULE__{}
   deftransform wrap_external_fn(external_fn), do: %__MODULE__{external_fn: external_fn}
+
+  deftransform wrap_external_fn_double_arity(nil = _external_fn),
+    do: %__MODULE__{external_fn: &__MODULE__.no_op_double_arity_fn/2}
+
+  deftransform wrap_external_fn_double_arity(external_fn), do: %__MODULE__{external_fn: external_fn}
 end

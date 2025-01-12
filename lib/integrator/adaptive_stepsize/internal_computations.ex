@@ -198,16 +198,26 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  defn call_event_fn(step, _options) do
-    # Psuedo-code: first check if an event function is present
-    called_fn_output = Nx.u8(1)
-    event_happened? = called_fn_output
+  defn call_event_fn(step, options) do
+    event_fn_result = options.event_fn_adapter.external_fn.(step.rk_step.t_new, step.rk_step.x_new)
 
-    if event_happened? do
-      step
-    else
-      step
-    end
+    {step, _, _} =
+      hook({step, event_fn_result, step.rk_step.t_new}, fn {s, result, t} ->
+        IO.puts("t: #{Nx.to_number(t)}   result:  #{Nx.to_number(result)}  ")
+        {s, result, t}
+      end)
+
+    step
+
+    # Psuedo-code: first check if an event function is present
+    # called_fn_output = Nx.u8(1)
+    # event_happened? = called_fn_output
+
+    # if event_happened? do
+    #   step
+    # else
+    #   step
+    # end
   end
 
   @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
