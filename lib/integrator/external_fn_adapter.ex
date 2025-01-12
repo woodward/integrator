@@ -23,7 +23,7 @@ defmodule Integrator.ExternalFnAdapter do
   defn no_op_fn(arg), do: arg
 
   @spec no_op_double_arity_fn(any(), any()) :: any()
-  defn no_op_double_arity_fn(arg1, _arg2), do: arg1
+  defn no_op_double_arity_fn(_arg1, _arg2), do: Nx.u8(1)
 
   # Note that just doing &(&1) did not work here; the no_op_fn/1 had to be defined above instead
   defstruct external_fn: &__MODULE__.no_op_fn/1

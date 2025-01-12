@@ -88,7 +88,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     error_count: Nx.s32(0),
     i_step: Nx.s32(0),
     #
-    terminal_event: Nx.s32(0),
+    terminal_event: Nx.u8(1),
     terminal_output: Nx.s32(0),
     #
     start_timestamp_μs: Nx.s32(0),

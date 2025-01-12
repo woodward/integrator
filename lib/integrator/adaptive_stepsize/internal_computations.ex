@@ -198,16 +198,30 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
+  defn continue, do: Nx.u8(1)
+  defn halt, do: Nx.u8(0)
+
   defn call_event_fn(step, options) do
     event_fn_result = options.event_fn_adapter.external_fn.(step.rk_step.t_new, step.rk_step.x_new)
 
-    {step, _, _} =
-      hook({step, event_fn_result, step.rk_step.t_new}, fn {s, result, t} ->
-        IO.puts("t: #{Nx.to_number(t)}   result:  #{Nx.to_number(result)}  ")
-        {s, result, t}
-      end)
+    if event_fn_result == continue() do
+      step
+    else
+      # {step, _, _} =
+      #   hook({step, event_fn_result, step.rk_step.t_new}, fn {s, result, t} ->
+      #     IO.puts("t: #{Nx.to_number(t)}   result:  #{Nx.to_number(result)}  ")
+      #     {s, result, t}
+      #   end)
 
-    step
+      step = step |> compute_new_event_fn_step(options)
+
+      %{
+        step
+        | terminal_event: halt()
+          #     x_new: new_step.x_new,
+          #     t_new: new_step.t_new
+      }
+    end
 
     # Psuedo-code: first check if an event function is present
     # called_fn_output = Nx.u8(1)
@@ -220,15 +234,45 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # end
   end
 
+  defn compute_new_event_fn_step(step, options) do
+    step
+    # t_old = step.t_old
+    # t_new = step.t_new_rk_interpolate
+    # x_old = step.x_old
+    # x_new = step.x_new_rk_interpolate
+    # k_vals = step.k_vals
+
+    # zero_fn = if zero_fn, do: zero_fn, else: &ZeroFn.find_zero/2
+    # zero_fn_args = [t_old, t_new, x_old, x_new, k_vals, interpolate_fn, event_fn]
+
+    # root =
+    #   NonLinearEqnRoot.find_zero(
+    #     zero_fn,
+    #     step.t_old,
+    #     step.t_new,
+    #     zero_fn_args,
+    #     only_non_linear_eqn_root_opts(opts)
+    #   )
+
+    # type = Nx.type(root.x)
+    # t_add = Nx.tensor(root.x, type: type)
+    # t = Nx.stack([step.t_old, step.t_new_rk_interpolate])
+    # x = Nx.stack([step.x_old, step.x_new_rk_interpolate]) |> Nx.transpose()
+    # x_new = interpolate_fn.(t, x, step.k_vals, t_add) |> Nx.flatten()
+
+    # %OldStep{t_new: Nx.tensor(root.x, type: opts[:type]), x_new: x_new, k_vals: step.k_vals, options_comp: step.options_comp}
+  end
+
   @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
   defnp continue_stepping?(step, t_end) do
     # Also check the step's status here
 
-    #    if    close to end time                                  or past end time
-    if Nx.abs(step.t_at_start_of_step - t_end) <= @zero_tolerance or step.t_at_start_of_step > t_end do
-      Nx.u8(0)
+    #                                        if    close to end time                                  or past end time
+    if step.terminal_event == halt() or Nx.abs(step.t_at_start_of_step - t_end) <= @zero_tolerance or
+         step.t_at_start_of_step > t_end do
+      halt()
     else
-      Nx.u8(1)
+      continue()
     end
   end
 

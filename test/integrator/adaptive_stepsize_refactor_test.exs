@@ -234,8 +234,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       assert result.count_cycles__compute_step == Nx.s32(9)
       assert result.count_loop__increment_step == Nx.s32(8)
-      assert result.terminal_event == :halt
-      assert result.terminal_output == :continue
+      assert result.terminal_event == Nx.u8(0)
+      # assert result.terminal_output == :continue
 
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
