@@ -110,20 +110,16 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   @spec interpolate_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_points(step, options) do
-    if options.fixed_output_times? do
-      step |> interpolate_fixed_points(options)
-    else
-      step |> interpolate_intermediate_points(options)
-    end
-  end
+    cond do
+      options.fixed_output_times? ->
+        step |> interpolate_fixed_points(options)
 
-  @spec interpolate_intermediate_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
-  defn interpolate_intermediate_points(step, options) do
-    if options.refine == 1 do
-      %{step | output_t_and_x_single: {step.rk_step.t_new, step.rk_step.x_new}}
-    else
-      {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.rk_step, options)
-      %{step | output_t_and_x_multi: {t_add, x_out}}
+      options.refine == 1 ->
+        %{step | output_t_and_x_single: {step.rk_step.t_new, step.rk_step.x_new}}
+
+      true ->
+        {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.rk_step, options)
+        %{step | output_t_and_x_multi: {t_add, x_out}}
     end
   end
 
@@ -131,7 +127,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn interpolate_fixed_points(step, options) do
     fixed_output_t_next = step.fixed_output_t_next
 
-    if add_fixed_point?(fixed_output_t_next, step.rk_step.t_new) == Nx.tensor(1, type: :u8) do
+    if fixed_point_needed_this_step?(fixed_output_t_next, step.rk_step.t_new) do
       x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
 
       %{
@@ -145,22 +141,22 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  @spec add_fixed_point?(Nx.t(), Nx.t()) :: Nx.t()
-  defnp add_fixed_point?(fixed_time, t_new) do
+  @spec fixed_point_needed_this_step?(Nx.t(), Nx.t()) :: Nx.t()
+  defnp fixed_point_needed_this_step?(fixed_time, t_new) do
     fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
   end
 
   @spec call_output_fn(IntegrationStep.t(), ExternalFnAdapter.t(), Nx.t(), Nx.t()) :: IntegrationStep.t()
   defn call_output_fn(step, output_fn_adapter, fixed_output_times?, refine) do
-    if fixed_output_times? do
-      generate_output? = if step.fixed_output_t_within_step?, do: Nx.u8(1), else: Nx.u8(0)
-      if generate_output?, do: output_single_point(step, output_fn_adapter), else: step
-    else
-      if refine == 1 do
+    cond do
+      fixed_output_times? ->
+        if step.fixed_output_t_within_step?, do: output_single_point(step, output_fn_adapter), else: step
+
+      refine == 1 ->
         step |> output_single_point(output_fn_adapter)
-      else
+
+      true ->
         step |> output_multiple_points(output_fn_adapter)
-      end
     end
   end
 
