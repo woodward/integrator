@@ -309,38 +309,30 @@ defmodule Integrator.RungeKutta.StepTest do
     end
   end
 
-  describe "initial_output_t_and_x" do
-    test "returns t and x of the correct sizes and type - no interpolation nor fixed times" do
-      options = %AdaptiveStepsizeRefactor.NxOptions{refine: 1, fixed_output_times?: Nx.u8(0), type: {:f, 64}}
-      x0 = Nx.f32([0.0, 0.0])
-
-      {output_t, output_x} = Step.initial_output_t_and_x(x0, options)
-
-      assert output_t == Nx.f64([0.0])
-      assert output_x == Nx.f64([0.0, 0.0])
-    end
-
-    test "returns t and x of the correct sizes and type - fixed times (which means no interpolation)" do
-      options = %AdaptiveStepsizeRefactor.NxOptions{refine: 1, fixed_output_times?: Nx.u8(1), type: {:f, 64}}
-      x0 = Nx.f32([0.0, 0.0])
-
-      {output_t, output_x} = Step.initial_output_t_and_x(x0, options)
-
-      assert output_t == Nx.f64([0.0])
-      assert output_x == Nx.f64([0.0, 0.0])
-    end
-
+  describe "initial_output_t_and_x_multiple_points" do
     test "returns t and x of the correct sizes and type - interpolation and no fixed times" do
-      options = %AdaptiveStepsizeRefactor.NxOptions{refine: 4, fixed_output_times?: Nx.u8(0), type: {:f, 64}}
+      options = %AdaptiveStepsizeRefactor.NxOptions{refine: 4, type: {:f, 64}}
       x0 = Nx.f32([0.0, 0.0])
 
-      {output_t, output_x} = Step.initial_output_t_and_x(x0, options)
+      {output_t, output_x} = Step.initial_output_t_and_x_multiple_points(x0, options)
 
       assert output_t == Nx.f64([0.0, 0.0, 0.0, 0.0])
       assert output_x == ~MAT[
         0.0  0.0  0.0  0.0
         0.0  0.0  0.0  0.0
       ]f64
+    end
+  end
+
+  describe "initial_output_t_and_x_single_point" do
+    test "returns t and x of the correct sizes and type" do
+      options = %AdaptiveStepsizeRefactor.NxOptions{type: {:f, 64}}
+      x0 = Nx.f32([0.0, 0.0])
+
+      {output_t, output_x} = Step.initial_output_t_and_x_single_point(x0, options)
+
+      assert output_t == Nx.f64(0.0)
+      assert output_x == Nx.f64([0.0, 0.0])
     end
   end
 
