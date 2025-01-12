@@ -42,7 +42,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
           end
 
         dt_new =
-          compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_at_start_of_step, t_end, options)
+          compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_current, t_end, options)
 
         step = %{step | dt_new: dt_new} |> possibly_delay_playback_speed(options.speed)
 
@@ -104,8 +104,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     %{
       step
       | rk_step: rk_step,
-        t_at_start_of_step: rk_step.t_new,
-        x_at_start_of_step: rk_step.x_new
+        t_current: rk_step.t_new,
+        x_current: rk_step.x_new
     }
   end
 
@@ -116,13 +116,19 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         step |> interpolate_fixed_points(options)
 
       options.refine == 1 ->
-        %{step | output_t_and_x_single: {step.t_at_start_of_step, step.x_at_start_of_step}}
+        %{step | output_t_and_x_single: {step.t_current, step.x_current}}
 
       true ->
-        {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.t_at_start_of_step, step.rk_step, options)
+        # Note that step.t_current here is equal to step.rk_step.t_new (if no event fn has triggered
+        # during this integration step) OR the time at which the event fn triggered (if an event did in
+        # fact happen during this step):
+        {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.t_current, step.rk_step, options)
         %{step | output_t_and_x_multi: {t_add, x_out}}
     end
   end
+
+  defn true_nx, do: Nx.u8(1)
+  defn false_nx, do: Nx.u8(0)
 
   @spec interpolate_fixed_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_fixed_points(step, options) do
@@ -133,12 +139,12 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
       %{
         step
-        | fixed_output_t_within_step?: Nx.u8(1),
+        | fixed_output_t_within_step?: true_nx(),
           output_t_and_x_single: {fixed_output_t_next, x_out},
           fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
       }
     else
-      %{step | fixed_output_t_within_step?: Nx.u8(0)}
+      %{step | fixed_output_t_within_step?: false_nx()}
     end
   end
 
@@ -203,7 +209,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn halt, do: Nx.u8(0)
 
   defn call_event_fn(step, options) do
-    event_fn_result = options.event_fn_adapter.external_fn.(step.rk_step.t_new, step.rk_step.x_new)
+    event_fn_result = options.event_fn_adapter.external_fn.(step.t_current, step.x_current)
 
     if event_fn_result == continue() do
       step
@@ -214,20 +220,10 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       #     {s, result, t}
       #   end)
 
-      t_zero = find_event_fn_t_zero(step, options)
-      x_zero = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_zero)
-      %{step | terminal_event: halt(), t_at_start_of_step: t_zero, x_at_start_of_step: x_zero}
+      t_at_event_fn = find_event_fn_t_zero(step, options)
+      x_at_event_fn = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_at_event_fn)
+      %{step | terminal_event: halt(), t_current: t_at_event_fn, x_current: x_at_event_fn}
     end
-
-    # Psuedo-code: first check if an event function is present
-    # called_fn_output = Nx.u8(1)
-    # event_happened? = called_fn_output
-
-    # if event_happened? do
-    #   step
-    # else
-    #   step
-    # end
   end
 
   defn zero_fn(t_add, zero_fn_args) do
@@ -262,8 +258,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # Also check the step's status here
 
     #                                        if    close to end time                                  or past end time
-    if step.terminal_event == halt() or Nx.abs(step.t_at_start_of_step - t_end) <= @zero_tolerance or
-         step.t_at_start_of_step > t_end do
+    if step.terminal_event == halt() or Nx.abs(step.t_current - t_end) <= @zero_tolerance or
+         step.t_current > t_end do
       halt()
     else
       continue()

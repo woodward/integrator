@@ -229,8 +229,8 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
     initial_step =
       %IntegrationStep{
-        t_at_start_of_step: t_start,
-        x_at_start_of_step: x0,
+        t_current: t_start,
+        x_current: x0,
         dt_new: initial_tstep,
         start_timestamp_μs: start_timestamp_μs,
         rk_step: initial_rk_step,

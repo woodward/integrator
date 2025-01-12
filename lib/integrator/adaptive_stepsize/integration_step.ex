@@ -7,8 +7,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
 
   @derive {Nx.Container,
    containers: [
-     :t_at_start_of_step,
-     :x_at_start_of_step,
+     :t_current,
+     :x_current,
      :dt_new,
      :rk_step,
      :fixed_output_t_next,
@@ -36,8 +36,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
    ]}
 
   @type t :: %__MODULE__{
-          t_at_start_of_step: Nx.t(),
-          x_at_start_of_step: Nx.t(),
+          t_current: Nx.t(),
+          x_current: Nx.t(),
           dt_new: Nx.t(),
           rk_step: RungeKutta.Step.t(),
           fixed_output_t_next: Nx.t(),
@@ -66,8 +66,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           interpolate_fn: fun()
         }
   defstruct [
-    :t_at_start_of_step,
-    :x_at_start_of_step,
+    :t_current,
+    :x_current,
     :dt_new,
     :rk_step,
     #
