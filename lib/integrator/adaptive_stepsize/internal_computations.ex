@@ -13,7 +13,6 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.Step
   alias Integrator.NonLinearEqnRoot
-  alias Integrator.NonNx
   alias Integrator.Utils
 
   import Integrator.Utils, only: [timestamp_μs: 0]
@@ -219,11 +218,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     if event_fn_result == continue() do
       step
     else
-      t_at_event_fn = find_event_fn_t_zero_with_nx(step, options)
-      # t_at_event_fn = find_event_fn_t_zero_without_nx(step, options)
-
-      x_at_event_fn = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_at_event_fn)
-      %{step | terminal_event: halt(), t_current: t_at_event_fn, x_current: x_at_event_fn}
+      t_at_event_fn_zero = find_event_fn_t_zero(step, options)
+      x_at_event_fn_zero = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_at_event_fn_zero)
+      %{step | terminal_event: halt(), t_current: t_at_event_fn_zero, x_current: x_at_event_fn_zero}
     end
   end
 
@@ -233,58 +230,13 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     x[0]
   end
 
-  deftransform find_event_fn_t_zero_without_nx(step, _options) do
-    # New:
-
-    zero_fn = fn t ->
-      x = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t)
-      {_status, value} = step.event_fn.(t, x)
-      value
-    end
-
-    # Old:
-    # zero_fn = fn t ->
-    #   x = interpolate_one_point(t, step, interpolate_fn)
-    #   {_status, value} = event_fn.(t, x)
-    #   value |> Nx.to_number()
-    # end
-
-    only_non_linear_eqn_root_opts = [
-      nonlinear_eqn_root_output_fn: nil,
-      max_fn_eval_count: 1000,
-      max_iterations: 1000,
-      type: :f64
-    ]
-
-    # New:
-    root =
-      NonNx.NonLinearEqnRoot.find_zero(
-        zero_fn,
-        [step.rk_step.t_old, step.rk_step.t_new],
-        only_non_linear_eqn_root_opts
-      )
-
-    # Old:
-    # root =
-    #   NonLinearEqnRoot.find_zero(
-    #     zero_fn,
-    #     [Nx.to_number(step.t_old), Nx.to_number(step.t_new)],
-    #     only_non_linear_eqn_root_opts
-    #   )
-
-    root.x
-
-    # An example root which satisfies the event_fn test:
-    # Nx.f64(2.161317515510217)
-  end
-
   deftransform get_zero_fn(step) do
     fn a, b ->
       zero_fn(a, [step.interpolate_fn | b])
     end
   end
 
-  defn find_event_fn_t_zero_with_nx(step, options) do
+  defn find_event_fn_t_zero(step, options) do
     rk_step = step.rk_step
     t_old = rk_step.t_old
     t_new = rk_step.t_new
