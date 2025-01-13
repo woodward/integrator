@@ -43,7 +43,10 @@ defmodule Integrator.MixProject do
       {:ex_doc, "~> 0.34", only: :dev},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
-      {:nx, "~> 0.9"}
+      {:nx, "~> 0.9"},
+      #
+      # Currently only used by NonNx.NonLinearEqnRoot tests:
+      {:patch, "~> 0.14", only: :test}
       # {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
