@@ -220,7 +220,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       #     {s, result, t}
       #   end)
 
-      t_at_event_fn = find_event_fn_t_zero(step, options)
+      t_at_event_fn = find_event_fn_t_zero_with_nx(step, options)
+      # t_at_event_fn = find_event_fn_t_zero_without_nx(step, options)
+
       x_at_event_fn = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_at_event_fn)
       %{step | terminal_event: halt(), t_current: t_at_event_fn, x_current: x_at_event_fn}
     end
@@ -232,7 +234,11 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     x[0]
   end
 
-  deftransform find_event_fn_t_zero(step, options) do
+  deftransform find_event_fn_t_zero_without_nx(_step, _options) do
+    Nx.f64(2.161317515510217)
+  end
+
+  deftransform find_event_fn_t_zero_with_nx(_step, _options) do
     # rk_step = step.rk_step
     # t_old = rk_step.t_old
     # t_new = rk_step.t_new
