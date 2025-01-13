@@ -61,13 +61,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     # For debugging:
     # z = print_z(z)
 
-    {z, _, _} =
-      while {z, options, continue?}, continue? do
+    zero_fn_args_as_tuple = zero_fn_args |> to_tuple()
+
+    {z, _, _, _} =
+      while {z, options, continue?, zero_fn_args_as_tuple}, continue? do
         {status_1, z} =
           z
           |> compute_iteration()
           |> adjust_if_too_close_to_a_or_b(options.machine_eps, options.tolerance)
-          |> fn_eval_new_point(zero_fn, zero_fn_args, options)
+          |> fn_eval_new_point(zero_fn, zero_fn_args_as_tuple, options)
           |> check_for_non_monotonicity()
           |> bracket()
 
@@ -82,12 +84,16 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
         # For debugging:
         # z = print_z(z)
-        {z, options, continue?}
+        {z, options, continue?, zero_fn_args_as_tuple}
       end
 
     # I'm not 100% sure why this is not needed - is it happening somewhere else after the big refactor?
     # %{z | x: z.u, fx: z.fu}
     z
+  end
+
+  deftransform to_tuple(list_of_args) do
+    list_of_args |> List.to_tuple()
   end
 
   @spec compute_iteration(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
@@ -412,10 +418,15 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     if is_nil(item), do: 1, else: 0
   end
 
+  deftransform to_list(tuple_args) do
+    tuple_args |> Tuple.to_list()
+  end
+
   @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], Keyword.t()) ::
           NonLinearEqnRoot.t()
   defn fn_eval_new_point(z, zero_fn, zero_fn_args, options) do
-    fc = zero_fn.(z.c, zero_fn_args)
+    zero_fn_args_as_list = zero_fn_args |> to_list()
+    fc = zero_fn.(z.c, zero_fn_args_as_list)
 
     %{
       z

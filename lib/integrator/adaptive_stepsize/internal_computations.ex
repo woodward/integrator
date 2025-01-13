@@ -278,13 +278,22 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # Nx.f64(2.161317515510217)
   end
 
-  deftransform find_event_fn_t_zero_with_nx(step, options) do
+  deftransform get_zero_fn(step) do
+    fn a, b ->
+      zero_fn(a, [step.interpolate_fn | b])
+    end
+  end
+
+  defn find_event_fn_t_zero_with_nx(step, options) do
     rk_step = step.rk_step
     t_old = rk_step.t_old
     t_new = rk_step.t_new
 
-    zero_fn = &__MODULE__.zero_fn/2
-    zero_fn_args = [step.interpolate_fn, step.rk_step]
+    # zero_fn = &__MODULE__.zero_fn/2
+
+    zero_fn = get_zero_fn(step)
+
+    zero_fn_args = [step.rk_step]
 
     root =
       NonLinearEqnRoot.find_zero_nx(
