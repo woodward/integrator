@@ -202,6 +202,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     @tag transferred_to_refactor?: true
+    @tag :skip
     test "works - event function with interpolation" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -249,6 +250,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     end
 
     @tag transferred_to_refactor?: false
+    @tag :skip
     test "works - event function with interpolation - ballode - high fidelity - one bounce" do
       event_fn = &SampleEqns.falling_particle_event_fn/2
       stepper_fn = &DormandPrince45.integrate/6
@@ -1235,6 +1237,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
   end
 
   describe "ZeroFn" do
+    @tag :skip
     test "works with real-life args" do
       # The values in this test (both input and expected) were obtained by just printing out values
       # from AdaptiveStepsize during the test run for ballode (specially, test

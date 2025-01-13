@@ -111,7 +111,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       zero_fn = &TestFunctions.sin/2
-      zero_fn_args = []
+      zero_fn_args = {}
       opts = %{max_iterations: 1000, max_fn_eval_count: 1000}
       z = InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
 
@@ -135,7 +135,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
       opts = %{max_iterations: max_iterations, max_fn_eval_count: 1000}
       zero_fn = &TestFunctions.sin/2
-      zero_fn_args = []
+      zero_fn_args = {}
 
       assert_raise MaxIterationsExceededError, fn ->
         InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
@@ -154,7 +154,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
       opts = %{max_iterations: 1000, max_fn_eval_count: max_fn_eval_count}
       zero_fn = &TestFunctions.sin/2
-      zero_fn_args = []
+      zero_fn_args = {}
 
       assert_raise MaxFnEvalsExceededError, fn ->
         InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)

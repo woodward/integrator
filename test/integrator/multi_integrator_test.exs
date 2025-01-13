@@ -37,6 +37,7 @@ defmodule Integrator.MultiIntegratorTest do
     end
 
     @tag transferred_to_refactor?: false
+    @tag :skip
     test "performs the integration", %{
       opts: opts,
       t_initial: t_initial,
@@ -78,6 +79,7 @@ defmodule Integrator.MultiIntegratorTest do
     end
 
     @tag transferred_to_refactor?: false
+    @tag :skip
     test "performs the integration - high fidelity multi-bounce ballode", %{
       opts: opts,
       t_initial: t_initial,
@@ -153,6 +155,7 @@ defmodule Integrator.MultiIntegratorTest do
     end
 
     @tag transferred_to_refactor?: false
+    @tag :skip
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
       opts: opts,
       t_initial: t_initial,

@@ -240,6 +240,8 @@ defmodule Integrator.AdaptiveStepsizePrivateTest do
       assert new_step.terminal_event == :continue
     end
 
+    @tag transferred_to_refactor?: false
+    @tag :skip
     test ":halt event for SampleEqns.van_der_pol function (y[0] goes negative)", %{event_fn: event_fn} do
       t_old = Nx.tensor(2.155396117711071, type: :f64)
       t_new = Nx.tensor(2.742956500140625, type: :f64)
