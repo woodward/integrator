@@ -201,6 +201,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
+  @spec possibly_delay_playback_speed(IntegrationStep.t(), Nx.t()) :: IntegrationStep.t()
   defn possibly_delay_playback_speed(step, _speed) do
     # Not implented yet (code needs to be brought over from the pre-refactor code)
     step
@@ -212,6 +213,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   @spec halt :: Nx.t()
   defn halt, do: Nx.u8(0)
 
+  @spec call_event_fn(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn call_event_fn(step, options) do
     event_fn_result = options.event_fn_adapter.external_fn.(step.t_current, step.x_current)
 
@@ -230,7 +232,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     x[0]
   end
 
-  deftransform get_zero_fn(step) do
+  deftransform find_zero_fn(step) do
     fn a, b ->
       zero_fn(a, [step.interpolate_fn | b])
     end
@@ -241,10 +243,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     t_old = rk_step.t_old
     t_new = rk_step.t_new
 
-    # zero_fn = &__MODULE__.zero_fn/2
-
-    zero_fn = get_zero_fn(step)
-
+    zero_fn = find_zero_fn(step)
     zero_fn_args = [step.rk_step]
 
     root =
