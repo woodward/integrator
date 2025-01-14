@@ -96,61 +96,22 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     list_of_args |> List.to_tuple()
   end
 
+  deftransform to_list(tuple_args) do
+    tuple_args |> Tuple.to_list()
+  end
+
   @spec compute_iteration(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration(z) do
     iteration_type = z.iteration_type
 
-    # How can I get rid of these nasty nested if statements and do a case statement instead? See failed attempts below:
-    if iteration_type == 1 do
-      compute_iteration_type_1(z)
-    else
-      if iteration_type == 2 or iteration_type == 3 do
-        compute_iteration_types_2_or_3(z)
-      else
-        if iteration_type == 4 do
-          compute_iteration_type_4(z)
-        else
-          if iteration_type == 5 do
-            compute_iteration_type_5(z)
-          else
-            # Should never reach here:
-            hook(z, &raise(IncorrectIterationTypeError, step: &1, iteration_type: &1.iteration_type))
-          end
-        end
-      end
+    cond do
+      iteration_type == 1 -> compute_iteration_type_1(z)
+      iteration_type == 2 -> compute_iteration_types_2_or_3(z)
+      iteration_type == 3 -> compute_iteration_types_2_or_3(z)
+      iteration_type == 4 -> compute_iteration_type_4(z)
+      iteration_type == 5 -> compute_iteration_type_5(z)
+      true -> hook(z, &raise(IncorrectIterationTypeError, step: &1, iteration_type: &1.iteration_type))
     end
-
-    # ----------------------------------------------------------------------------------------------
-    # Failed attempts to do a case statement:
-
-    # I should be able to do this as a case statement on z.iteration_type - why does this not work???
-
-    # First try:
-    # case z.iteration_type do
-    #   1 -> compute_iteration_type_1(z)
-    #   2 -> compute_iteration_types_2_or_3(z)
-    #   3 -> compute_iteration_types_2_or_3(z)
-    #   4 -> compute_iteration_type_4(z)
-    #   5 -> compute_iteration_type_5(z)
-    # end
-
-    # ---------------
-
-    # 2nd try:
-
-    # one = Nx.tensor(1, type: :s32)
-    # two = Nx.tensor(2, type: :s32)
-    # three = Nx.tensor(3, type: :s32)
-    # four = Nx.tensor(4, type: :s32)
-    # five = Nx.tensor(5, type: :s32)
-
-    # case z.iteration_type do
-    #   ^one -> compute_iteration_type_1(z)
-    #   ^two -> compute_iteration_types_2_or_3(z)
-    #   ^three -> compute_iteration_types_2_or_3(z)
-    #   ^four -> compute_iteration_type_4(z)
-    #   ^five -> compute_iteration_type_5(z)
-    # end
   end
 
   @spec compute_iteration_type_1(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
@@ -416,10 +377,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   @spec is_nil?(any()) :: Nx.t()
   deftransform is_nil?(item) do
     if is_nil(item), do: 1, else: 0
-  end
-
-  deftransform to_list(tuple_args) do
-    tuple_args |> Tuple.to_list()
   end
 
   @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], Keyword.t()) ::
