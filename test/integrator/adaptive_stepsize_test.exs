@@ -370,7 +370,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - playback speed of 1.0" do
       # Octave:
       #   format long
@@ -433,7 +433,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - high fidelity - playback speed of 0.5" do
       # Octave:
       #   format long
