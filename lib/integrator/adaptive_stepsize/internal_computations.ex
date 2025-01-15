@@ -27,13 +27,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         compute_integration_step(step, t_end, options)
       end
 
-    updated_step |> record_elapsed_time()
+    updated_step
   end
 
   @spec integrate_via_elixir_recursion(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   deftransform integrate_via_elixir_recursion(step, t_end, options) do
     if continue_stepping?(step, t_end) == Nx.u8(1) do
       {step, t_end, options} = compute_integration_step(step, t_end, options)
+      step = step |> possibly_delay_playback_speed(options.speed)
       integrate_via_elixir_recursion(step, t_end, options)
     else
       step
@@ -215,9 +216,23 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   @spec possibly_delay_playback_speed(IntegrationStep.t(), Nx.t()) :: IntegrationStep.t()
-  defn possibly_delay_playback_speed(step, _speed) do
-    # Not implented yet (code needs to be brought over from the pre-refactor code)
-    step
+  deftransform possibly_delay_playback_speed(step, speed) do
+    if Nx.to_number(step.error_count) > 0 do
+      step
+    else
+      rk_step = step.rk_step
+      t_new = Nx.to_number(rk_step.t_new)
+      t_old = Nx.to_number(rk_step.t_old)
+      speed = Nx.to_number(speed)
+      step_timestamp_μs = Nx.to_number(step.step_timestamp_μs)
+
+      desired_time_interval_ms = (t_new - t_old) * 1000.0 / speed
+      elapsed_time_ms = (:os.system_time(:microsecond) - step_timestamp_μs) / 1000.0
+      sleep_time_ms = trunc(desired_time_interval_ms - elapsed_time_ms)
+
+      if sleep_time_ms > 0, do: Process.sleep(sleep_time_ms)
+      %{step | step_timestamp_μs: timestamp_μs()}
+    end
   end
 
   @spec continue :: Nx.t()

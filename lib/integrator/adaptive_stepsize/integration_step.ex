@@ -27,6 +27,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      :terminal_output,
      #
      :start_timestamp_μs,
+     :step_timestamp_μs,
      :elapsed_time_μs
    ],
    keep: [
@@ -59,6 +60,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           terminal_output: Nx.t(),
           #
           start_timestamp_μs: Nx.t(),
+          step_timestamp_μs: Nx.t(),
           elapsed_time_μs: Nx.t(),
           #
           stepper_fn: fun(),
@@ -92,6 +94,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     terminal_output: Nx.s32(0),
     #
     start_timestamp_μs: Nx.s64(0),
+    step_timestamp_μs: Nx.s64(0),
     elapsed_time_μs: Nx.s64(0)
   ]
 end

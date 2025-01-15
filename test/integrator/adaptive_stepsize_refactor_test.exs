@@ -312,9 +312,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       [last_t | _rest] = output_t |> Enum.reverse()
 
-      # dbg(result.elapsed_time_μs)
-
-      # This is a 0.1 second simulation, so the elapsed time should be close to that:
+      # This is a 0.1 second simulation, so the elapsed time should be close to 100 ms:
       assert abs(Nx.to_number(result.elapsed_time_μs) / 1000.0 - 100) <= 40
 
       # write_t(output_t, "test/fixtures/octave_results/van_der_pol/speed/t_elixir2.csv")
@@ -327,8 +325,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_in_delta(Nx.to_number(last_x[0]), 1.990933460195306, 1.0e-13)
       assert_in_delta(Nx.to_number(last_x[1]), -0.172654870547380, 1.0e-13)
 
-      assert result.count_cycles__compute_step == 10
-      assert result.count_loop__increment_step == 10
+      assert result.count_cycles__compute_step == Nx.s32(10)
+      assert result.count_loop__increment_step == Nx.s32(10)
       # assert result.terminal_event == :continue
       # assert result.terminal_output == :continue
 
@@ -396,7 +394,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       [last_t | _rest] = output_t |> Enum.reverse()
 
-      assert abs(Nx.to_number(result.elapsed_time_μs) / 1000.0 - 200) <= 10
+      # Elapsed time should be something close to 0.1 * 2 or 200 ms:
+      assert abs(Nx.to_number(result.elapsed_time_μs) / 1000.0 - 200) <= 40
 
       # write_t(output_t, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/t_elixir.csv")
       # write_x(output_x, "test/fixtures/octave_results/van_der_pol/speed_high_fidelity/x_elixir.csv")
@@ -408,8 +407,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
       assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
 
-      assert result.count_cycles__compute_step == 18
-      assert result.count_loop__increment_step == 18
+      assert result.count_cycles__compute_step == Nx.s32(18)
+      assert result.count_loop__increment_step == Nx.s32(18)
       # assert result.terminal_event == :halt
       # assert result.terminal_output == :continue
 

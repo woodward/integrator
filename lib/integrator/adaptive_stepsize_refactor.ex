@@ -233,6 +233,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         x_current: x0,
         dt_new: initial_tstep,
         start_timestamp_μs: start_timestamp_μs,
+        step_timestamp_μs: start_timestamp_μs,
         rk_step: initial_rk_step,
         # These are just dummy values in :output_t_and_x right now to allocate the right size and shape
         output_t_and_x_multi: RungeKutta.Step.initial_output_t_and_x_multiple_points(x0, options),
@@ -249,6 +250,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     else
       InternalComputations.integrate_via_elixir_recursion(initial_step, t_end, options)
     end
+    |> InternalComputations.record_elapsed_time()
   end
 
   @doc """
