@@ -20,14 +20,24 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @spec integrate_step_via_nx_while_loop(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
-  defn integrate_step_via_nx_while_loop(step_start, t_end, options) do
+  @spec integrate_via_nx_while_loop(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
+  defn integrate_via_nx_while_loop(starting_step, t_end, options) do
     {updated_step, _t_end, _options} =
-      while {step = step_start, t_end, options}, continue_stepping?(step, t_end) do
+      while {step = starting_step, t_end, options}, continue_stepping?(step, t_end) do
         compute_integration_step(step, t_end, options)
       end
 
     updated_step |> record_elapsed_time()
+  end
+
+  @spec integrate_via_elixir_recursion(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
+  deftransform integrate_via_elixir_recursion(step, t_end, options) do
+    if continue_stepping?(step, t_end) == Nx.u8(1) do
+      {step, t_end, options} = compute_integration_step(step, t_end, options)
+      integrate_via_elixir_recursion(step, t_end, options)
+    else
+      step
+    end
   end
 
   @spec compute_integration_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}

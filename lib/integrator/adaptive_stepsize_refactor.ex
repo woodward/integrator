@@ -244,7 +244,11 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         interpolate_fn: interpolate_fn
       }
 
-    InternalComputations.integrate_step_via_nx_while_loop(initial_step, t_end, options)
+    if options.speed == Nx.Constants.infinity(type) do
+      InternalComputations.integrate_via_nx_while_loop(initial_step, t_end, options)
+    else
+      InternalComputations.integrate_via_elixir_recursion(initial_step, t_end, options)
+    end
   end
 
   @doc """

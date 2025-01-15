@@ -261,7 +261,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag :skip
     test "works - playback speed of 1.0" do
       # Octave:
       #   format long
