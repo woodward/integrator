@@ -244,7 +244,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         interpolate_fn: interpolate_fn
       }
 
-    InternalComputations.integrate_step(initial_step, t_end, options)
+    InternalComputations.integrate_step_via_nx_while_loop(initial_step, t_end, options)
   end
 
   @doc """

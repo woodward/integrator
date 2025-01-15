@@ -20,8 +20,8 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  @spec integrate_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
-  defn integrate_step(step_start, t_end, options) do
+  @spec integrate_step_via_nx_while_loop(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
+  defn integrate_step_via_nx_while_loop(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
       while {step = step_start, t_end, options}, continue_stepping?(step, t_end) do
         rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
@@ -44,9 +44,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         dt_new =
           compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_current, t_end, options)
 
-        step = %{step | dt_new: dt_new} |> possibly_delay_playback_speed(options.speed)
-
-        {step, t_end, options}
+        {%{step | dt_new: dt_new}, t_end, options}
       end
 
     updated_step |> record_elapsed_time()
