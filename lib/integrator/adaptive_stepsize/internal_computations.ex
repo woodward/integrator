@@ -24,30 +24,35 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn integrate_step_via_nx_while_loop(step_start, t_end, options) do
     {updated_step, _t_end, _options} =
       while {step = step_start, t_end, options}, continue_stepping?(step, t_end) do
-        rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
-        step = step |> increment_compute_counter()
-
-        step =
-          if error_less_than_one?(rk_step) do
-            step
-            |> reset_error_count_to_zero()
-            |> increment_counters()
-            |> merge_rk_step_into_integration_step(rk_step)
-            |> call_event_fn(options)
-            |> interpolate_points(options)
-            |> call_output_fn(options.output_fn_adapter, options.fixed_output_times?, options.refine)
-          else
-            step
-            |> bump_error_count(options.max_number_of_errors)
-          end
-
-        dt_new =
-          compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_current, t_end, options)
-
-        {%{step | dt_new: dt_new}, t_end, options}
+        compute_integration_step(step, t_end, options)
       end
 
     updated_step |> record_elapsed_time()
+  end
+
+  @spec compute_integration_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}
+  defn compute_integration_step(step, t_end, options) do
+    rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
+    step = step |> increment_compute_counter()
+
+    step =
+      if error_less_than_one?(rk_step) do
+        step
+        |> reset_error_count_to_zero()
+        |> increment_counters()
+        |> merge_rk_step_into_integration_step(rk_step)
+        |> call_event_fn(options)
+        |> interpolate_points(options)
+        |> call_output_fn(options.output_fn_adapter, options.fixed_output_times?, options.refine)
+      else
+        step
+        |> bump_error_count(options.max_number_of_errors)
+      end
+
+    dt_new =
+      compute_next_timestep(step.dt_new, rk_step.error_estimate, options.order, step.t_current, t_end, options)
+
+    {%{step | dt_new: dt_new}, t_end, options}
   end
 
   # Printing example - paste in where necessary:
