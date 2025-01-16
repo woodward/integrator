@@ -307,11 +307,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    # ==============================================================================================
-    # ==============================================================================================
-    # ==============================================================================================
-
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "max step uses computed default for short simulation times" do
       # Octave:
       #   format long
@@ -499,6 +495,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
 
     @tag transferred_to_refactor?: false
     test "works - no data interpolation (refine == 1) together with an output function" do
