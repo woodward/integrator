@@ -145,7 +145,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - output function with interpolation" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -249,7 +249,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     @tag :skip
     test "works - event function with interpolation - ballode - high fidelity - one bounce" do
       event_fn = &SampleEqns.falling_particle_event_fn/2
@@ -306,6 +306,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
 
     @tag transferred_to_refactor?: false
     test "max step uses computed default for short simulation times" do

@@ -483,6 +483,80 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
+
+    test "works - event function with interpolation - ballode - high fidelity - one bounce" do
+      event_fn = &SampleEqns.falling_particle_event_fn/2
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      ode_fn = &SampleEqns.falling_particle/2
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(30.0)
+      x0 = Nx.f64([0.0, 20.0])
+
+      opts = [
+        event_fn: event_fn,
+        #  zero_fn: zero_fn,
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.f64(1.0e-14),
+        rel_tol: Nx.f64(1.0e-14),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(1.472499532027109e-03)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      [last_t | _rest] = output_t |> Enum.reverse()
+
+      # write_t(result.output_t, "test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/t_elixir.csv")
+      # write_x(result.output_x, "test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/x_elixir.csv")
+
+      # Expected last_t is from Octave:
+      assert_in_delta(Nx.to_number(last_t), 4.077471967380223, 1.0e-14)
+
+      [last_x | _rest] = output_x |> Enum.reverse()
+      assert_in_delta(Nx.to_number(last_x[0]), 0.0, 1.0e-13)
+      assert_in_delta(Nx.to_number(last_x[1]), -20.0, 1.0e-13)
+
+      assert result.count_cycles__compute_step == Nx.s32(18)
+      assert result.count_loop__increment_step == Nx.s32(18)
+      assert result.terminal_event == Nx.u8(0)
+      # assert result.terminal_output == :continue
+
+      # assert length(result.ode_t) == 19
+      # assert length(result.ode_x) == 19
+      # assert length(result.output_t) == 73
+      # assert length(result.output_x) == 73
+
+      expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity_one_bounce_only/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
   end
 
   describe "starting_stepsize" do
