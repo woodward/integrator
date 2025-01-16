@@ -426,6 +426,63 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    test "works - high fidelity" do
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        abs_tol: Nx.f64(1.0e-10),
+        rel_tol: Nx.f64(1.0e-10),
+        type: :f64,
+        norm_control?: false,
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(0.007418363820761442)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      assert result.count_cycles__compute_step == Nx.s32(1037)
+      assert result.count_loop__increment_step == Nx.s32(1027)
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      # assert length(result.ode_t) == 1028
+      # assert length(result.ode_x) == 1028
+      # assert length(result.output_t) == 4109
+      # assert length(result.output_x) == 4109
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
   end
 
   describe "starting_stepsize" do
