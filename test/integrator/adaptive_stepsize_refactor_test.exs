@@ -637,6 +637,93 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-16, rtol: 1.0e-16)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
+
+    @tag :skip
+    test "works - fixed stepsize output that's smaller than the timestep" do
+      # In this test, there are many output timesteps for every integration timestep
+
+      # Octave:
+      #   format long
+      #   t_values = 0.0:0.05:3;
+      #   fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
+      #   [t,y] = ode45 (fvdp, t_values, [2, 0]);
+      #
+      #   file_id = fopen("../test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv", "w")
+      #   fdisp(file_id, t)
+      #   fclose(file_id)
+      #
+      #   file_id = fopen("../test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv", "w")
+      #   fdisp(file_id, y)
+      #   fclose(file_id)
+
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(3.0)
+      # t_end = Nx.f64(0.45)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        type: :f64,
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn,
+        fixed_output_times?: true,
+        fixed_output_dt: Nx.f64(0.05)
+      ]
+
+      # t_values = Nx.linspace(t_start, t_end, n: 61) |> Nx.to_list() |> Enum.map(&Nx.f64(&1))
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(6.812920690579614e-02)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      assert result.count_cycles__compute_step == Nx.s32(10)
+      assert result.count_loop__increment_step == Nx.s32(9)
+      # assert length(result.ode_t) == 10
+      # assert length(result.ode_x) == 10
+      # assert length(result.output_t) == 61
+      # assert length(result.output_x) == 61
+
+      # Verify the last time step is correct (this check was the result of a bug fix!):
+      [last_time | _rest] = output_t |> Enum.reverse()
+
+      # output_t_contents = output_t |> Enum.map(&"#{Nx.to_number(&1)}\n") |> Enum.join()
+      # output_x_contents = output_x |> Enum.map(&"#{Nx.to_number(&1[0])}  #{Nx.to_number(&1[1])}\n") |> Enum.join()
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/junk_t.csv", output_t_contents)
+      # File.write!("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/junk_x.csv", output_x_contents)
+
+      assert_in_delta(Nx.to_number(last_time), 3.0, 1.0e-07)
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output_2/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
+    end
   end
 
   describe "starting_stepsize" do

@@ -496,11 +496,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       # assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    # ==============================================================================================
-    # ==============================================================================================
-    # ==============================================================================================
-
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - no data interpolation (refine == 1) together with an output function" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -553,7 +549,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(x_data, result.output_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: :not_brought_over
     test "works - no data interpolation (refine == 1), no caching, output function with terminal output" do
       dummy_output_name = :"dummy-output-#{inspect(self())}"
       DummyOutput.start_link(name: dummy_output_name)
@@ -653,7 +649,11 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    @tag transferred_to_refactor?: false
+    # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
+
+    @tag transferred_to_refactor?: true
     test "works - fixed stepsize output that's smaller than the timestep" do
       # In this test, there are many output timesteps for every integration timestep
 
