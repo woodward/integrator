@@ -32,7 +32,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   @spec integrate_via_elixir_recursion(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   deftransform integrate_via_elixir_recursion(step, t_end, options) do
-    if continue_stepping?(step, t_end) == Nx.u8(1) do
+    if continue_stepping?(step, t_end) == true_nx() do
       {step, t_end, options} = compute_integration_step(step, t_end, options)
       step = step |> possibly_delay_playback_speed(options.speed)
       integrate_via_elixir_recursion(step, t_end, options)
