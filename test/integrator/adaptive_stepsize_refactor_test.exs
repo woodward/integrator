@@ -9,6 +9,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
   alias Integrator.Point
+  alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.SampleEqns
 
@@ -722,6 +723,253 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
+    end
+
+    @tag :skip
+    test "throws an exception if too many errors" do
+      stepper_fn = &DormandPrince45.integrate/6
+      interpolate_fn = &DormandPrince45.interpolate/4
+      order = DormandPrince45.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(0.007418363820761442)
+
+      # Set the max_number_of_errors to 1 so that an exception should be thrown:
+      opts = [
+        abs_tol: Nx.f64(1.0e-2),
+        rel_tol: Nx.f64(1.0e-2),
+        max_number_of_errors: 1,
+        type: :f64,
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+      end
+    end
+
+    @tag :skip
+    test "works - uses Bogacki-Shampine23" do
+      stepper_fn = &BogackiShampine23.integrate/6
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(20.0)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        refine: 4,
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.f64(1.0e-06),
+        rel_tol: Nx.f64(1.0e-03),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(1.778279410038923e-02)
+
+      #  Octave:
+      #    fvdp = @(t,y) [y(2); (1 - y(1)^2) * y(2) - y(1)];
+      #    [t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset( "Refine", 4));
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      assert result.count_cycles__compute_step == Nx.s32(189)
+      assert result.count_loop__increment_step == Nx.s32(171)
+      # assert length(result.ode_t) == 172
+      # assert length(result.ode_x) == 172
+      # assert length(result.output_t) == 685
+      # assert length(result.output_x) == 685
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-05, rtol: 1.0e-05)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
+    end
+
+    @tag :skip
+    test "works - uses Bogacki-Shampine23 - high fidelity" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 4)
+      #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &BogackiShampine23.integrate/6
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(0.1)
+      x0 = Nx.f64([2.0, 0.0])
+
+      opts = [
+        refine: 4,
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.f64(1.0e-12),
+        rel_tol: Nx.f64(1.0e-12),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.f64(2.020515504676623e-04)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      assert result.count_cycles__compute_step == Nx.s32(952)
+      assert result.count_loop__increment_step == Nx.s32(950)
+      # assert length(result.ode_t) == 951
+      # assert length(result.ode_x) == 951
+      # assert length(result.output_t) == 3_801
+      # assert length(result.output_x) == 3_801
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = result.output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+
+      # write_t(output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/t_elixir.csv")
+      # write_x(output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/x_elixir.csv")
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+    end
+
+    @tag :skip
+    test "works - uses Bogacki-Shampine23 - high fidelity - no interpolation" do
+      # Octave:
+      #   format long
+      #   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
+      #   opts = odeset("AbsTol", 1.0e-12, "RelTol", 1.0e-12, "Refine", 1)
+      #   [t,x] = ode23 (fvdp, [0, 0.1], [2, 0], opts);
+
+      stepper_fn = &BogackiShampine23.integrate/6
+      interpolate_fn = &BogackiShampine23.interpolate/4
+      order = BogackiShampine23.order()
+
+      ode_fn = &SampleEqns.van_der_pol_fn/2
+
+      t_start = Nx.tensor(0.0, type: :f64)
+      t_end = Nx.tensor(0.1, type: :f64)
+      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+
+      opts = [
+        refine: 1,
+        type: :f64,
+        norm_control?: false,
+        abs_tol: Nx.tensor(1.0e-12, type: :f64),
+        rel_tol: Nx.tensor(1.0e-12, type: :f64),
+        max_step: Nx.tensor(2.0, type: :f64)
+      ]
+
+      # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
+      initial_tstep = Nx.tensor(2.020515504676623e-04, type: :f64)
+
+      result =
+        AdaptiveStepsizeRefactor.integrate(
+          stepper_fn,
+          interpolate_fn,
+          ode_fn,
+          t_start,
+          t_end,
+          initial_tstep,
+          x0,
+          order,
+          opts
+        )
+
+      points = DataCollector.get_data(pid)
+      {output_t, output_x} = points |> Point.split_points_into_t_and_x()
+
+      assert result.count_cycles__compute_step == Nx.s32(952)
+      assert result.count_loop__increment_step == Nx.s32(950)
+      # assert length(result.ode_t) == 951
+      # assert length(result.ode_x) == 951
+      # assert length(result.output_t) == 951
+      # assert length(result.output_x) == 951
+
+      # Verify the last time step is correct (bug fix!):
+      [last_time | _rest] = output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+
+      # write_t(output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/t_elixir.csv")
+      # write_x(output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/x_elixir.csv")
+
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
   end
 

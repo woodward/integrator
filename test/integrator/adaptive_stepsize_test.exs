@@ -649,10 +649,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-03, rtol: 1.0e-03)
     end
 
-    # ==============================================================================================
-    # ==============================================================================================
-    # ==============================================================================================
-
     @tag transferred_to_refactor?: true
     test "works - fixed stepsize output that's smaller than the timestep" do
       # In this test, there are many output timesteps for every integration timestep
@@ -715,7 +711,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - do not store results" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -750,7 +746,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert Enum.empty?(result.ode_x)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "throws an exception if too many errors" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
@@ -779,7 +775,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       end
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - uses Bogacki-Shampine23" do
       stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
@@ -827,7 +823,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - uses Bogacki-Shampine23 - high fidelity" do
       # Octave:
       #   format long
@@ -880,7 +876,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    @tag transferred_to_refactor?: false
+    @tag transferred_to_refactor?: true
     test "works - uses Bogacki-Shampine23 - high fidelity - no interpolation" do
       # Octave:
       #   format long
@@ -932,6 +928,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
   end
 
   describe "starting_stepsize" do
