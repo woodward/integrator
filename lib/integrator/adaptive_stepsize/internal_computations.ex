@@ -140,21 +140,18 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
+  @spec interpolate_output_fixed_times(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_output_fixed_times(step, options) do
-    fixed_output_t_next = step.fixed_output_t_next
+    {step, _} =
+      while({step, options}, fixed_point_within_this_step?(step.fixed_output_t_next, step.rk_step.t_new)) do
+        t_next_fixed = step.fixed_output_t_next
+        x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_next_fixed)
+        step = step |> output_single_point(options.output_fn_adapter, t_next_fixed, x_out)
+        step = %{step | fixed_output_t_next: t_next_fixed + options.fixed_output_dt}
+        {step, options}
+      end
 
-    if fixed_point_within_this_step?(fixed_output_t_next, step.rk_step.t_new) do
-      x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
-      step = step |> output_single_point(options.output_fn_adapter, fixed_output_t_next, x_out)
-
-      %{
-        step
-        | fixed_output_t_within_step?: true_nx(),
-          fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
-      }
-    else
-      %{step | fixed_output_t_within_step?: false_nx()}
-    end
+    step
   end
 
   defn true_nx, do: Nx.u8(1)

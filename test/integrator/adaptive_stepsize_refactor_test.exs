@@ -638,7 +638,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
-    @tag :skip
     test "works - fixed stepsize output that's smaller than the timestep" do
       # In this test, there are many output timesteps for every integration timestep
 
