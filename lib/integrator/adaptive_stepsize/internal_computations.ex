@@ -126,20 +126,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn interpolate_output_points(step, options) do
     cond do
       options.fixed_output_times? ->
-        fixed_output_t_next = step.fixed_output_t_next
-
-        if fixed_point_within_this_step?(fixed_output_t_next, step.rk_step.t_new) do
-          x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
-          step = step |> output_single_point(options.output_fn_adapter, fixed_output_t_next, x_out)
-
-          %{
-            step
-            | fixed_output_t_within_step?: true_nx(),
-              fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
-          }
-        else
-          %{step | fixed_output_t_within_step?: false_nx()}
-        end
+        step |> interpolate_output_fixed_times(options)
 
       options.refine == 1 ->
         step |> output_single_point(options.output_fn_adapter, step.t_current, step.x_current)
@@ -150,6 +137,23 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         # fact happen during this step):
         {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.t_current, step.rk_step, options)
         step |> output_multiple_points(options.output_fn_adapter, t_add, x_out)
+    end
+  end
+
+  defn interpolate_output_fixed_times(step, options) do
+    fixed_output_t_next = step.fixed_output_t_next
+
+    if fixed_point_within_this_step?(fixed_output_t_next, step.rk_step.t_new) do
+      x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
+      step = step |> output_single_point(options.output_fn_adapter, fixed_output_t_next, x_out)
+
+      %{
+        step
+        | fixed_output_t_within_step?: true_nx(),
+          fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
+      }
+    else
+      %{step | fixed_output_t_within_step?: false_nx()}
     end
   end
 
