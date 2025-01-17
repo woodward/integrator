@@ -160,7 +160,7 @@ defmodule Integrator.RungeKutta.Step do
     opts = keyword!(opts, order: 5)
 
     # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
-    k_length = opts[:order] + 2
+    k_length = if opts[:order] == 5, do: 7, else: 4
 
     x_length = Nx.size(x)
     zero = Nx.tensor(0.0, type: Nx.type(x))

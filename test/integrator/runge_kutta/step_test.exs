@@ -375,9 +375,9 @@ defmodule Integrator.RungeKutta.StepTest do
       k_vals = Step.initial_empty_k_vals_defn(x, order: order)
 
       expected_k_vals = ~MAT[
-        0.0 0.0 0.0 0.0 0.0
-        0.0 0.0 0.0 0.0 0.0
-        0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0
       ]f32
 
       assert_all_close(k_vals, expected_k_vals, atol: 1.0e-15, rtol: 1.0e-16)

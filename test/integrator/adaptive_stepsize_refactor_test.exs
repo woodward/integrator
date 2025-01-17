@@ -768,7 +768,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       end
     end
 
-    @tag :skip
     test "works - uses Bogacki-Shampine23" do
       stepper_fn = &BogackiShampine23.integrate/6
       interpolate_fn = &BogackiShampine23.interpolate/4
@@ -824,7 +823,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # assert length(result.output_x) == 685
 
       # Verify the last time step is correct (bug fix!):
-      [last_time | _rest] = result.output_t |> Enum.reverse()
+      [last_time | _rest] = output_t |> Enum.reverse()
       assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
@@ -834,7 +833,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-05, rtol: 1.0e-05)
     end
 
-    @tag :skip
     test "works - uses Bogacki-Shampine23 - high fidelity" do
       # Octave:
       #   format long
@@ -892,8 +890,8 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # assert length(result.output_x) == 3_801
 
       # Verify the last time step is correct (bug fix!):
-      [last_time | _rest] = result.output_t |> Enum.reverse()
-      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+      [last_time | _rest] = output_t |> Enum.reverse()
+      assert_all_close(last_time, Nx.f64(0.1), atol: 1.0e-11, rtol: 1.0e-11)
 
       # write_t(output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/t_elixir.csv")
       # write_x(output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_high_fidelity/x_elixir.csv")
@@ -905,7 +903,6 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
 
-    @tag :skip
     test "works - uses Bogacki-Shampine23 - high fidelity - no interpolation" do
       # Octave:
       #   format long
@@ -919,21 +916,25 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
-      t_start = Nx.tensor(0.0, type: :f64)
-      t_end = Nx.tensor(0.1, type: :f64)
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      {:ok, pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(pid, &1)
+
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(0.1)
+      x0 = Nx.f64([2.0, 0.0])
 
       opts = [
         refine: 1,
         type: :f64,
         norm_control?: false,
-        abs_tol: Nx.tensor(1.0e-12, type: :f64),
-        rel_tol: Nx.tensor(1.0e-12, type: :f64),
-        max_step: Nx.tensor(2.0, type: :f64)
+        abs_tol: Nx.f64(1.0e-12),
+        rel_tol: Nx.f64(1.0e-12),
+        max_step: Nx.f64(2.0),
+        output_fn: output_fn
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
-      initial_tstep = Nx.tensor(2.020515504676623e-04, type: :f64)
+      initial_tstep = Nx.f64(2.020515504676623e-04)
 
       result =
         AdaptiveStepsizeRefactor.integrate(
@@ -960,7 +961,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = output_t |> Enum.reverse()
-      assert_all_close(last_time, Nx.tensor(0.1), atol: 1.0e-11, rtol: 1.0e-11)
+      assert_all_close(last_time, Nx.f64(0.1), atol: 1.0e-11, rtol: 1.0e-11)
 
       # write_t(output_t, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/t_elixir.csv")
       # write_x(output_x, "test/fixtures/octave_results/van_der_pol/bogacki_shampine_23_hi_fi_no_interpolation/x_elixir.csv")
