@@ -135,7 +135,6 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
           %{
             step
             | fixed_output_t_within_step?: true_nx(),
-              output_t_and_x_single: {fixed_output_t_next, x_out},
               fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
           }
         else

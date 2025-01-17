@@ -235,9 +235,6 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         start_timestamp_μs: start_timestamp_μs,
         step_timestamp_μs: start_timestamp_μs,
         rk_step: initial_rk_step,
-        # These are just dummy values in :output_t_and_x right now to allocate the right size and shape
-        output_t_and_x_multi: RungeKutta.Step.initial_output_t_and_x_multiple_points(x0, options),
-        output_t_and_x_single: RungeKutta.Step.initial_output_t_and_x_single_point(x0, options),
         fixed_output_t_next: fixed_output_t_next,
         #
         stepper_fn: stepper_fn,
