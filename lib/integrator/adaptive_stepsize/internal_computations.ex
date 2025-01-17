@@ -53,8 +53,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         |> increment_counters()
         |> merge_rk_step_into_integration_step(rk_step)
         |> call_event_fn(options)
-        |> interpolate_points(options)
-        |> call_output_fn(options.output_fn_adapter, options.fixed_output_times?, options.refine)
+        |> interpolate_output_points(options)
       else
         step
         |> bump_error_count(options.max_number_of_errors)
@@ -123,21 +122,35 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     }
   end
 
-  @spec interpolate_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
-  defn interpolate_points(step, options) do
+  @spec interpolate_output_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  defn interpolate_output_points(step, options) do
     cond do
       options.fixed_output_times? ->
-        step |> interpolate_fixed_points(options)
+        fixed_output_t_next = step.fixed_output_t_next
+
+        if fixed_point_within_this_step?(fixed_output_t_next, step.rk_step.t_new) do
+          x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, fixed_output_t_next)
+          step = step |> output_single_point(options.output_fn_adapter, fixed_output_t_next, x_out)
+
+          %{
+            step
+            | fixed_output_t_within_step?: true_nx(),
+              output_t_and_x_single: {fixed_output_t_next, x_out},
+              fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
+          }
+        else
+          %{step | fixed_output_t_within_step?: false_nx()}
+        end
 
       options.refine == 1 ->
-        %{step | output_t_and_x_single: {step.t_current, step.x_current}}
+        step |> output_single_point(options.output_fn_adapter, step.t_current, step.x_current)
 
       true ->
         # Note that step.t_current here is equal to step.rk_step.t_new (if no event fn has triggered
         # during this integration step) OR the time at which the event fn triggered (if an event did in
         # fact happen during this step):
         {t_add, x_out} = Step.interpolate_multiple_points(step.interpolate_fn, step.t_current, step.rk_step, options)
-        %{step | output_t_and_x_multi: {t_add, x_out}}
+        step |> output_multiple_points(options.output_fn_adapter, t_add, x_out)
     end
   end
 
@@ -167,38 +180,21 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
   end
 
-  @spec call_output_fn(IntegrationStep.t(), ExternalFnAdapter.t(), Nx.t(), Nx.t()) :: IntegrationStep.t()
-  defn call_output_fn(step, output_fn_adapter, fixed_output_times?, refine) do
-    cond do
-      fixed_output_times? ->
-        if step.fixed_output_t_within_step?, do: output_single_point(step, output_fn_adapter), else: step
-
-      refine == 1 ->
-        step |> output_single_point(output_fn_adapter)
-
-      true ->
-        step |> output_multiple_points(output_fn_adapter)
-    end
-  end
-
-  @spec output_single_point(IntegrationStep.t(), ExternalFnAdapter.t()) :: IntegrationStep.t()
-  defn output_single_point(step, output_fn_adapter) do
-    {step, _} =
-      hook({step, output_fn_adapter}, fn {s, adapter} ->
-        {t, x} = s.output_t_and_x_single
-        point = %Point{t: t, x: x}
-        adapter.external_fn.(point)
-        {s, adapter}
+  @spec output_single_point(IntegrationStep.t(), ExternalFnAdapter.t(), Nx.t(), Nx.t()) :: IntegrationStep.t()
+  defn output_single_point(step, output_fn_adapter, t, x) do
+    {step, _output_fn_adapter, _, _} =
+      hook({step, output_fn_adapter, t, x}, fn {s, adapter, t_out, x_out} ->
+        adapter.external_fn.(%Point{t: t_out, x: x_out})
+        {s, adapter, t_out, x_out}
       end)
 
     step
   end
 
-  @spec output_multiple_points(IntegrationStep.t(), ExternalFnAdapter.t()) :: IntegrationStep.t()
-  defn output_multiple_points(step, output_fn_adapter) do
-    {step, _} =
-      hook({step, output_fn_adapter}, fn {s, adapter} ->
-        {t, x} = s.output_t_and_x_multi
+  @spec output_multiple_points(IntegrationStep.t(), ExternalFnAdapter.t(), Nx.t(), Nx.t()) :: IntegrationStep.t()
+  defn output_multiple_points(step, output_fn_adapter, t_chunk, x_chunk) do
+    {step, _, _, _} =
+      hook({step, output_fn_adapter, t_chunk, x_chunk}, fn {s, adapter, t, x} ->
         t_list = Utils.vector_as_list(t)
         x_list = Utils.columns_as_list(x, 0)
 
@@ -209,7 +205,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
           end)
 
         adapter.external_fn.(points)
-        {s, adapter}
+        {s, adapter, t, x}
       end)
 
     step
