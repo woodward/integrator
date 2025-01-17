@@ -32,6 +32,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
        :speed,
        :max_step,
        :max_number_of_errors,
+       :nx_while_loop_integration?,
        #
        :event_fn_adapter,
        :output_fn_adapter,
@@ -57,6 +58,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
             type: Nx.Type.t(),
             max_step: Nx.t(),
             max_number_of_errors: Nx.t(),
+            nx_while_loop_integration?: Nx.t(),
             #
             event_fn_adapter: ExternalFnAdapter.t(),
             output_fn_adapter: ExternalFnAdapter.t(),
@@ -78,6 +80,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               type: {:f, 64},
               max_step: 0.0,
               max_number_of_errors: 0,
+              nx_while_loop_integration?: 1,
               #
               event_fn_adapter: %ExternalFnAdapter{},
               output_fn_adapter: %ExternalFnAdapter{},
@@ -138,6 +141,14 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       doc: """
       The default max time step.  The default value is determined by the start and end times.
       """
+    ],
+    nx_while_loop_integration?: [
+      type: :boolean,
+      doc: """
+      Indicates whether an Nx `while` loop is to be used for the main integration loop or Elixir recursion.
+      Note that specifying a playback speed will override this value (setting it to false).
+      """,
+      default: true
     ],
     refine: [
       type: :pos_integer,
@@ -242,7 +253,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
         interpolate_fn: interpolate_fn
       }
 
-    if options.speed == Nx.Constants.infinity(type) do
+    if options.nx_while_loop_integration? == Nx.u8(1) do
       InternalComputations.integrate_via_nx_while_loop(initial_step, t_end, options)
     else
       InternalComputations.integrate_via_elixir_recursion(initial_step, t_end, options)
@@ -340,11 +351,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     norm_control? = nimble_opts[:norm_control?] |> Utils.convert_arg_to_nx_type({:u, 8})
     abs_tol = nimble_opts[:abs_tol] |> Utils.convert_arg_to_nx_type(nx_type)
     rel_tol = nimble_opts[:rel_tol] |> Utils.convert_arg_to_nx_type(nx_type)
+    nx_while_loop_integration? = nimble_opts[:nx_while_loop_integration?] |> Utils.convert_arg_to_nx_type({:u, 8})
 
-    speed =
+    {speed, nx_while_loop_integration?} =
       case nimble_opts[:speed] do
-        :infinite -> Nx.Constants.infinity(nx_type)
-        some_number -> some_number |> Utils.convert_arg_to_nx_type(nx_type)
+        :infinite -> {Nx.Constants.infinity(nx_type), nx_while_loop_integration?}
+        # If the speed is set to a number other than :infinity, then the Nx `while` loop can no longer be used:
+        some_number -> {some_number |> Utils.convert_arg_to_nx_type(nx_type), Nx.u8(0)}
       end
 
     event_fn_adapter = ExternalFnAdapter.wrap_external_fn_double_arity(nimble_opts[:event_fn])
@@ -370,6 +383,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       fixed_output_times?: fixed_output_times?,
       fixed_output_dt: fixed_output_dt,
       max_number_of_errors: max_number_of_errors,
+      nx_while_loop_integration?: nx_while_loop_integration?,
       output_fn_adapter: output_fn_adapter,
       event_fn_adapter: event_fn_adapter,
       zero_fn_adapter: zero_fn_adapter,

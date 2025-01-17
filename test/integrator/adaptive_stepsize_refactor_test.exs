@@ -1052,6 +1052,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.norm_control? == Nx.u8(1)
       assert nx_options.abs_tol == Nx.f32(1.0e-06)
       assert nx_options.rel_tol == Nx.f32(1.0e-03)
+      assert nx_options.nx_while_loop_integration? == Nx.u8(1)
 
       assert nx_options.event_fn_adapter == %ExternalFnAdapter{external_fn: &Integrator.ExternalFnAdapter.no_op_double_arity_fn/2}
 
@@ -1145,6 +1146,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.norm_control? == Nx.u8(0)
       assert nx_options.abs_tol == Nx.f64(1.0e-08)
       assert nx_options.rel_tol == Nx.f64(1.0e-04)
+      assert nx_options.nx_while_loop_integration? == Nx.u8(0)
 
       assert nx_options.event_fn_adapter == %ExternalFnAdapter{external_fn: &:erlang.max/2}
       assert nx_options.output_fn_adapter == %ExternalFnAdapter{external_fn: &Math.sin/1}

@@ -928,10 +928,6 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(result.output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(result.output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
-
-    # ==============================================================================================
-    # ==============================================================================================
-    # ==============================================================================================
   end
 
   describe "starting_stepsize" do

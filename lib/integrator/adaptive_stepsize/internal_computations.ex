@@ -34,7 +34,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   deftransform integrate_via_elixir_recursion(step, t_end, options) do
     if continue_stepping?(step, t_end) == true_nx() do
       {step, t_end, options} = compute_integration_step(step, t_end, options)
-      step = step |> possibly_delay_playback_speed(options.speed)
+      step = step |> possibly_delay_playback_speed(options)
       integrate_via_elixir_recursion(step, t_end, options)
     else
       step
@@ -211,15 +211,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  @spec possibly_delay_playback_speed(IntegrationStep.t(), Nx.t()) :: IntegrationStep.t()
-  deftransform possibly_delay_playback_speed(step, speed) do
-    if Nx.to_number(step.error_count) > 0 do
+  @spec possibly_delay_playback_speed(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  deftransform possibly_delay_playback_speed(step, options) do
+    if Nx.to_number(step.error_count) > 0 or options.speed == Nx.Constants.infinity(options.type) do
       step
     else
       rk_step = step.rk_step
       t_new = Nx.to_number(rk_step.t_new)
       t_old = Nx.to_number(rk_step.t_old)
-      speed = Nx.to_number(speed)
+      speed = Nx.to_number(options.speed)
       step_timestamp_μs = Nx.to_number(step.step_timestamp_μs)
 
       desired_time_interval_ms = (t_new - t_old) * 1000.0 / speed
