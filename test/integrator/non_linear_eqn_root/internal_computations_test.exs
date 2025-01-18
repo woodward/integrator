@@ -5,8 +5,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InternalComputations.SearchFor2ndPoint
-  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
-  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
   defmodule TestFunctions do
     @moduledoc false
@@ -111,8 +109,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
       zero_fn = &TestFunctions.sin/2
       zero_fn_args = {}
-      opts = %{max_iterations: 1000, max_fn_eval_count: 1000}
-      z = InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
+      z = InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args)
 
       assert_all_close(z.fc, Nx.f64(3.109168853400020e-04), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fx, Nx.f64(3.109168853400020e-04), atol: 1.0e-16, rtol: 1.0e-16)
@@ -120,44 +117,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
 
       assert z.iteration_count == Nx.s32(2)
       assert z.fn_eval_count == Nx.s32(4)
-    end
-
-    test "raises an error if max iterations exceeded" do
-      max_iterations = 4
-
-      z = %NonLinearEqnRoot{
-        c: Nx.f64(3.141281736699444),
-        iteration_count: max_iterations,
-        fn_eval_count: 3,
-        fc: 7
-      }
-
-      opts = %{max_iterations: max_iterations, max_fn_eval_count: 1000}
-      zero_fn = &TestFunctions.sin/2
-      zero_fn_args = {}
-
-      assert_raise MaxIterationsExceededError, fn ->
-        InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
-      end
-    end
-
-    test "raises an error if max function evaluations exceeded" do
-      max_fn_eval_count = 4
-
-      z = %NonLinearEqnRoot{
-        c: Nx.f64(3.141281736699444),
-        iteration_count: 1,
-        fn_eval_count: max_fn_eval_count,
-        fc: 7
-      }
-
-      opts = %{max_iterations: 1000, max_fn_eval_count: max_fn_eval_count}
-      zero_fn = &TestFunctions.sin/2
-      zero_fn_args = {}
-
-      assert_raise MaxFnEvalsExceededError, fn ->
-        InternalComputations.fn_eval_new_point(z, zero_fn, zero_fn_args, opts)
-      end
     end
   end
 

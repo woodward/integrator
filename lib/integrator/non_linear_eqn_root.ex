@@ -18,6 +18,8 @@ defmodule Integrator.NonLinearEqnRoot do
 
   # 2 -> InvalidInitialBracketError   "Invalid initial bracket"
   # 3 -> BracketingFailureError       "Zero point is not bracketed"
+  # 4 -> MaxFnEvalsExceededError      "Too many function evaluations"
+  # 5 -> MaxIterationsExceededError   "Too many iterations"
 
   import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 

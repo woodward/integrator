@@ -8,8 +8,6 @@ defmodule Integrator.NonLinearEqnRootTest do
   alias Integrator.DataCollector
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
-  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
-  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.NxOptions
   alias Integrator.RungeKutta.DormandPrince45
 
@@ -143,9 +141,9 @@ defmodule Integrator.NonLinearEqnRootTest do
       x1 = 4.0
       opts = [max_iterations: 2]
 
-      assert_raise MaxIterationsExceededError, fn ->
-        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
-      end
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
+
+      assert result.status == Nx.u8(5)
     end
 
     test "sine function - raises an error if max function evaluations exceeded" do
@@ -153,9 +151,9 @@ defmodule Integrator.NonLinearEqnRootTest do
       x1 = 4.0
       opts = [max_fn_eval_count: 2]
 
-      assert_raise MaxFnEvalsExceededError, fn ->
-        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
-      end
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
+
+      assert result.status == Nx.u8(4)
     end
 
     test "sine function - outputs values if a function is given" do

@@ -17,8 +17,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
-  alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
-  alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.NxOptions
 
   @initial_mu 0.5
@@ -63,13 +61,18 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
     {z, _, _, _} =
       while {z, options, continue?, zero_fn_args_as_tuple}, continue? do
-        {status_1, z} =
+        z =
           z
           |> compute_iteration()
           |> adjust_if_too_close_to_a_or_b(options.machine_eps, options.tolerance)
-          |> fn_eval_new_point(zero_fn, zero_fn_args_as_tuple, options)
+          |> fn_eval_new_point(zero_fn, zero_fn_args_as_tuple)
           |> check_for_non_monotonicity()
+
+        {status_1, z} =
+          z
           |> bracket()
+          |> check_for_max_iteration_count_exceeded(options.max_iterations)
+          |> check_for_max_fn_eval_count_exceeded(options.max_fn_eval_count)
 
         z =
           z
@@ -378,9 +381,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     if is_nil(item), do: 1, else: 0
   end
 
-  @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], Keyword.t()) ::
-          NonLinearEqnRoot.t()
-  defn fn_eval_new_point(z, zero_fn, zero_fn_args, options) do
+  @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()]) :: NonLinearEqnRoot.t()
+  defn fn_eval_new_point(z, zero_fn, zero_fn_args) do
     zero_fn_args_as_list = zero_fn_args |> to_list()
     fc = zero_fn.(z.c, zero_fn_args_as_list)
 
@@ -393,25 +395,27 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
         # Perhaps move the incrementing of the iteration count elsewhere?
         iteration_count: z.iteration_count + 1
     }
-    |> raise_if_max_iteration_count_exceeded(options.max_iterations)
-    |> raise_if_max_fn_eval_count_exceeded(options.max_fn_eval_count)
   end
 
-  @spec raise_if_max_iteration_count_exceeded(NonLinearEqnRoot.t(), Nx.t()) :: NonLinearEqnRoot.t()
-  defnp raise_if_max_iteration_count_exceeded(z, max_iterations) do
+  @spec check_for_max_iteration_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
+  defnp check_for_max_iteration_count_exceeded(status_z, max_iterations) do
+    {status, z} = status_z
+
     if z.iteration_count > max_iterations do
-      hook(z, &raise(MaxIterationsExceededError, step: &1, iteration_count: &1.iteration_count))
+      {@halt, %{z | status: Nx.u8(5)}}
     else
-      z
+      {status, z}
     end
   end
 
-  @spec raise_if_max_fn_eval_count_exceeded(NonLinearEqnRoot.t(), Nx.t()) :: NonLinearEqnRoot.t()
-  defnp raise_if_max_fn_eval_count_exceeded(z, max_fn_eval_count) do
+  @spec check_for_max_fn_eval_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
+  defnp check_for_max_fn_eval_count_exceeded(status_z, max_fn_eval_count) do
+    {status, z} = status_z
+
     if z.fn_eval_count > max_fn_eval_count do
-      hook(z, &raise(MaxFnEvalsExceededError, step: &1, fn_eval_count: &1.fn_eval_count))
+      {@halt, %{z | status: Nx.u8(4)}}
     else
-      z
+      {status, z}
     end
   end
 
