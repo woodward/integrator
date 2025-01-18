@@ -23,6 +23,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
      #
      :terminal_event,
      :terminal_output,
+     :status_integration,
+     :status_non_linear_eqn_root,
      #
      :start_timestamp_μs,
      :step_timestamp_μs,
@@ -54,6 +56,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           #
           terminal_event: Nx.t(),
           terminal_output: Nx.t(),
+          status_integration: Nx.t(),
+          status_non_linear_eqn_root: Nx.t(),
           #
           start_timestamp_μs: Nx.t(),
           step_timestamp_μs: Nx.t(),
@@ -85,6 +89,8 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     #
     terminal_event: Nx.u8(1),
     terminal_output: Nx.s32(0),
+    status_integration: Nx.u8(1),
+    status_non_linear_eqn_root: Nx.u8(1),
     #
     start_timestamp_μs: Nx.s64(0),
     step_timestamp_μs: Nx.s64(0),
