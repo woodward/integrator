@@ -236,6 +236,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert result.count_cycles__compute_step == Nx.s32(9)
       assert result.count_loop__increment_step == Nx.s32(8)
       assert result.terminal_event == Nx.u8(0)
+      assert result.status_non_linear_eqn_root == Nx.u8(1)
       # assert result.terminal_output == :continue
 
       points = DataCollector.get_data(pid)
@@ -545,6 +546,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert result.count_cycles__compute_step == Nx.s32(18)
       assert result.count_loop__increment_step == Nx.s32(18)
       assert result.terminal_event == Nx.u8(0)
+      assert result.status_non_linear_eqn_root == Nx.u8(1)
       # assert result.terminal_output == :continue
 
       # assert length(result.ode_t) == 19

@@ -244,9 +244,16 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     if event_fn_result == continue() do
       step
     else
-      t_at_event_fn_zero = find_event_fn_t_zero(step, options)
+      {t_at_event_fn_zero, status_non_linear_eqn_root} = find_event_fn_t_zero(step, options)
       x_at_event_fn_zero = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_at_event_fn_zero)
-      %{step | terminal_event: halt(), t_current: t_at_event_fn_zero, x_current: x_at_event_fn_zero}
+
+      %{
+        step
+        | terminal_event: halt(),
+          t_current: t_at_event_fn_zero,
+          x_current: x_at_event_fn_zero,
+          status_non_linear_eqn_root: status_non_linear_eqn_root
+      }
     end
   end
 
@@ -279,7 +286,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         options.non_linear_eqn_root_nx_options
       )
 
-    root.x
+    {root.x, root.status}
 
     # An example root which satisfies the event_fn test:
     # Nx.f64(2.161317515510217)
