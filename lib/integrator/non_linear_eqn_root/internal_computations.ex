@@ -17,7 +17,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
-  alias Integrator.NonLinearEqnRoot.BracketingFailureError
   alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
@@ -365,8 +364,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           if z.fc == 0.0 do
             {@halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
           else
-            # Should never reach here
-            {@halt, hook(z, &raise(BracketingFailureError, step: &1))}
+            # Should never reach here - bracketing failure error:
+            {@halt, %{z | status: Nx.u8(3)}}
           end
         end
       end

@@ -5,7 +5,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.InternalComputations.SearchFor2ndPoint
-  alias Integrator.NonLinearEqnRoot.BracketingFailureError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
 
@@ -326,9 +325,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: 0.1
       }
 
-      assert_raise BracketingFailureError, fn ->
-        InternalComputations.bracket(z)
-      end
+      {_, result} = InternalComputations.bracket(z)
+      assert result.status == Nx.u8(3)
+      assert result.iteration_count == Nx.s32(0)
     end
 
     test "bug fix - first iteration of first bounce of ballode.m" do

@@ -17,6 +17,7 @@ defmodule Integrator.NonLinearEqnRoot do
   alias Integrator.NonLinearEqnRoot.InternalComputations
 
   # 2 -> InvalidInitialBracketError   "Invalid initial bracket"
+  # 3 -> BracketingFailureError       "Zero point is not bracketed"
 
   import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
