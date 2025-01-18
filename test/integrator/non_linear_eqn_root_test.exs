@@ -8,7 +8,6 @@ defmodule Integrator.NonLinearEqnRootTest do
   alias Integrator.DataCollector
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
-  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.NxOptions
@@ -126,9 +125,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       x0 = 2.5
       x1 = 3.0
 
-      assert_raise InvalidInitialBracketError, fn ->
-        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
-      end
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
+      assert result.status == Nx.u8(2)
     end
 
     test "sine function - raises an error if invalid initial bracket - negative sine" do
@@ -136,9 +134,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       x0 = 3.5
       x1 = 4.0
 
-      assert_raise InvalidInitialBracketError, fn ->
-        NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
-      end
+      result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
+      assert result.status == Nx.u8(2)
     end
 
     test "sine function - raises an error if max iterations exceeded" do

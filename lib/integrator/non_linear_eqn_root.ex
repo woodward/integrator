@@ -15,7 +15,8 @@ defmodule Integrator.NonLinearEqnRoot do
 
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot.InternalComputations
-  alias Integrator.NonLinearEqnRoot.InvalidInitialBracketError
+
+  # 2 -> InvalidInitialBracketError   "Invalid initial bracket"
 
   import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
@@ -47,6 +48,7 @@ defmodule Integrator.NonLinearEqnRoot do
      :fn_eval_count,
      :iteration_count,
      :iteration_type,
+     :status,
      :interpolation_type_debug_only
    ]}
 
@@ -76,6 +78,7 @@ defmodule Integrator.NonLinearEqnRoot do
           fn_eval_count: Nx.t(),
           iteration_count: Nx.t(),
           iteration_type: Nx.t(),
+          status: Nx.t(),
           interpolation_type_debug_only: Nx.t()
         }
 
@@ -105,6 +108,7 @@ defmodule Integrator.NonLinearEqnRoot do
             iteration_count: 0,
             # Change iteration_type to a more descriptive atom later (possibly?):
             iteration_type: 1,
+            status: Nx.u8(1),
             interpolation_type_debug_only: 0
 
   defmodule NxOptions do
@@ -260,14 +264,16 @@ defmodule Integrator.NonLinearEqnRoot do
       mu_ba: (b - a) * InternalComputations.initial_mu()
     }
 
-    z = if same_signs?(z.fa, z.fb), do: hook(z, &raise(InvalidInitialBracketError, step: &1)), else: z
+    if same_signs?(z.fa, z.fb) do
+      %{z | status: Nx.u8(2)}
+    else
+      InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
+    end
 
     # case converged?(z, opts[:machine_eps], opts[:tolerance]) do
     #   :continue -> iterate(z, :continue, zero_fn, opts)
     #   :halt -> %{z | x: u, fx: fu}
     # end
-
-    InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
   end
 
   @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()
