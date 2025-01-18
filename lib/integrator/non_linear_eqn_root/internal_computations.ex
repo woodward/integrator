@@ -17,7 +17,6 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
-  alias Integrator.NonLinearEqnRoot.IncorrectIterationTypeError
   alias Integrator.NonLinearEqnRoot.MaxFnEvalsExceededError
   alias Integrator.NonLinearEqnRoot.MaxIterationsExceededError
   alias Integrator.NonLinearEqnRoot.NxOptions
@@ -109,7 +108,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       iteration_type == 3 -> compute_iteration_types_2_or_3(z)
       iteration_type == 4 -> compute_iteration_type_4(z)
       iteration_type == 5 -> compute_iteration_type_5(z)
-      true -> hook(z, &raise(IncorrectIterationTypeError, step: &1, iteration_type: &1.iteration_type))
+      # Should never get here:
+      true -> z
     end
   end
 
