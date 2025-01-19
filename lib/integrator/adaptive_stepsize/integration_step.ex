@@ -103,6 +103,43 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     elapsed_time_μs: Nx.s64(0)
   ]
 
+  @spec new(
+          stepper_fn :: RungeKutta.stepper_fn_t(),
+          interpolate_fn :: RungeKutta.interpolate_fn_t(),
+          ode_fn :: RungeKutta.ode_fn_t(),
+          t_start :: Nx.t(),
+          initial_tstep :: Nx.t(),
+          x0 :: Nx.t(),
+          options :: Integrator.AdaptiveStepsizeRefactor.NxOptions.t(),
+          start_timestamp_μs :: pos_integer()
+        ) :: t()
+  deftransform new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs) do
+    type = options.type
+
+    initial_tstep = to_tensor(initial_tstep, type)
+    t_start = to_tensor(t_start, type)
+    x0 = to_tensor(x0, type)
+
+    initial_tstep = Nx.min(Nx.abs(initial_tstep), options.max_step)
+    initial_rk_step = RungeKutta.Step.initial_step(t_start, x0, order: options.order)
+
+    fixed_output_t_next = Nx.add(t_start, options.fixed_output_step)
+
+    %__MODULE__{
+      t_current: t_start,
+      x_current: x0,
+      dt_new: initial_tstep,
+      start_timestamp_μs: start_timestamp_μs,
+      step_timestamp_μs: start_timestamp_μs,
+      rk_step: initial_rk_step,
+      fixed_output_t_next: fixed_output_t_next,
+      #
+      stepper_fn: stepper_fn,
+      ode_fn: ode_fn,
+      interpolate_fn: interpolate_fn
+    }
+  end
+
   deftransform status_integration(%__MODULE__{status_integration: status_value} = _integration_step) do
     status_integration(status_value)
   end
@@ -125,5 +162,18 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
 
   deftransform status_non_linear_eqn_root(status_value) do
     Integrator.NonLinearEqnRoot.status(status_value)
+  end
+
+  @spec to_tensor(Nx.t() | float(), Nx.Type.t()) :: Nx.t()
+  deftransform to_tensor(%Nx.Tensor{} = tensor, type) do
+    if Nx.type(tensor) != type do
+      raise "tensor #{inspect(tensor)} is of incorrect type, #{inspect(type)} expected}"
+    else
+      tensor
+    end
+  end
+
+  deftransform to_tensor(value, type) do
+    Nx.tensor(value, type: type)
   end
 end
