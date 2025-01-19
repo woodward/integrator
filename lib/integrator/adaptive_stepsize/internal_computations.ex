@@ -7,7 +7,6 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   alias Integrator.ExternalFnAdapter
   alias Integrator.AdaptiveStepsize.IntegrationStep
-  alias Integrator.AdaptiveStepsize.MaxErrorsExceededError
   alias Integrator.AdaptiveStepsizeRefactor.NxOptions
   alias Integrator.Point
   alias Integrator.RungeKutta
@@ -297,8 +296,9 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # Also check the step's status here
 
     #                                        if    close to end time                                  or past end time
+    #  step.t_current > t_end do
     if step.terminal_event == halt() or Nx.abs(step.t_current - t_end) <= @zero_tolerance or
-         step.t_current > t_end do
+         step.t_current > t_end or step.status_integration > Nx.u8(1) do
       halt()
     else
       continue()
@@ -347,22 +347,11 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defnp bump_error_count(step, max_number_of_errors) do
     step = %{step | error_count: step.error_count + 1}
 
-    {step, _options} =
-      if step.error_count > max_number_of_errors do
-        hook({step, max_number_of_errors}, fn {s, max_errors} ->
-          raise MaxErrorsExceededError,
-            message: "Too many errors",
-            error_count: s.error_count,
-            max_number_of_errors: max_errors,
-            step: s
-
-          {s, max_errors}
-        end)
-      else
-        {step, max_number_of_errors}
-      end
-
-    step
+    if step.error_count > max_number_of_errors do
+      %{step | status_integration: Nx.u8(2)}
+    else
+      step
+    end
   end
 
   @spec record_elapsed_time(IntegrationStep.t()) :: IntegrationStep.t()

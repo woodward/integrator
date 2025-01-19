@@ -727,8 +727,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    @tag :skip
-    test "throws an exception if too many errors" do
+    test "shows an error status if too many integration errors" do
       stepper_fn = &DormandPrince45.integrate/6
       interpolate_fn = &DormandPrince45.interpolate/4
       order = DormandPrince45.order()
@@ -745,7 +744,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
       initial_tstep = Nx.f64(0.007418363820761442)
 
-      # Set the max_number_of_errors to 1 so that an exception should be thrown:
+      # Set the max_number_of_errors to 1 so that an error will bubble up:
       opts = [
         abs_tol: Nx.f64(1.0e-2),
         rel_tol: Nx.f64(1.0e-2),
@@ -755,7 +754,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         output_fn: output_fn
       ]
 
-      assert_raise Integrator.AdaptiveStepsize.MaxErrorsExceededError, "Too many errors", fn ->
+      result =
         AdaptiveStepsizeRefactor.integrate(
           stepper_fn,
           interpolate_fn,
@@ -767,7 +766,19 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
           order,
           opts
         )
-      end
+
+      assert result.status_integration == Nx.u8(2)
+
+      points = DataCollector.get_data(pid)
+
+      # This would be length 169 except for the fact that the simulation was terminated early due to the error count:
+      assert length(points) == 53
+
+      # This would be 61 except for the fact that the simulation was terminated early due to the error count:
+      assert result.count_cycles__compute_step == Nx.s32(16)
+
+      # This would be 42 except for the fact that the simulation was terminated early due to the error count:
+      assert result.count_loop__increment_step == Nx.s32(13)
     end
 
     test "works - uses Bogacki-Shampine23" do
