@@ -356,24 +356,21 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   @spec bracket(NonLinearEqnRoot.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defn bracket(z) do
-    {status, z} =
-      if different_signs?(z.fa, z.fc) do
+    cond do
+      different_signs?(z.fa, z.fc) ->
         # Move c to b:
         {@continue, %{z | d: z.b, fd: z.fb, b: z.c, fb: z.fc}}
-      else
-        if different_signs?(z.fb, z.fc) do
-          {@continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
-        else
-          if z.fc == 0.0 do
-            {@halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
-          else
-            # Should never reach here - bracketing failure error:
-            {@halt, %{z | status: Nx.u8(3)}}
-          end
-        end
-      end
 
-    {status, z}
+      different_signs?(z.fb, z.fc) ->
+        {@continue, %{z | d: z.a, fd: z.fa, a: z.c, fa: z.fc}}
+
+      z.fc == 0.0 ->
+        {@halt, %{z | a: z.c, b: z.c, fa: z.fc, fb: z.fc}}
+
+      true ->
+        # Should never reach here - bracketing failure error:
+        {@halt, %{z | status: Nx.u8(3)}}
+    end
   end
 
   @spec is_nil?(any()) :: Nx.t()
