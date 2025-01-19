@@ -4,6 +4,12 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
   """
 
   alias Integrator.RungeKutta
+  import Nx.Defn
+
+  # Values for :status_integration:
+  @success 1
+  @max_errors_exceeded 2
+  deftransform max_errors_exceeded, do: @max_errors_exceeded
 
   @derive {Nx.Container,
    containers: [
@@ -96,4 +102,20 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     step_timestamp_μs: Nx.s64(0),
     elapsed_time_μs: Nx.s64(0)
   ]
+
+  deftransform status_integration(%__MODULE__{status_integration: status_value} = _integration_step) do
+    status_integration(status_value)
+  end
+
+  deftransform status_integration(%Nx.Tensor{} = status_value) do
+    status_value |> Nx.to_number() |> status_integration()
+  end
+
+  deftransform status_integration(status_value) do
+    case status_value do
+      @success -> :ok
+      @max_errors_exceeded -> {:error, "Maximum number of errors exceeded"}
+      _ -> {:error, "Unknown error"}
+    end
+  end
 end

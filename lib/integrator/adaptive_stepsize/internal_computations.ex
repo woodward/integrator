@@ -348,7 +348,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step = %{step | error_count: step.error_count + 1}
 
     if step.error_count > max_number_of_errors do
-      %{step | status_integration: Nx.u8(2)}
+      %{step | status_integration: IntegrationStep.max_errors_exceeded()}
     else
       step
     end
