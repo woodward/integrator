@@ -16,10 +16,18 @@ defmodule Integrator.NonLinearEqnRoot do
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot.InternalComputations
 
-  # 2 -> InvalidInitialBracketError   "Invalid initial bracket"
-  # 3 -> BracketingFailureError       "Zero point is not bracketed"
-  # 4 -> MaxFnEvalsExceededError      "Too many function evaluations"
-  # 5 -> MaxIterationsExceededError   "Too many iterations"
+  # Values for :status field:
+  @success 1
+  @invalid_initial_bracket 2
+  @bracketing_failure 3
+  @max_fn_evals_exceeded 4
+  @max_iterations_exceeded 5
+
+  deftransform success, do: @success
+  deftransform invalid_initial_bracket, do: @invalid_initial_bracket
+  deftransform bracketing_failure, do: @bracketing_failure
+  deftransform max_fn_evals_exceeded, do: @max_fn_evals_exceeded
+  deftransform max_iterations_exceeded, do: @max_iterations_exceeded
 
   import Integrator.Utils, only: [convert_arg_to_nx_type: 2, timestamp_μs: 0, elapsed_time_μs: 1, same_signs?: 2]
 
@@ -268,7 +276,7 @@ defmodule Integrator.NonLinearEqnRoot do
     }
 
     if same_signs?(z.fa, z.fb) do
-      %{z | status: Nx.u8(2)}
+      %{z | status: invalid_initial_bracket()}
     else
       InternalComputations.iterate(z, zero_fn, zero_fn_args, options)
     end
@@ -299,4 +307,23 @@ defmodule Integrator.NonLinearEqnRoot do
 
   deftransformp default_to_epsilon(nil, type), do: Nx.Constants.epsilon(type)
   deftransformp default_to_epsilon(value, type), do: Nx.tensor(value, type: type)
+
+  deftransform status(%__MODULE__{status: status} = _result) do
+    status(status)
+  end
+
+  deftransform status(%Nx.Tensor{} = status) do
+    status |> Nx.to_number() |> status()
+  end
+
+  deftransform status(status) do
+    case status do
+      @success -> :ok
+      @invalid_initial_bracket -> {:error, "Invalid initial bracket"}
+      @bracketing_failure -> {:error, "Zero point is not bracketed"}
+      @max_fn_evals_exceeded -> {:error, "Too many function evaluations"}
+      @max_iterations_exceeded -> {:error, "Too many iterations"}
+      _ -> {:error, "Unknown error"}
+    end
+  end
 end

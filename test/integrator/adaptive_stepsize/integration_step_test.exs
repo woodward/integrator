@@ -4,7 +4,7 @@ defmodule Integrator.InternalComputations.IntegrationStepTest do
 
   alias Integrator.AdaptiveStepsize.IntegrationStep
 
-  describe "status/1" do
+  describe "status_integration/1" do
     test "returns :ok if the integration was successful" do
       integration = %IntegrationStep{status_integration: Nx.u8(1)}
       assert IntegrationStep.status_integration(integration) == :ok
@@ -24,6 +24,13 @@ defmodule Integrator.InternalComputations.IntegrationStepTest do
     test "returns an error tuple for an unknown error" do
       integration = %IntegrationStep{status_integration: 999}
       assert IntegrationStep.status_integration(integration) == {:error, "Unknown error"}
+    end
+  end
+
+  describe "status_non_linear_eqn_root/1" do
+    test "calls through to the NonLinearEqnRoot functions to get the status" do
+      integration = %IntegrationStep{status_non_linear_eqn_root: Nx.u8(2)}
+      assert IntegrationStep.status_non_linear_eqn_root(integration) == {:error, "Invalid initial bracket"}
     end
   end
 end

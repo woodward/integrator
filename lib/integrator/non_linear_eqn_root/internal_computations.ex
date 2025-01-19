@@ -14,6 +14,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
       same_signs_or_any_zeros?: 2
     ]
 
+  import Integrator.NonLinearEqnRoot, only: [bracketing_failure: 0, max_fn_evals_exceeded: 0, max_iterations_exceeded: 0]
+
   alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
   alias Integrator.NonLinearEqnRoot
@@ -369,7 +371,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
       true ->
         # Should never reach here - bracketing failure error:
-        {@halt, %{z | status: Nx.u8(3)}}
+        {@halt, %{z | status: bracketing_failure()}}
     end
   end
 
@@ -399,7 +401,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     {status, z} = status_z
 
     if z.iteration_count > max_iterations do
-      {@halt, %{z | status: Nx.u8(5)}}
+      {@halt, %{z | status: max_iterations_exceeded()}}
     else
       {status, z}
     end
@@ -410,7 +412,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     {status, z} = status_z
 
     if z.fn_eval_count > max_fn_eval_count do
-      {@halt, %{z | status: Nx.u8(4)}}
+      {@halt, %{z | status: max_fn_evals_exceeded()}}
     else
       {status, z}
     end

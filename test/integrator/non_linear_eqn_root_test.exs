@@ -423,4 +423,42 @@ defmodule Integrator.NonLinearEqnRootTest do
              ]
     end
   end
+
+  describe "status/1" do
+    test "returns an :ok for the success status code" do
+      result = %NonLinearEqnRoot{status: 1}
+      assert NonLinearEqnRoot.status(result) == :ok
+
+      result = %NonLinearEqnRoot{status: Nx.u8(1)}
+      assert NonLinearEqnRoot.status(result) == :ok
+
+      result = %NonLinearEqnRoot{status: Nx.s32(1)}
+      assert NonLinearEqnRoot.status(result) == :ok
+    end
+
+    test "returns an error for invalid initial bracket" do
+      result = %NonLinearEqnRoot{status: 2}
+      assert NonLinearEqnRoot.status(result) == {:error, "Invalid initial bracket"}
+    end
+
+    test "returns an error for zero point not bracketed" do
+      result = %NonLinearEqnRoot{status: 3}
+      assert NonLinearEqnRoot.status(result) == {:error, "Zero point is not bracketed"}
+    end
+
+    test "returns an error for too many function evaluations" do
+      result = %NonLinearEqnRoot{status: 4}
+      assert NonLinearEqnRoot.status(result) == {:error, "Too many function evaluations"}
+    end
+
+    test "returns an error for too many iterations" do
+      result = %NonLinearEqnRoot{status: 5}
+      assert NonLinearEqnRoot.status(result) == {:error, "Too many iterations"}
+    end
+
+    test "returns an unknown error" do
+      result = %NonLinearEqnRoot{status: 99}
+      assert NonLinearEqnRoot.status(result) == {:error, "Unknown error"}
+    end
+  end
 end

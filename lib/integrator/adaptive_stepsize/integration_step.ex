@@ -118,4 +118,12 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
       _ -> {:error, "Unknown error"}
     end
   end
+
+  deftransform status_non_linear_eqn_root(%__MODULE__{status_non_linear_eqn_root: status_value} = _integration_step) do
+    status_non_linear_eqn_root(status_value)
+  end
+
+  deftransform status_non_linear_eqn_root(status_value) do
+    Integrator.NonLinearEqnRoot.status(status_value)
+  end
 end
