@@ -153,7 +153,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         max_step: Nx.f64(2.0),
         output_fn: output_fn,
         fixed_output_times?: true,
-        fixed_output_dt: 1.0
+        fixed_output_step: 1.0
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
@@ -679,7 +679,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         max_step: Nx.f64(2.0),
         output_fn: output_fn,
         fixed_output_times?: true,
-        fixed_output_dt: Nx.f64(0.05)
+        fixed_output_step: Nx.f64(0.05)
       ]
 
       # t_values = Nx.linspace(t_start, t_end, n: 61) |> Nx.to_list() |> Enum.map(&Nx.f64(&1))
@@ -1060,7 +1060,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.refine == 4
       assert nx_options.speed == Nx.Constants.infinity(:f32)
       assert nx_options.fixed_output_times? == Nx.u8(0)
-      assert nx_options.fixed_output_dt == Nx.f32(0.0)
+      assert nx_options.fixed_output_step == Nx.f32(0.0)
       assert nx_options.order == 5
       assert nx_options.norm_control? == Nx.u8(1)
       assert nx_options.abs_tol == Nx.f32(1.0e-06)
@@ -1125,7 +1125,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
         refine: 3,
         speed: 0.5,
         fixed_output_times?: true,
-        fixed_output_dt: 0.5,
+        fixed_output_step: 0.5,
         norm_control?: false,
         abs_tol: 1.0e-08,
         rel_tol: 1.0e-04,
@@ -1154,7 +1154,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       assert nx_options.refine == 1
       assert nx_options.speed == Nx.f64(0.5)
       assert nx_options.fixed_output_times? == Nx.u8(1)
-      assert nx_options.fixed_output_dt == Nx.f64(0.5)
+      assert nx_options.fixed_output_step == Nx.f64(0.5)
       assert nx_options.order == 3
       assert nx_options.norm_control? == Nx.u8(0)
       assert nx_options.abs_tol == Nx.f64(1.0e-08)

@@ -28,7 +28,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
        :rel_tol,
        :norm_control?,
        :fixed_output_times?,
-       :fixed_output_dt,
+       :fixed_output_step,
        :speed,
        :max_step,
        :max_number_of_errors,
@@ -52,7 +52,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
             norm_control?: Nx.t(),
             order: integer(),
             fixed_output_times?: Nx.t(),
-            fixed_output_dt: Nx.t(),
+            fixed_output_step: Nx.t(),
             speed: Nx.t(),
             refine: integer(),
             type: Nx.Type.t(),
@@ -74,7 +74,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
               norm_control?: Nx.u8(1),
               order: 0,
               fixed_output_times?: Nx.u8(0),
-              fixed_output_dt: 1000.0,
+              fixed_output_step: 1000.0,
               speed: Nx.Constants.nan(:f64),
               refine: 0,
               type: {:f, 64},
@@ -120,7 +120,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       doc: "Indicates whether output is to be generated at some fixed interval",
       default: false
     ],
-    fixed_output_dt: [
+    fixed_output_step: [
       # type: :float,
       type: :any,
       doc: "The fixed output timestep",
@@ -236,7 +236,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
 
     # Broadcast the initial conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: t_start, x: x0} |> options.output_fn_adapter.external_fn.()
-    fixed_output_t_next = Nx.add(t_start, options.fixed_output_dt)
+    fixed_output_t_next = Nx.add(t_start, options.fixed_output_step)
 
     initial_step =
       %IntegrationStep{
@@ -347,7 +347,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     # point itself is inteprolated):)
     refine = if nimble_opts[:fixed_output_times?], do: 1, else: nimble_opts[:refine]
 
-    fixed_output_dt = nimble_opts[:fixed_output_dt] |> Utils.convert_arg_to_nx_type(nx_type)
+    fixed_output_step = nimble_opts[:fixed_output_step] |> Utils.convert_arg_to_nx_type(nx_type)
     norm_control? = nimble_opts[:norm_control?] |> Utils.convert_arg_to_nx_type({:u, 8})
     abs_tol = nimble_opts[:abs_tol] |> Utils.convert_arg_to_nx_type(nx_type)
     rel_tol = nimble_opts[:rel_tol] |> Utils.convert_arg_to_nx_type(nx_type)
@@ -381,7 +381,7 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
       rel_tol: rel_tol,
       norm_control?: norm_control?,
       fixed_output_times?: fixed_output_times?,
-      fixed_output_dt: fixed_output_dt,
+      fixed_output_step: fixed_output_step,
       max_number_of_errors: max_number_of_errors,
       nx_while_loop_integration?: nx_while_loop_integration?,
       output_fn_adapter: output_fn_adapter,

@@ -146,7 +146,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         t_next_fixed = step.fixed_output_t_next
         x_out = Step.interpolate_single_specified_point(step.interpolate_fn, step.rk_step, t_next_fixed)
         step = step |> output_single_point(options.output_fn_adapter, t_next_fixed, x_out)
-        step = %{step | fixed_output_t_next: t_next_fixed + options.fixed_output_dt}
+        step = %{step | fixed_output_t_next: t_next_fixed + options.fixed_output_step}
         {step, options}
       end
 
@@ -167,7 +167,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
         step
         | fixed_output_t_within_step?: true_nx(),
           output_t_and_x_single: {fixed_output_t_next, x_out},
-          fixed_output_t_next: fixed_output_t_next + options.fixed_output_dt
+          fixed_output_t_next: fixed_output_t_next + options.fixed_output_step
       }
     else
       %{step | fixed_output_t_within_step?: false_nx()}
