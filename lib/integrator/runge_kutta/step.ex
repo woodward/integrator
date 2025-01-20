@@ -94,7 +94,7 @@ defmodule Integrator.RungeKutta.Step do
       x_old: Nx.tensor(0.0, type: type) |> Nx.broadcast({Nx.size(x0)}),
       x_new: x0,
       #
-      k_vals: initial_empty_k_vals_defn(x0, opts),
+      k_vals: initial_empty_k_vals(x0, opts),
       options_comp: Nx.tensor(0.0, type: type),
       error_estimate: nan,
       dt: nan
@@ -143,8 +143,8 @@ defmodule Integrator.RungeKutta.Step do
     {zero, x_output}
   end
 
-  @spec initial_empty_k_vals_defn(Nx.t(), Keyword.t()) :: Nx.t()
-  defn initial_empty_k_vals_defn(x, opts \\ []) do
+  @spec initial_empty_k_vals(Nx.t(), Keyword.t()) :: Nx.t()
+  defn initial_empty_k_vals(x, opts \\ []) do
     # Note that `order` needs to be passed in as an option, otherwise I get an error about a dimension
     # being a tensor if it's passed in as a standard argument
     opts = keyword!(opts, order: 5)

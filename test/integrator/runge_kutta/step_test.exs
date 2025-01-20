@@ -336,11 +336,11 @@ defmodule Integrator.RungeKutta.StepTest do
     end
   end
 
-  describe "initial_empty_k_vals - defn version" do
+  describe "initial_empty_k_vals" do
     test "returns a tensor with zeros that's the correct size, given the size of x and the order" do
       order = 5
       x = ~VEC[ 1.0 2.0 3.0 ]f64
-      k_vals = Step.initial_empty_k_vals_defn(x, order: order)
+      k_vals = Step.initial_empty_k_vals(x, order: order)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -358,7 +358,7 @@ defmodule Integrator.RungeKutta.StepTest do
       order = 3
       type = {:f, 32}
       x = Nx.tensor([1.0, 2.0, 3.0], type: type)
-      k_vals = Step.initial_empty_k_vals_defn(x, order: order)
+      k_vals = Step.initial_empty_k_vals(x, order: order)
 
       expected_k_vals = ~MAT[
         0.0 0.0 0.0 0.0
