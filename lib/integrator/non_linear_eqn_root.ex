@@ -13,7 +13,6 @@ defmodule Integrator.NonLinearEqnRoot do
 
   import Nx.Defn
 
-  alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.NonLinearEqnRoot.NxOptions
 
@@ -172,7 +171,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
-    options_nx = convert_to_nx_options(opts)
+    options_nx = NxOptions.convert_opts_to_nx_options(opts)
     a_nx = convert_arg_to_nx_type(a, options_nx.type)
     b_nx = convert_arg_to_nx_type(b, options_nx.type)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options_nx.type))
@@ -185,7 +184,7 @@ defmodule Integrator.NonLinearEqnRoot do
   @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero_with_single_point(zero_fn, solo_point, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
-    options = convert_to_nx_options(opts)
+    options = NxOptions.convert_opts_to_nx_options(opts)
     solo_point_nx = convert_arg_to_nx_type(solo_point, options.type)
     second_point = InternalComputations.find_2nd_starting_point(zero_fn, solo_point_nx, zero_fn_args)
     zero_fn_args_nx = zero_fn_args |> Enum.map(&convert_arg_to_nx_type(&1, options.type))
@@ -252,27 +251,6 @@ defmodule Integrator.NonLinearEqnRoot do
     #   :halt -> %{z | x: u, fx: fu}
     # end
   end
-
-  @spec convert_to_nx_options(Keyword.t()) :: NxOptions.t()
-  deftransform convert_to_nx_options(opts) do
-    nimble_opts = opts |> NimbleOptions.validate!(@options_schema) |> Map.new()
-    nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
-    machine_eps = default_to_epsilon(nimble_opts[:machine_eps], nx_type)
-    tolerance = default_to_epsilon(nimble_opts[:tolerance], nx_type)
-    output_fn_adapter = ExternalFnAdapter.wrap_external_fn(nimble_opts[:nonlinear_eqn_root_output_fn])
-
-    %NxOptions{
-      machine_eps: machine_eps,
-      max_fn_eval_count: nimble_opts[:max_fn_eval_count],
-      max_iterations: nimble_opts[:max_iterations],
-      output_fn_adapter: output_fn_adapter,
-      tolerance: tolerance,
-      type: nx_type
-    }
-  end
-
-  deftransformp default_to_epsilon(nil, type), do: Nx.Constants.epsilon(type)
-  deftransformp default_to_epsilon(value, type), do: Nx.tensor(value, type: type)
 
   deftransform status(%__MODULE__{status: status} = _result) do
     status(status)

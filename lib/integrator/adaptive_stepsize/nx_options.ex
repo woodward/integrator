@@ -120,7 +120,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
     non_linear_eqn_root_nx_options =
       opts
       |> Enum.filter(fn {key, _value} -> key in non_linear_eqn_root_opt_keys end)
-      |> NonLinearEqnRoot.convert_to_nx_options()
+      |> NonLinearEqnRoot.NxOptions.convert_opts_to_nx_options()
 
     %__MODULE__{
       type: nx_type,
