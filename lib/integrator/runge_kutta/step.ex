@@ -123,16 +123,6 @@ defmodule Integrator.RungeKutta.Step do
     interpolate_fn.(t, x, rk_step.k_vals, t_add) |> Utils.last_column()
   end
 
-  @spec initial_empty_k_vals(integer(), Nx.t()) :: Nx.t()
-  deftransform initial_empty_k_vals(order, x) do
-    # Figure out the correct way to do this!  Does k_length depend on the order of the Runge Kutta method?
-    k_length = order + 2
-
-    x_length = Nx.size(x)
-    zero = Nx.tensor(0.0, type: Nx.type(x))
-    Nx.broadcast(zero, {x_length, k_length})
-  end
-
   @spec initial_output_t_and_x_multiple_points(Nx.t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
   defn initial_output_t_and_x_multiple_points(x0, options) do
     size_x = Nx.size(x0)
