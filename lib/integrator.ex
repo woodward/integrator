@@ -8,7 +8,7 @@ defmodule Integrator do
   users who want to use the underlying algorithms directly.
   """
 
-  alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsize
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
@@ -34,7 +34,7 @@ defmodule Integrator do
   @options_schema_integrator_only NimbleOptions.new!(options)
   def options_schema_integrator_only, do: @options_schema_integrator_only
 
-  # @options_schema NimbleOptions.new!(AdaptiveStepsizeRefactor.options_schema().schema |> Keyword.merge(options))
+  # @options_schema NimbleOptions.new!(AdaptiveStepsize.options_schema().schema |> Keyword.merge(options))
 
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method.
@@ -57,7 +57,7 @@ defmodule Integrator do
           t_end :: Nx.t() | float(),
           x0 :: Nx.t(),
           opts :: Keyword.t()
-        ) :: AdaptiveStepsizeRefactor.t()
+        ) :: AdaptiveStepsize.t()
   def integrate(ode_fn, t_start, t_end, x0, opts \\ []) do
     local_opt_keys = options_schema_integrator_only() |> Map.get(:schema) |> Keyword.keys()
     {local_opts, remaining_opts} = Keyword.split(opts, local_opt_keys)
@@ -67,7 +67,7 @@ defmodule Integrator do
     initial_step = Keyword.get(local_opts, :initial_step)
     order = integrator_mod.order()
 
-    AdaptiveStepsizeRefactor.integrate(
+    AdaptiveStepsize.integrate(
       &integrator_mod.integrate/6,
       &integrator_mod.interpolate/4,
       ode_fn,

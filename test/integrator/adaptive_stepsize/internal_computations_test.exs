@@ -4,7 +4,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
 
   alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.AdaptiveStepsize.IntegrationStep
-  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.RungeKutta
 
   describe "compute_next_timestep" do

@@ -1,10 +1,10 @@
-defmodule Integrator.AdaptiveStepsizeRefactorTest do
+defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
   use Integrator.TestCase, async: true
   import Nx, only: :sigils
 
-  alias Integrator.AdaptiveStepsizeRefactor
-  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.AdaptiveStepsize
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.DataCollector
   alias Integrator.ExternalFnAdapter
   alias Integrator.NonLinearEqnRoot
@@ -41,7 +41,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(0.068129)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -98,7 +98,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(0.068129)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -160,7 +160,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(6.812920690579614e-02)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -221,7 +221,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(0.068129)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -297,7 +297,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(6.812920690579614e-02)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -378,7 +378,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.tensor(5.054072392284442e-03, type: :f64)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -456,7 +456,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(0.007418363820761442)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -516,7 +516,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(1.472499532027109e-03)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -594,7 +594,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(6.812920690579614e-02)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -688,7 +688,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(6.812920690579614e-02)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -755,7 +755,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       ]
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -813,7 +813,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       #    [t,y] = ode23 (fvdp, [0, 20], [2, 0], odeset( "Refine", 4));
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -880,7 +880,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(2.020515504676623e-04)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -950,7 +950,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       initial_tstep = Nx.f64(2.020515504676623e-04)
 
       result =
-        AdaptiveStepsizeRefactor.integrate(
+        AdaptiveStepsize.integrate(
           stepper_fn,
           interpolate_fn,
           ode_fn,
@@ -997,7 +997,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       norm_control? = Nx.u8(0)
 
       starting_stepsize =
-        AdaptiveStepsizeRefactor.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control?)
+        AdaptiveStepsize.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control?)
 
       assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
     end
@@ -1011,7 +1011,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       norm_control? = Nx.u8(0)
       ode_fn = &SampleEqns.falling_particle/2
 
-      starting_stepsize = AdaptiveStepsizeRefactor.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
+      starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
       assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
     end
 
@@ -1024,7 +1024,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       norm_control? = Nx.u8(0)
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
-      starting_stepsize = AdaptiveStepsizeRefactor.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
+      starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
 
       zero_stepsize_which_is_bad = Nx.tensor(0.0, type: :f16)
 
@@ -1051,7 +1051,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       t_end = 10.0
       order = 5
 
-      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, use_default_opts)
+      nx_options = AdaptiveStepsize.convert_to_nx_options(t_start, t_end, order, use_default_opts)
       assert %NxOptions{} = nx_options
 
       assert nx_options.type == {:f, 32}
@@ -1099,7 +1099,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       t_end = Nx.f32(10.0)
       order = 5
 
-      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, use_default_opts)
+      nx_options = AdaptiveStepsize.convert_to_nx_options(t_start, t_end, order, use_default_opts)
       assert %NxOptions{} = nx_options
 
       assert nx_options.max_step == Nx.f32(1.0)
@@ -1111,7 +1111,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       t_end = Nx.f32(10.0)
       order = 5
 
-      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, opts)
+      nx_options = AdaptiveStepsize.convert_to_nx_options(t_start, t_end, order, opts)
       assert %NxOptions{} = nx_options
 
       assert nx_options.refine == 1
@@ -1145,7 +1145,7 @@ defmodule Integrator.AdaptiveStepsizeRefactorTest do
       t_end = 10.0
       order = 3
 
-      nx_options = AdaptiveStepsizeRefactor.convert_to_nx_options(t_start, t_end, order, opts)
+      nx_options = AdaptiveStepsize.convert_to_nx_options(t_start, t_end, order, opts)
       assert %NxOptions{} = nx_options
 
       assert nx_options.type == {:f, 64}

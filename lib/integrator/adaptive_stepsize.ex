@@ -1,4 +1,4 @@
-defmodule Integrator.AdaptiveStepsizeRefactor do
+defmodule Integrator.AdaptiveStepsize do
   @moduledoc """
   Integrates a set of ODEs with an adaptive timestep.
   """

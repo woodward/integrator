@@ -8,7 +8,7 @@ defmodule Integrator.RungeKutta do
 
   import Nx.Defn
 
-  alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsize
   alias Integrator.Utils
 
   @type stepper_fn_t :: ((Nx.t(), Nx.t() -> Nx.t()), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t() -> {Nx.t(), Nx.t(), Nx.t(), Nx.t()})
@@ -50,7 +50,7 @@ defmodule Integrator.RungeKutta do
           k_vals_old :: Nx.t(),
           options_comp_old :: Nx.t(),
           dt :: Nx.t(),
-          options :: AdaptiveStepsizeRefactor.NxOptions.t()
+          options :: AdaptiveStepsize.NxOptions.t()
         ) :: {
           t_next :: Nx.t(),
           x_next :: Nx.t(),

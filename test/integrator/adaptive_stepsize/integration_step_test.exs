@@ -3,7 +3,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
   use Integrator.TestCase, async: true
 
   alias Integrator.AdaptiveStepsize.IntegrationStep
-  alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsize
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
   alias Integrator.SampleEqns
@@ -155,7 +155,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
   end
 
   defp initial_nx_options_dormand_prince do
-    %AdaptiveStepsizeRefactor.NxOptions{
+    %AdaptiveStepsize.NxOptions{
       abs_tol: Nx.f64(1.0e-06),
       rel_tol: Nx.f64(1.0e-03),
       norm_control?: Nx.u8(0),
@@ -191,7 +191,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
   end
 
   defp initial_nx_options_bobacki_shampine do
-    %AdaptiveStepsizeRefactor.NxOptions{
+    %AdaptiveStepsize.NxOptions{
       abs_tol: Nx.f64(1.0e-06),
       rel_tol: Nx.f64(1.0e-03),
       norm_control?: Nx.u8(0),

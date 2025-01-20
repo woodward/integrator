@@ -7,7 +7,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   alias Integrator.ExternalFnAdapter
   alias Integrator.AdaptiveStepsize.IntegrationStep
-  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.Point
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.Step

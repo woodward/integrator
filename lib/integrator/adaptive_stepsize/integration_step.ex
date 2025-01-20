@@ -110,7 +110,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
           t_start :: Nx.t(),
           initial_tstep :: Nx.t(),
           x0 :: Nx.t(),
-          options :: Integrator.AdaptiveStepsizeRefactor.NxOptions.t(),
+          options :: Integrator.AdaptiveStepsize.NxOptions.t(),
           start_timestamp_μs :: pos_integer()
         ) :: t()
   deftransform new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs) do

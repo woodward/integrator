@@ -6,7 +6,7 @@ defmodule Integrator.RungeKutta.Step do
 
   import Nx.Defn
 
-  alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.RungeKutta
   alias Integrator.Utils
 

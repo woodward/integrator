@@ -4,7 +4,7 @@ defmodule Integrator.MultiIntegrator do
   in the `ballode.m` example.
   """
 
-  alias Integrator.AdaptiveStepsizeRefactor
+  alias Integrator.AdaptiveStepsize
   alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
 
@@ -16,7 +16,7 @@ defmodule Integrator.MultiIntegrator do
           event_t: [Nx.t()],
           event_x: [Nx.t()],
           transition_x: [Nx.t()],
-          integrations: [AdaptiveStepsizeRefactor.t()],
+          integrations: [AdaptiveStepsize.t()],
           integration_status: integration_status(),
           t_start: Nx.t(),
           t_end: Nx.t()
@@ -34,7 +34,7 @@ defmodule Integrator.MultiIntegrator do
 
   all_options =
     NonLinearEqnRoot.options_schema().schema
-    |> Keyword.merge(AdaptiveStepsizeRefactor.options_schema_adaptive_stepsize_only().schema)
+    |> Keyword.merge(AdaptiveStepsize.options_schema_adaptive_stepsize_only().schema)
     |> Keyword.merge(Integrator.options_schema_integrator_only().schema)
 
   @options_schema NimbleOptions.new!(all_options)
@@ -46,13 +46,13 @@ defmodule Integrator.MultiIntegrator do
   See the options for these functions which are passed through:
 
   * `Integrator.NonLinearEqnRoot.find_zero/4`
-  * `Integrator.AdaptiveStepsizeRefactor.integrate/10`
+  * `Integrator.AdaptiveStepsize.integrate/10`
   * `Integrator.integrate/4`
 
   """
   @spec integrate(
           ode_fn :: RungeKutta.ode_fn_t(),
-          event_fn :: AdaptiveStepsizeRefactor.event_fn_t(),
+          event_fn :: AdaptiveStepsize.event_fn_t(),
           transition_fn :: transition_fn_t(),
           t_start :: Nx.t(),
           t_end :: Nx.t(),
