@@ -34,7 +34,7 @@ defmodule Integrator do
   @options_schema_integrator_only NimbleOptions.new!(options)
   def options_schema_integrator_only, do: @options_schema_integrator_only
 
-  @options_schema NimbleOptions.new!(AdaptiveStepsizeRefactor.options_schema().schema |> Keyword.merge(options))
+  # @options_schema NimbleOptions.new!(AdaptiveStepsizeRefactor.options_schema().schema |> Keyword.merge(options))
 
   @doc """
   Integrates an ODE function using either the Dormand-Prince45 method or the Bogacki-Shampine23 method.
