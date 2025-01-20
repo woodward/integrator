@@ -384,13 +384,12 @@ defmodule Integrator.AdaptiveStepsize do
     0.0 |> Nx.tensor(type: type) |> Nx.broadcast({size})
   end
 
-  @spec default_max_step(Nx.t(), Nx.t()) :: Nx.t()
+  @spec default_max_step(Nx.t() | float(), Nx.t() | float()) :: Nx.t() | float()
   deftransformp default_max_step(%Nx.Tensor{} = t_start, %Nx.Tensor{} = t_end) do
     # See Octave: integrate_adaptive.m:89
     Nx.subtract(t_start, t_end) |> Nx.abs() |> Nx.multiply(Nx.tensor(0.1, type: Nx.type(t_start)))
   end
 
-  @spec default_max_step(Nx.t(), Nx.t()) :: Nx.t()
   deftransformp default_max_step(t_start, t_end) do
     # See Octave: integrate_adaptive.m:89
     0.1 * abs(t_start - t_end)

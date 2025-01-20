@@ -9,6 +9,7 @@ defmodule Integrator do
   """
 
   alias Integrator.AdaptiveStepsize
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
@@ -57,7 +58,7 @@ defmodule Integrator do
           t_end :: Nx.t() | float(),
           x0 :: Nx.t(),
           opts :: Keyword.t()
-        ) :: AdaptiveStepsize.t()
+        ) :: IntegrationStep.t()
   def integrate(ode_fn, t_start, t_end, x0, opts \\ []) do
     local_opt_keys = options_schema_integrator_only() |> Map.get(:schema) |> Keyword.keys()
     {local_opts, remaining_opts} = Keyword.split(opts, local_opt_keys)

@@ -5,6 +5,7 @@ defmodule Integrator.MultiIntegrator do
   """
 
   alias Integrator.AdaptiveStepsize
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.NonLinearEqnRoot
   alias Integrator.RungeKutta
 
@@ -16,7 +17,7 @@ defmodule Integrator.MultiIntegrator do
           event_t: [Nx.t()],
           event_x: [Nx.t()],
           transition_x: [Nx.t()],
-          integrations: [AdaptiveStepsize.t()],
+          integrations: [IntegrationStep.t()],
           integration_status: integration_status(),
           t_start: Nx.t(),
           t_end: Nx.t()

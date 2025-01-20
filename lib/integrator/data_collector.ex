@@ -22,6 +22,8 @@ defmodule Integrator.DataCollector do
     GenServer.call(pid, :get_data)
   end
 
+  # ------------------------------------------------------------------------------------------------
+
   @impl true
   def init(_args) do
     {:ok, %{data: []}}
