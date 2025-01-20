@@ -33,8 +33,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   deftransform integrate_via_elixir_recursion(step, t_end, options) do
     if continue_stepping?(step, t_end) == true_nx() do
       {step, t_end, options} = compute_integration_step(step, t_end, options)
-      step = step |> possibly_delay_playback_speed(options)
-      integrate_via_elixir_recursion(step, t_end, options)
+      sleep_time_ms = compute_sleep_time(step, options)
+
+      if sleep_time_ms && sleep_time_ms > 0 do
+        Process.sleep(sleep_time_ms)
+        %{step | step_timestamp_μs: timestamp_μs()}
+      else
+        step
+      end
+      |> integrate_via_elixir_recursion(t_end, options)
     else
       step
     end
@@ -210,23 +217,19 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  @spec possibly_delay_playback_speed(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
-  deftransform possibly_delay_playback_speed(step, options) do
+  @spec compute_sleep_time(IntegrationStep.t(), NxOptions.t(), pos_integer()) :: pos_integer() | nil
+  deftransform compute_sleep_time(step, options, time_now_μs \\ :os.system_time(:microsecond)) do
     if Nx.to_number(step.error_count) > 0 or options.speed == Nx.Constants.infinity(options.type) do
-      step
+      nil
     else
-      rk_step = step.rk_step
-      t_new = Nx.to_number(rk_step.t_new)
-      t_old = Nx.to_number(rk_step.t_old)
+      t_new = Nx.to_number(step.t_current)
+      t_old = Nx.to_number(step.rk_step.t_old)
       speed = Nx.to_number(options.speed)
       step_timestamp_μs = Nx.to_number(step.step_timestamp_μs)
 
       desired_time_interval_ms = (t_new - t_old) * 1000.0 / speed
-      elapsed_time_ms = (:os.system_time(:microsecond) - step_timestamp_μs) / 1000.0
-      sleep_time_ms = trunc(desired_time_interval_ms - elapsed_time_ms)
-
-      if sleep_time_ms > 0, do: Process.sleep(sleep_time_ms)
-      %{step | step_timestamp_μs: timestamp_μs()}
+      elapsed_time_ms = (time_now_μs - step_timestamp_μs) / 1000.0
+      trunc(desired_time_interval_ms - elapsed_time_ms)
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule Integrator.InternalComputations.IntegrationStepTest do
+defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 

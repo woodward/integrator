@@ -1,9 +1,11 @@
-defmodule Integrator.InternalComputations.InternalComputationsTest do
+defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsizeRefactor.NxOptions
+  alias Integrator.RungeKutta
 
   describe "compute_next_timestep" do
     test "basic case" do
@@ -131,6 +133,43 @@ defmodule Integrator.InternalComputations.InternalComputationsTest do
       # Expected dt from Octave:
       expected_dt = Nx.f64(0.007895960916517373)
       assert_all_close(new_dt, expected_dt, atol: 1.0e-19, rtol: 1.0e-19)
+    end
+  end
+
+  describe "compute_sleep_time/2" do
+    test "returns nil if there are errors" do
+      step = %IntegrationStep{error_count: 3}
+      options = %NxOptions{}
+      sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
+      assert sleep_time_ms == nil
+    end
+
+    test "returns nil if the speed is set to infinity" do
+      step = %IntegrationStep{error_count: 0}
+      options = %NxOptions{speed: Nx.Constants.infinity(:f64), type: {:f, 64}}
+      sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
+      assert sleep_time_ms == nil
+    end
+
+    test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 1.0 speed" do
+      rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
+      step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
+      options = %NxOptions{speed: Nx.f64(1.0)}
+      timestamp_now_μs = 1100
+      sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)
+
+      # The desired time interval is 0.1 second or 100 ms.  The elapsed time is 1000 μs == 1 ms
+      assert sleep_time_ms == 98
+    end
+
+    test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 0.5 speed" do
+      rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
+      step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
+      options = %NxOptions{speed: Nx.f64(0.5)}
+      timestamp_now_μs = 1100
+      sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)
+
+      assert sleep_time_ms == 198
     end
   end
 end
