@@ -96,7 +96,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     terminal_event: Nx.u8(1),
     terminal_output: Nx.s32(0),
     status_integration: Nx.u8(1),
-    status_non_linear_eqn_root: Nx.u8(0),
+    status_non_linear_eqn_root: Nx.u8(1),
     #
     start_timestamp_μs: Nx.s64(0),
     step_timestamp_μs: Nx.s64(0),

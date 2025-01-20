@@ -58,7 +58,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
         terminal_event: Nx.u8(1),
         terminal_output: Nx.s32(0),
         status_integration: Nx.u8(1),
-        status_non_linear_eqn_root: Nx.u8(0),
+        status_non_linear_eqn_root: Nx.u8(1),
         start_timestamp_μs: start_timestamp_μs,
         step_timestamp_μs: start_timestamp_μs,
         elapsed_time_μs: Nx.s64(0)
@@ -114,7 +114,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
         terminal_event: Nx.u8(1),
         terminal_output: Nx.s32(0),
         status_integration: Nx.u8(1),
-        status_non_linear_eqn_root: Nx.u8(0),
+        status_non_linear_eqn_root: Nx.u8(1),
         start_timestamp_μs: start_timestamp_μs,
         step_timestamp_μs: start_timestamp_μs,
         elapsed_time_μs: Nx.s64(0)
