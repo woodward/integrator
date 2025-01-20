@@ -33,4 +33,11 @@ defmodule Integrator.PointTest do
       assert x == expected_x
     end
   end
+
+  describe "to_number/1" do
+    test "converts a point from Nx tensors to numbers" do
+      point = %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+      assert Point.to_number(point) == %Point{t: 0.1, x: [1.0, 2.0]}
+    end
+  end
 end

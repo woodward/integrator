@@ -26,4 +26,10 @@ defmodule Integrator.Point do
     x = points |> Enum.map(& &1.x)
     {t, x}
   end
+
+  def to_number(point) do
+    t = Nx.to_number(point.t)
+    x = Nx.to_list(point.x) |> Enum.map(&Nx.to_number(&1))
+    %__MODULE__{t: t, x: x}
+  end
 end

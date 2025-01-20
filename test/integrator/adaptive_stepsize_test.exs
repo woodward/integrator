@@ -982,6 +982,17 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
     end
+
+    test "bug fix - does not blow up if there is no output function" do
+      t_initial = Nx.f64(0.0)
+      t_final = Nx.f64(20.0)
+      x_initial = Nx.f64([2.0, 0.0])
+
+      # This was raising an exception about a Point not being an NxContainer:
+      integration = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, type: :f64)
+
+      assert integration.status_integration == Nx.u8(1)
+    end
   end
 
   describe "starting_stepsize" do

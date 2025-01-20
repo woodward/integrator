@@ -2,8 +2,9 @@
 
 ```elixir
 Mix.install([
-  {:integrator, "~> 0.1.2"},
-  {:kino_vega_lite, "~> 0.1.7"}
+  # {:integrator, path: "/Users/Greg/Dynamics/Development/integrator"},
+  {:integrator, github: "woodward/integrator", branch: "nx-while-loop"},
+  {:kino_vega_lite, "~> 0.1"}
 ])
 ```
 
@@ -13,12 +14,19 @@ Numerical integration is easy with `Integrator`.  For example, let's integrate t
 Van der Pol equation `Integrator.SampleEqns.van_der_pol_fn` for 20 seconds:
 
 ```elixir
+alias Integrator.DataCollector
+alias Integrator.Point
 alias Integrator.SampleEqns
 
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(20.0, type: :f64)
-x_initial = Nx.tensor([2.0, 0.0], type: :f64)
-solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(20.0)
+x_initial = Nx.f64([2.0, 0.0])
+
+{:ok, pid} = DataCollector.start_link()
+output_fn = &DataCollector.add_data(pid, &1)
+
+opts = [type: :f64, output_fn: output_fn]
+Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
 ```
 
 Now you can plot the results via Kino:
@@ -27,11 +35,14 @@ Now you can plot the results via Kino:
 alias VegaLite, as: VL
 
 data =
-  Enum.zip(solution.output_t, solution.output_x)
-  |> Enum.map(fn {t, x} ->
+  DataCollector.get_data(pid)
+  |> Enum.map(&Point.to_number(&1))
+  |> Enum.map(fn point ->
+    %{t: t, x: x} = point
+
     [
-      %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"},
-      %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
+      %{t: t, x: List.first(x), x_value: "x[0]"},
+      %{t: t, x: List.last(x), x_value: "x[1]"}
     ]
   end)
   |> List.flatten()
