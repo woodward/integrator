@@ -226,6 +226,13 @@ defmodule Integrator.AdaptiveStepsizeRefactor do
     options = convert_to_nx_options(t_start, t_end, order, opts)
     t_end = IntegrationStep.to_tensor(t_end, options.type)
 
+    initial_tstep =
+      if initial_tstep do
+        initial_tstep
+      else
+        starting_stepsize(order, ode_fn, t_start, x0, options.abs_tol, options.rel_tol, options.norm_control?)
+      end
+
     initial_step =
       IntegrationStep.new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs)
 
