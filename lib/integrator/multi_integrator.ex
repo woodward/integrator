@@ -52,7 +52,7 @@ defmodule Integrator.MultiIntegrator do
   """
   @spec integrate(
           ode_fn :: RungeKutta.ode_fn_t(),
-          event_fn :: AdaptiveStepsize.event_fn_t(),
+          event_fn :: fun(),
           transition_fn :: transition_fn_t(),
           t_start :: Nx.t(),
           t_end :: Nx.t(),
