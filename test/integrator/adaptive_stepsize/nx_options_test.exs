@@ -30,9 +30,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       assert nx_options.nx_while_loop_integration? == Nx.u8(1)
 
       assert nx_options.event_fn_adapter == %ExternalFnAdapter{external_fn: &Integrator.ExternalFnAdapter.no_op_double_arity_fn/2}
-
-      assert nx_options.output_fn_adapter == %ExternalFnAdapter{}
-      assert nx_options.output_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)
+      assert nx_options.output_fn_adapter == %ExternalFnAdapter{external_fn: &Integrator.ExternalFnAdapter.non_defn_no_op_fn/1}
 
       assert nx_options.zero_fn_adapter == %ExternalFnAdapter{}
       assert nx_options.zero_fn_adapter.external_fn == (&Integrator.ExternalFnAdapter.no_op_fn/1)

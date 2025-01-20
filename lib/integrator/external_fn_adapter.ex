@@ -22,6 +22,9 @@ defmodule Integrator.ExternalFnAdapter do
   @spec no_op_fn(any()) :: any()
   defn no_op_fn(arg), do: arg
 
+  @spec non_defn_no_op_fn(any()) :: any()
+  def non_defn_no_op_fn(arg), do: arg
+
   @spec no_op_double_arity_fn(any(), any()) :: any()
   defn no_op_double_arity_fn(_arg1, _arg2), do: Nx.u8(1)
 

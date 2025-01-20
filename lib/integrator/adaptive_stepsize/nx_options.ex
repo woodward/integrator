@@ -113,7 +113,8 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
 
     event_fn_adapter = ExternalFnAdapter.wrap_external_fn_double_arity(nimble_opts[:event_fn])
     zero_fn_adapter = ExternalFnAdapter.wrap_external_fn(nimble_opts[:zero_fn])
-    output_fn_adapter = ExternalFnAdapter.wrap_external_fn(nimble_opts[:output_fn])
+    output_fn = if output_fn = nimble_opts[:output_fn], do: output_fn, else: &ExternalFnAdapter.non_defn_no_op_fn/1
+    output_fn_adapter = ExternalFnAdapter.wrap_external_fn(output_fn)
 
     non_linear_eqn_root_opt_keys = NonLinearEqnRoot.option_keys()
 
