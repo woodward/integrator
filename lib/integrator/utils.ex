@@ -230,13 +230,13 @@ defmodule Integrator.Utils do
   option values than safely cross the Elixir/Nx boundary safely and also be of known, expected types.
   """
   @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer() | fun(), Nx.Type.t()) :: Nx.t()
-  def convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
+  deftransform convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
     if Nx.type(arg) != type, do: raise(TensorTypeError)
     arg
   end
 
-  def convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
-  def convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
+  deftransform convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
+  deftransform convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
 
   @spec first_column(Nx.t()) :: Nx.t()
   defn first_column(x) do
