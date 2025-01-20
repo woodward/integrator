@@ -2,8 +2,9 @@
 
 ```elixir
 Mix.install([
-  {:integrator, "~> 0.1.2"},
-  {:kino_vega_lite, "~> 0.1.7"}
+  # {:integrator, path: "/Users/Greg/Dynamics/Development/integrator"},
+  {:integrator, github: "woodward/integrator", branch: "nx-while-loop", sha: "e15be91ddb48d3bffcdcd3690c2aef1cfe61a7ee"},
+  {:kino_vega_lite, "~> 0.1"}
 ])
 ```
 
@@ -16,6 +17,8 @@ First, we'll need to set up an empty chart to receive the data:
 
 ```elixir
 alias VegaLite, as: VL
+alias Integrator.SampleEqns
+alias Integrator.Point
 
 chart =
   VL.new(
@@ -34,33 +37,34 @@ chart =
 Now, let's connect an output function to the simulation, and we'll inject a `Process.sleep(50)` on purpose so that the simulation takes a while. Watch the chart above while you run the simulation below.
 
 ```elixir
-alias Integrator.SampleEqns
 
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(20.0, type: :f64)
-x_initial = Nx.tensor([2.0, 0.0], type: :f64)
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(20.0)
+x_initial = Nx.f64([2.0, 0.0])
 
-output_fn = fn t, x ->
-  # t and x are lists of Nx tensors
+output_fn = fn points ->
+  points = if is_list(points), do: points, else: [points]
+  points = points |> Enum.map(&Point.to_number(&1))
 
-  Enum.zip(t, x)
-  |> Enum.map(fn {t, x} ->
-    [
-      %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"},
-      %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
-    ]
-  end)
-  |> List.flatten()
-  |> Enum.map(fn point ->
-    Kino.VegaLite.push(chart, point)
+  points
+  |> Enum.map(fn point -> 
+    %Point{t: t, x: x} = point
+    
+      data = 
+      [
+        %{t: t, x: List.first(x), x_value: "x[0]"},
+        %{t: t, x: List.last(x), x_value: "x[1]"}
+      ]
 
-    # Sleep on purpose to slow down the simulation:
-    Process.sleep(50)
+    data |> Enum.each(& Kino.VegaLite.push(chart, &1))
   end)
 end
 
-opts = [output_fn: output_fn, type: :f64]
+opts = [output_fn: output_fn, type: :f64, speed: 1.0]
 
 solution =
-  Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+  Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
+
+
+
 ```
