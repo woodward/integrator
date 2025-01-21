@@ -32,4 +32,17 @@ defmodule Integrator.Point do
     x = Nx.to_list(point.x) |> Enum.map(&Nx.to_number(&1))
     %__MODULE__{t: t, x: x}
   end
+
+  def filter_out_points_with_same_t(points) do
+    points
+    |> Enum.reduce({-1, []}, fn point, {last_t, points} ->
+      if last_t != point.t do
+        {point.t, [point | points]}
+      else
+        {last_t, points}
+      end
+    end)
+    |> elem(1)
+    |> Enum.reverse()
+  end
 end

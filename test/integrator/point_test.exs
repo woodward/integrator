@@ -40,4 +40,23 @@ defmodule Integrator.PointTest do
       assert Point.to_number(point) == %Point{t: 0.1, x: [1.0, 2.0]}
     end
   end
+
+  describe "filter_out_points_with_same_t/1" do
+    test "gets rid of points with the same t value" do
+      points = [
+        %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])},
+        %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])},
+        %Point{t: Nx.f64(0.2), x: Nx.f64([5.0, 6.0])},
+        %Point{t: Nx.f64(0.3), x: Nx.f64([7.0, 8.0])}
+      ]
+
+      filtered_points = Point.filter_out_points_with_same_t(points)
+
+      assert filtered_points == [
+               %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])},
+               %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])},
+               %Point{t: Nx.f64(0.3), x: Nx.f64([7.0, 8.0])}
+             ]
+    end
+  end
 end
