@@ -45,9 +45,11 @@ defmodule Integrator.ExternalFnAdapter do
     z
   end
 
+  @spec wrap_external_fn(nil | fun()) :: t()
   deftransform wrap_external_fn(nil = _external_fn), do: %__MODULE__{}
   deftransform wrap_external_fn(external_fn), do: %__MODULE__{external_fn: external_fn}
 
+  @spec wrap_external_fn_double_arity(nil | fun()) :: t()
   deftransform wrap_external_fn_double_arity(nil = _external_fn),
     do: %__MODULE__{external_fn: &__MODULE__.no_op_double_arity_fn/2}
 

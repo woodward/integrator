@@ -101,6 +101,9 @@ defmodule Integrator.Interpolation do
     x1 + x2 + x3 + x4 + x5
   end
 
+  @doc """
+  Used by `NonLinearEqnRoot`
+  """
   @spec quadratic_plus_newton(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn quadratic_plus_newton(a, fa, b, fb, d, fd, iteration_type) do
     a0 = fa
@@ -135,6 +138,9 @@ defmodule Integrator.Interpolation do
     end
   end
 
+  @doc """
+  Used by `NonLinearEqnRoot`
+  """
   @spec inverse_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn inverse_cubic(a, fa, b, fb, d, fd, e, fe) do
     q11 = (d - e) * fd / (fe - fd)
@@ -151,16 +157,25 @@ defmodule Integrator.Interpolation do
     a + q31 + q32 + q33
   end
 
+  @doc """
+  Used by `NonLinearEqnRoot`
+  """
   @spec secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn secant(a, fa, b, fb, u, fu) do
     u - (a - b) / (fa - fb) * fu
   end
 
+  @doc """
+  Used by `NonLinearEqnRoot`
+  """
   @spec double_secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn double_secant(a, fa, b, fb, u, fu) do
     u - 2.0 * (b - a) / (fb - fa) * fu
   end
 
+  @doc """
+  Used by `NonLinearEqnRoot`
+  """
   @spec bisect(Nx.t(), Nx.t()) :: Nx.t()
   defn bisect(a, b) do
     0.5 * (b + a)

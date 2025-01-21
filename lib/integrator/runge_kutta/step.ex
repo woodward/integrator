@@ -52,7 +52,8 @@ defmodule Integrator.RungeKutta.Step do
 
   @doc """
   Computes the next `Runge-Kutta.Step` struct given a prior `RungeKutta.Step` which contains info from the
-  previous Runge-Kutta computation
+  previous Runge-Kutta computation. This function basically wraps the core Runge-Kutta computation
+  contained in `Integrator.RugeKutta.compute_step/8` in a `Integrator.RungaKutta.Step` struct.
   """
   @spec compute_step(t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: t()
   defn compute_step(step, dt, stepper_fn, ode_fn, options) do
@@ -79,6 +80,9 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
+  @doc """
+  Create the intial `Integrator.RungeKutta.Step` struct based on initial values and options
+  """
   @spec initial_step(Nx.t(), Nx.t(), Keyword.t()) :: t()
   defn initial_step(t0, x0, opts \\ []) do
     opts = keyword!(opts, order: 5)
@@ -101,6 +105,10 @@ defmodule Integrator.RungeKutta.Step do
     }
   end
 
+  @doc """
+  Use the results of the Runge-Kutta computation to interpolate multiple `x` values for various
+  values of `t`.
+  """
   @spec interpolate_multiple_points(fun(), Nx.t(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
   defn interpolate_multiple_points(interpolate_fn, t, rk_step, options) do
     refine = options.refine
@@ -116,6 +124,9 @@ defmodule Integrator.RungeKutta.Step do
     {t_add, x_out}
   end
 
+  @doc """
+  Interpolate a single `x` value for a value of `t`
+  """
   @spec interpolate_single_specified_point(fun(), t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn interpolate_single_specified_point(interpolate_fn, rk_step, t_add) do
     t = Nx.stack([rk_step.t_old, rk_step.t_new])

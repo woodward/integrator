@@ -252,6 +252,7 @@ defmodule Integrator.NonLinearEqnRoot do
     # end
   end
 
+  @spec status(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status(%__MODULE__{status: status} = _result) do
     status(status)
   end
