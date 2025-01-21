@@ -47,7 +47,7 @@ defmodule Integrator.MultiIntegrator do
   See the options for these functions which are passed through:
 
   * `Integrator.NonLinearEqnRoot.find_zero/4`
-  * `Integrator.AdaptiveStepsize.integrate/10`
+  * `Integrator.AdaptiveStepsize.integrate/9`
   * `Integrator.integrate/4`
 
   """

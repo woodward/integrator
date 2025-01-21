@@ -218,7 +218,7 @@ defmodule Integrator.Utils do
   deftransform elapsed_time_μs(start_time_μs), do: Nx.subtract(Nx.s64(timestamp_μs()), start_time_μs)
 
   @doc """
-  Returns the timestamp in microseconds as an Nx :s32 tensor
+  Returns the timestamp in microseconds as an Nx :s64 tensor
 
   Will this need to be a hook in order to work inside of defn?
   """
@@ -227,7 +227,8 @@ defmodule Integrator.Utils do
 
   @doc """
   A function which converts args to their Nx equivalents. Used to populate Nx.Container structs with
-  option values than safely cross the Elixir/Nx boundary safely and also be of known, expected types.
+  option values that safely cross the Elixir/Nx boundary and also be of known, expected types (to
+  eliminate precision errors/issues)
   """
   @spec convert_arg_to_nx_type(Nx.Tensor.t() | float() | integer() | fun(), Nx.Type.t()) :: Nx.t()
   deftransform convert_arg_to_nx_type(%Nx.Tensor{} = arg, type) do
