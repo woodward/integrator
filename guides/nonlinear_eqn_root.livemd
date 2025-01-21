@@ -2,7 +2,7 @@
 
 ```elixir
 Mix.install([
-  {:integrator, "~> 0.1"}
+  {:integrator, github: "woodward/integrator"},
 ])
 ```
 
