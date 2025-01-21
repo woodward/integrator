@@ -10,11 +10,6 @@ Mix.install([
 ])
 ```
 
-## NOTE - 2025-01-02
-
-This Livebook guide currently does not work (at least not based on code on the `main` branch of `integrator`) 
-as a big refactor is currently happening on `integrator`.  This guide will updated once that refactor is completed.
-
 ### Usage
 
 An event function lets you terminate a simulation based on some event (such as a collision).  For this example, we're going to mimic the [Matlab `ballode.m`](https://www.mathworks.com/help/matlab/math/ode-event-location.html) bouncing ball example. See also [here](https://github.com/kuo-courses/hw00/blob/master/ballode.m).
@@ -39,11 +34,14 @@ ode_fn = &SampleEqns.falling_particle/2
 The follwing event function will detect when $ x_0 $ goes negative, and will return `:halt` in order to terminate the simulation:
 
 ```elixir
-event_fn = fn _t, x ->
-  value = Nx.to_number(x[0])
-  answer = if value <= 0.0, do: :halt, else: :continue
-  {answer, value}
-end
+# event_fn = fn _t, x ->
+#   value = Nx.to_number(x[0])
+#   answer = if value <= 0.0, do: :halt, else: :continue
+#   {answer, value}
+# end
+
+event_fn = &SampleEqns.falling_particle_event_fn/2
+
 ```
 
 Create an empty chart to receive the data:
