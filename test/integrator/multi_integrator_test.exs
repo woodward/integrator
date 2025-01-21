@@ -50,7 +50,7 @@ defmodule Integrator.MultiIntegratorTest do
       output_fn = &DataCollector.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
-      transition_fn = fn t, x, _multi, opts ->
+      transition_fn = fn t, x, multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
@@ -64,11 +64,9 @@ defmodule Integrator.MultiIntegratorTest do
         initial_step = last_t - next_to_last_t
 
         opts = opts |> Keyword.merge(initial_step: initial_step)
-        expected_last_t = 26.55745402242616
 
-        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
-        # Old way was to check for 10 bounces:
-        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        # Check for 10 bounces:
+        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
@@ -114,7 +112,7 @@ defmodule Integrator.MultiIntegratorTest do
           output_fn: output_fn
         )
 
-      transition_fn = fn t, x, _multi, opts ->
+      transition_fn = fn t, x, multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
@@ -128,11 +126,9 @@ defmodule Integrator.MultiIntegratorTest do
         initial_step = last_t - next_to_last_t
 
         opts = opts |> Keyword.merge(initial_step: initial_step)
-        expected_last_t = 26.55745402242616
 
-        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
-        # Old way was to check for 10 bounces:
-        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        # Check for 10 bounces:
+        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
@@ -212,7 +208,7 @@ defmodule Integrator.MultiIntegratorTest do
       # This is no longer used; it was before the big refactor:
       _number_of_bounces = 2
 
-      transition_fn = fn t, x, _multi, opts ->
+      transition_fn = fn t, x, multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
@@ -226,11 +222,9 @@ defmodule Integrator.MultiIntegratorTest do
         initial_step = last_t - next_to_last_t
 
         opts = opts |> Keyword.merge(initial_step: initial_step)
-        expected_last_t = 26.55745402242616
 
-        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
-        # Old way was to check for 10 bounces:
-        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        # Check for 10 bounces:
+        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
