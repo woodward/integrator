@@ -93,7 +93,6 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    @tag :skip
     test "performs the integration - high fidelity multi-bounce ballode", %{
       opts: opts,
       t_initial: t_initial,
@@ -115,18 +114,25 @@ defmodule Integrator.MultiIntegratorTest do
           output_fn: output_fn
         )
 
-      transition_fn = fn t, x, multi, opts ->
+      transition_fn = fn t, x, _multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        # last_integration = multi.integrations |> List.first()
-        # first_t = last_integration.ode_t |> List.first()
-        # [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
-        # [next_to_last_t | _rest] = rest_of_t
-        # initial_step = Nx.subtract(last_t, next_to_last_t)
-        # max_step = Nx.subtract(last_t, first_t)
-        # opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
-        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        last_five_points = DataCollector.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+
+        last_point = last_five_points |> List.last()
+        fifth_from_last_point = last_five_points |> List.first()
+
+        last_t = Map.get(last_point, :t)
+        next_to_last_t = Map.get(fifth_from_last_point, :t)
+        initial_step = last_t - next_to_last_t
+
+        opts = opts |> Keyword.merge(initial_step: initial_step)
+        expected_last_t = 26.55745402242616
+
+        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
+        # Old way was to check for 10 bounces:
+        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
@@ -137,7 +143,11 @@ defmodule Integrator.MultiIntegratorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/t.csv") |> Enum.take(amount_to_check)
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/x.csv") |> Enum.take(amount_to_check)
 
-      {output_t, output_x} = DataCollector.get_data(pid) |> Enum.take(amount_to_check) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} =
+        DataCollector.get_data(pid)
+        |> Point.filter_out_points_with_same_t()
+        |> Enum.take(amount_to_check)
+        |> Point.split_points_into_t_and_x()
 
       {t_row_72, _rest} = output_t |> List.pop_at(72)
       {x_row_72, _rest} = output_x |> List.pop_at(72)
@@ -173,7 +183,6 @@ defmodule Integrator.MultiIntegratorTest do
       assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
 
-    @tag :skip
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
       opts: opts,
       t_initial: t_initial,
@@ -187,20 +196,28 @@ defmodule Integrator.MultiIntegratorTest do
       output_fn = &DataCollector.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
-      number_of_bounces = 2
+      # This is no longer used; it was before the big refactor:
+      _number_of_bounces = 2
 
-      transition_fn = fn t, x, multi, opts ->
+      transition_fn = fn t, x, _multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        # last_integration = multi.integrations |> List.first()
-        # first_t = last_integration.ode_t |> List.first()
-        # [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
-        # [next_to_last_t | _rest] = rest_of_t
-        # initial_step = Nx.subtract(last_t, next_to_last_t)
-        # max_step = Nx.subtract(last_t, first_t)
-        # opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
-        status = if length(multi.integrations) >= number_of_bounces, do: :halt, else: :continue
+        last_five_points = DataCollector.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+
+        last_point = last_five_points |> List.last()
+        fifth_from_last_point = last_five_points |> List.first()
+
+        last_t = Map.get(last_point, :t)
+        next_to_last_t = Map.get(fifth_from_last_point, :t)
+        initial_step = last_t - next_to_last_t
+
+        opts = opts |> Keyword.merge(initial_step: initial_step)
+        expected_last_t = 26.55745402242616
+
+        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
+        # Old way was to check for 10 bounces:
+        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
@@ -210,7 +227,11 @@ defmodule Integrator.MultiIntegratorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/ballode/default/t.csv") |> Enum.take(amount_to_check)
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
-      {output_t, output_x} = DataCollector.get_data(pid) |> Enum.take(amount_to_check) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} =
+        DataCollector.get_data(pid)
+        |> Point.filter_out_points_with_same_t()
+        |> Enum.take(amount_to_check)
+        |> Point.split_points_into_t_and_x()
 
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-02, rtol: 1.0e-02)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)

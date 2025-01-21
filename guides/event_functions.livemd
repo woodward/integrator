@@ -1,19 +1,21 @@
-# Event Functions
+# Untitled notebook
+
+## Event Functions
 
 ```elixir
 Mix.install([
   # {:integrator, path: "/Users/Greg/Dynamics/Development/integrator"},
-  {:integrator, github: "woodward/integrator", branch: "nx-while-loop", sha: "e15be91ddb48d3bffcdcd3690c2aef1cfe61a7ee"},
+  {:integrator, github: "woodward/integrator", branch: "nx-while-loop", sha: "5e568ced1f5232468d8cb2addd386e0fa94b881f"},
   {:kino_vega_lite, "~> 0.1"}
 ])
 ```
 
-# NOTE - 2025-01-02
+## NOTE - 2025-01-02
 
 This Livebook guide currently does not work (at least not based on code on the `main` branch of `integrator`) 
 as a big refactor is currently happening on `integrator`.  This guide will updated once that refactor is completed.
 
-## Usage
+### Usage
 
 An event function lets you terminate a simulation based on some event (such as a collision).  For this example, we're going to mimic the [Matlab `ballode.m`](https://www.mathworks.com/help/matlab/math/ode-event-location.html) bouncing ball example. See also [here](https://github.com/kuo-courses/hw00/blob/master/ballode.m).
 
@@ -28,11 +30,10 @@ where $ g = 9.81 m/s^2 $.  Let's encode that in an Nx function:
 ```elixir
 import Nx.Defn
 
-ode_fn = fn _t, x ->
-  x0 = x[1]
-  x1 = -9.81
-  Nx.stack([x0, x1])
-end
+alias Integrator.SampleEqns
+
+ode_fn = &SampleEqns.falling_particle/2
+
 ```
 
 The follwing event function will detect when $ x_0 $ goes negative, and will return `:halt` in order to terminate the simulation:
@@ -49,6 +50,7 @@ Create an empty chart to receive the data:
 
 ```elixir
 alias VegaLite, as: VL
+alias Integrator.Point
 
 chart =
   VL.new(
@@ -68,12 +70,15 @@ chart =
 This output function will send the values of $ x_0 $ to the chart while the simulation is underway:
 
 ```elixir
-output_fn = fn t, x ->
-  Enum.zip(t, x)
-  |> Enum.map(fn {t, x} ->
-    [%{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"}]
+output_fn = fn points ->
+  points = [points] |> List.flatten()
+
+  points
+  |> Enum.map(&Point.to_number(&1))
+  |> Enum.map(fn point ->
+    %{t: t, x: x} = point
+    %{t: t, x: List.first(x), x_value: "x[0]"}
   end)
-  |> List.flatten()
   |> Enum.map(fn point ->
     Kino.VegaLite.push(chart, point)
   end)
@@ -85,9 +90,9 @@ case, are collisions between the ball and the ground. We'll reverse the directio
 decrease its velocity by 10% (to account for bouncing).
 
 ```elixir
-coefficient_of_restitution = -0.9
 
 transition_fn = fn t, x, _multi, opts ->
+  coefficient_of_restitution = -0.9
   x1 = Nx.multiply(coefficient_of_restitution, x[1])
   {:continue, t, Nx.stack([x[0], x1]), opts}
 end
@@ -99,10 +104,10 @@ events are encountered.
 ```elixir
 alias Integrator.MultiIntegrator
 
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(30.0, type: :f64)
-x_initial = Nx.tensor([0.0, 20.0], type: :f64)
-opts = [output_fn: output_fn]
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(30.0)
+x_initial = Nx.f64([0.0, 20.0])
+opts = [type: :f64, output_fn: output_fn]
 
 multi_integrator =
   MultiIntegrator.integrate(ode_fn, event_fn, transition_fn, t_initial, t_final, x_initial, opts)
