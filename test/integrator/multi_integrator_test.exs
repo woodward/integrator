@@ -62,8 +62,8 @@ defmodule Integrator.MultiIntegratorTest do
         last_t = Map.get(last_point, :t)
         next_to_last_t = Map.get(fifth_from_last_point, :t)
         initial_step = last_t - next_to_last_t
-
-        opts = opts |> Keyword.merge(initial_step: initial_step)
+        max_step = Nx.subtract(last_t, multi.t_start)
+        opts = opts |> Keyword.merge(initial_step: initial_step, max_step: max_step)
 
         # Check for 10 bounces:
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
@@ -124,8 +124,8 @@ defmodule Integrator.MultiIntegratorTest do
         last_t = Map.get(last_point, :t)
         next_to_last_t = Map.get(fifth_from_last_point, :t)
         initial_step = last_t - next_to_last_t
-
-        opts = opts |> Keyword.merge(initial_step: initial_step)
+        max_step = Nx.subtract(last_t, multi.t_start)
+        opts = opts |> Keyword.merge(initial_step: initial_step, max_step: max_step)
 
         # Check for 10 bounces:
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
@@ -165,31 +165,19 @@ defmodule Integrator.MultiIntegratorTest do
       actual_x = output_x |> Enum.map(fn x -> "#{Nx.to_number(x[0])}    #{Nx.to_number(x[1])}\n" end)
       File.write!("test/fixtures/octave_results/ballode/high_fidelity/junk_x_elixir.csv", actual_x)
 
-      # --------------------------
-      # Note that the data starts to diverge between my results and Matlab's results on row 90 of the CSV files
-      # at t = 8.740862525139363e+00 (Matlab) - I get t = 8.734073235895742
-      #
-      # The t's and x's right before this are right on the money:
-      #              Row           t                            x0                       x1
-      # Matlab:      89        8.469862765016561        9.145572092171863       9.110646275187445
-      # Integrator:  89        8.469862765016552        9.145572092171838       9.110646275187413
-      #
-      # This divergence throws the remaining test assertions off, so commenting them out for now
-      # --------------------------
+      expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/t.csv") |> Enum.take(amount_to_check)
+      expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/x.csv") |> Enum.take(amount_to_check)
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/t.csv") |> Enum.take(amount_to_check)
-      # expected_x = read_nx_list("test/fixtures/octave_results/ballode/high_fidelity/x.csv") |> Enum.take(amount_to_check)
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
 
-      # assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-07, rtol: 1.0e-07)
-      # assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-07, rtol: 1.0e-07)
+      t_last_row = output_t |> List.last()
+      x_last_row = output_x |> List.last()
 
-      # t_last_row = output_t |> List.last()
-      # x_last_row = output_x |> List.last()
-
-      # # Compare against Octave results:
-      # assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-14)
-      # assert_in_delta(Nx.to_number(x_last_row[0]), -1.360023205165817e-13, 1.0e-12)
-      # assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
+      # Compare against Octave results:
+      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-14)
+      assert_in_delta(Nx.to_number(x_last_row[0]), -1.360023205165817e-13, 1.0e-12)
+      assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
 
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
@@ -220,8 +208,8 @@ defmodule Integrator.MultiIntegratorTest do
         last_t = Map.get(last_point, :t)
         next_to_last_t = Map.get(fifth_from_last_point, :t)
         initial_step = last_t - next_to_last_t
-
-        opts = opts |> Keyword.merge(initial_step: initial_step)
+        max_step = Nx.subtract(last_t, multi.t_start)
+        opts = opts |> Keyword.merge(initial_step: initial_step, max_step: max_step)
 
         # Check for 10 bounces:
         status = if length(multi.integrations) >= 10, do: :halt, else: :continue
