@@ -193,8 +193,7 @@ defmodule Integrator.MultiIntegratorTest do
       output_fn = &DataCollector.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
-      # This is no longer used; it was before the big refactor:
-      _number_of_bounces = 2
+      number_of_bounces = 2
 
       transition_fn = fn t, x, multi, opts ->
         x0 = Nx.f64(0.0)
@@ -212,7 +211,7 @@ defmodule Integrator.MultiIntegratorTest do
         opts = opts |> Keyword.merge(initial_step: initial_step, max_step: max_step)
 
         # Check for 10 bounces:
-        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        status = if length(multi.integrations) >= number_of_bounces, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
