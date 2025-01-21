@@ -2,8 +2,9 @@
 
 ```elixir
 Mix.install([
-  {:integrator, "~> 0.1.2"},
-  {:kino_vega_lite, "~> 0.1.7"}
+  # {:integrator, path: "/Users/Greg/Dynamics/Development/integrator"},
+  {:integrator, github: "woodward/integrator", branch: "nx-while-loop", sha: "e15be91ddb48d3bffcdcd3690c2aef1cfe61a7ee"},
+  {:kino_vega_lite, "~> 0.1"}
 ])
 ```
 

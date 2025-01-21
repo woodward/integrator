@@ -24,7 +24,7 @@ chart =
   VL.new(
     width: 600,
     height: 400,
-    title: "Solution of van der Pol Equation (μ = 1) with ode45"
+    title: "Solution of van der Pol Equation (μ = 1) with Dormand-Prince45"
   )
   |> VL.mark(:line, point: true, tooltip: true)
   |> VL.encode_field(:x, "t", type: :quantitative)

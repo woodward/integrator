@@ -2,38 +2,51 @@
 
 ```elixir
 Mix.install([
-  {:integrator, "~> 0.1.2"},
-  {:kino_vega_lite, "~> 0.1.7"}
+  # {:integrator, path: "/Users/Greg/Dynamics/Development/integrator"},
+  {:integrator, github: "woodward/integrator", branch: "nx-while-loop", sha: "e15be91ddb48d3bffcdcd3690c2aef1cfe61a7ee"},
+  {:kino_vega_lite, "~> 0.1"}
 ])
 ```
 
 ## Interpolation
 
-By default, `refine: 4` for integrator `ode45`.  This means that four points are interpolated
+By default, `refine: 4` for integrator `DormandPrince45`.  This means that four points are interpolated
 for every solution of the ODE.
 
 ```elixir
 alias Integrator.SampleEqns
+alias Integrator.DataCollector
 
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(20.0, type: :f64)
-x_initial = Nx.tensor([2.0, 0.0], type: :f64)
-solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial)
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(20.0)
+x_initial = Nx.f64([2.0, 0.0])
+{:ok, pid} = DataCollector.start_link()
+output_fn = &DataCollector.add_data(pid, &1)
+
+opts = [type: :f64, output_fn: output_fn]
+
+_solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
+points = DataCollector.get_data(pid)
+
 ```
 
 Visualizing `refine: 4`:
 
 ```elixir
-alias VegaLite, as: VL
+alias VegaLite, as: VLq
+alias Integrator.Point
 
 defmodule VanDerPol do
-  def plot(solution) do
+  def plot(points) do
     data =
-      Enum.zip(solution.output_t, solution.output_x)
-      |> Enum.map(fn {t, x} ->
+      points
+      |> Enum.map(&Point.to_number(&1))
+      |> Enum.map(fn point ->
+        %{t: t, x: x} = point
+
         [
-          %{t: Nx.to_number(t), x: Nx.to_number(x[0]), x_value: "x[0]"},
-          %{t: Nx.to_number(t), x: Nx.to_number(x[1]), x_value: "x[1]"}
+          %{t: t, x: List.first(x), x_value: "x[0]"},
+          %{t: t, x: List.last(x), x_value: "x[1]"}
         ]
       end)
       |> List.flatten()
@@ -41,7 +54,7 @@ defmodule VanDerPol do
     VL.new(
       width: 600,
       height: 400,
-      title: "Solution of van der Pol Equation (μ = 1) with ode45"
+      title: "Solution of van der Pol Equation (μ = 1) with Dormand-Prince45"
     )
     |> VL.mark(:line, point: true, tooltip: true)
     |> VL.encode_field(:x, "t", type: :quantitative)
@@ -53,21 +66,27 @@ defmodule VanDerPol do
   end
 end
 
-VanDerPol.plot(solution)
+VanDerPol.plot(points)
 ```
 
 You can turn off interpolation by setting `refine: 1`:
 
 ```elixir
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(20.0, type: :f64)
-x_initial = Nx.tensor([2.0, 0.0], type: :f64)
-opts = [refine: 1]
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(20.0)
+x_initial = Nx.f64([2.0, 0.0])
 
-solution =
-  Integrator.integrate(&SampleEqns.van_der_pol_fn/2, [t_initial, t_final], x_initial, opts)
+{:ok, pid} = DataCollector.start_link()
+output_fn = &DataCollector.add_data(pid, &1)
 
-VanDerPol.plot(solution)
+opts = [type: :f64, output_fn: output_fn, refine: 1]
+
+
+_solution =
+  Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
+
+points = DataCollector.get_data(pid)
+VanDerPol.plot(points)
 ```
 
 Note how much "chunkier" the plot is without the interpolated points.  These points are solely those from the Runge-Kutta simulation.  Note that these values can also be accessed by `solution.ode_t` and `solution.ode_x`.
@@ -77,11 +96,16 @@ Note how much "chunkier" the plot is without the interpolated points.  These poi
 Finally, you can output data at fixed times. For example, let's print out data at `0.1` second intervals:
 
 ```elixir
-t_initial = Nx.tensor(0.0, type: :f64)
-t_final = Nx.tensor(20.0, type: :f64)
-x_initial = Nx.tensor([2.0, 0.0], type: :f64)
-t_range = Nx.linspace(t_initial, t_final, n: 201, type: :f64)
-opts = [refine: 1]
-solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_range, x_initial, opts)
-VanDerPol.plot(solution)
+t_initial = Nx.f64(0.0)
+t_final = Nx.f64(20.0)
+x_initial = Nx.f64([2.0, 0.0])
+
+{:ok, pid} = DataCollector.start_link()
+output_fn = &DataCollector.add_data(pid, &1)
+
+opts = [type: :f64, refine: 1, fixed_output_times?: Nx.u8(1), fixed_output_step: Nx.f64(0.1), output_fn: output_fn]
+
+_solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
+points = DataCollector.get_data(pid)
+VanDerPol.plot(points)
 ```
