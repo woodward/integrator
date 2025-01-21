@@ -37,7 +37,6 @@ defmodule Integrator.MultiIntegratorTest do
       ]
     end
 
-    @tag transferred_to_refactor?: false
     @tag :skip
     test "performs the integration", %{
       opts: opts,
@@ -84,7 +83,6 @@ defmodule Integrator.MultiIntegratorTest do
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
     end
 
-    @tag transferred_to_refactor?: false
     @tag :skip
     test "performs the integration - high fidelity multi-bounce ballode", %{
       opts: opts,
@@ -165,7 +163,6 @@ defmodule Integrator.MultiIntegratorTest do
       assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
 
-    @tag transferred_to_refactor?: false
     @tag :skip
     test "can terminate the simulation based on some event (in this case 2 bounces)", %{
       opts: opts,
