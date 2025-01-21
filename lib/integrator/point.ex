@@ -33,6 +33,9 @@ defmodule Integrator.Point do
     %__MODULE__{t: t, x: x}
   end
 
+  # This was used in the MultiIntegrator tests; a point was being broadcast twice (at the end of one
+  # integration and the start of the next).  I couldn't figure out a better solution, so this is sort
+  # of a temporary patch/hack.
   def filter_out_points_with_same_t(points) do
     points
     |> Enum.reduce({-1, []}, fn point, {last_t, points} ->
