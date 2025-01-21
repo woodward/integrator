@@ -134,26 +134,6 @@ defmodule Integrator.RungeKutta.Step do
     interpolate_fn.(t, x, rk_step.k_vals, t_add) |> Utils.last_column()
   end
 
-  @spec initial_output_t_and_x_multiple_points(Nx.t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
-  defn initial_output_t_and_x_multiple_points(x0, options) do
-    size_x = Nx.size(x0)
-    zero = Nx.tensor(0.0, type: options.type)
-
-    add_points = options.refine
-    t_ouptut = Nx.broadcast(zero, {add_points})
-    x_output = Nx.broadcast(zero, {size_x, add_points})
-    {t_ouptut, x_output}
-  end
-
-  @spec initial_output_t_and_x_single_point(Nx.t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
-  defn initial_output_t_and_x_single_point(x0, options) do
-    size_x = Nx.size(x0)
-    zero = Nx.tensor(0.0, type: options.type)
-
-    x_output = Nx.broadcast(zero, {size_x})
-    {zero, x_output}
-  end
-
   @spec initial_empty_k_vals(Nx.t(), Keyword.t()) :: Nx.t()
   defn initial_empty_k_vals(x, opts \\ []) do
     # Note that `order` needs to be passed in as an option, otherwise I get an error about a dimension

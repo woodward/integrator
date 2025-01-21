@@ -4,7 +4,6 @@ defmodule Integrator.RungeKutta.StepTest do
 
   import Nx, only: :sigils
 
-  alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
@@ -306,33 +305,6 @@ defmodule Integrator.RungeKutta.StepTest do
                error_estimate: nan,
                dt: nan
              }
-    end
-  end
-
-  describe "initial_output_t_and_x_multiple_points" do
-    test "returns t and x of the correct sizes and type - interpolation and no fixed times" do
-      options = %AdaptiveStepsize.NxOptions{refine: 4, type: {:f, 64}}
-      x0 = Nx.f32([0.0, 0.0])
-
-      {output_t, output_x} = Step.initial_output_t_and_x_multiple_points(x0, options)
-
-      assert output_t == Nx.f64([0.0, 0.0, 0.0, 0.0])
-      assert output_x == ~MAT[
-        0.0  0.0  0.0  0.0
-        0.0  0.0  0.0  0.0
-      ]f64
-    end
-  end
-
-  describe "initial_output_t_and_x_single_point" do
-    test "returns t and x of the correct sizes and type" do
-      options = %AdaptiveStepsize.NxOptions{type: {:f, 64}}
-      x0 = Nx.f32([0.0, 0.0])
-
-      {output_t, output_x} = Step.initial_output_t_and_x_single_point(x0, options)
-
-      assert output_t == Nx.f64(0.0)
-      assert output_x == Nx.f64([0.0, 0.0])
     end
   end
 
