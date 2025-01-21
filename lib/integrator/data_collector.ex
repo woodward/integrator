@@ -22,6 +22,11 @@ defmodule Integrator.DataCollector do
     GenServer.call(pid, :get_data)
   end
 
+  @spec get_last_n_data(pid(), pos_integer()) :: [Nx.t()]
+  def get_last_n_data(pid, number_of_data) do
+    GenServer.call(pid, {:get_last_n_data, number_of_data})
+  end
+
   # ------------------------------------------------------------------------------------------------
 
   @impl true
@@ -44,5 +49,10 @@ defmodule Integrator.DataCollector do
   @impl true
   def handle_call(:get_data, _from, state) do
     {:reply, state.data |> Enum.reverse(), state}
+  end
+
+  @impl true
+  def handle_call({:get_last_n_data, number_of_data}, _from, state) do
+    {:reply, state.data |> Enum.take(number_of_data) |> Enum.reverse(), state}
   end
 end
