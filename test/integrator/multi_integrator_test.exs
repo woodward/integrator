@@ -37,7 +37,6 @@ defmodule Integrator.MultiIntegratorTest do
       ]
     end
 
-    @tag :skip
     test "performs the integration", %{
       opts: opts,
       t_initial: t_initial,
@@ -51,18 +50,25 @@ defmodule Integrator.MultiIntegratorTest do
       output_fn = &DataCollector.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
-      transition_fn = fn t, x, multi, opts ->
+      transition_fn = fn t, x, _multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        # last_integration = multi.integrations |> List.first()
-        # first_t = last_integration.t_current
-        # [last_t | rest_of_t] = last_integration.ode_t |> Enum.reverse()
-        # [next_to_last_t | _rest] = rest_of_t
-        # initial_step = Nx.subtract(last_t, next_to_last_t)
-        # max_step = Nx.subtract(last_t, first_t)
-        # opts = opts |> Keyword.merge(max_step: max_step, initial_step: initial_step)
-        status = if length(multi.integrations) >= 10, do: :halt, else: :continue
+        last_five_points = DataCollector.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+
+        last_point = last_five_points |> List.last()
+        fifth_from_last_point = last_five_points |> List.first()
+
+        last_t = Map.get(last_point, :t)
+        next_to_last_t = Map.get(fifth_from_last_point, :t)
+        initial_step = last_t - next_to_last_t
+
+        opts = opts |> Keyword.merge(initial_step: initial_step)
+        expected_last_t = 26.55745402242616
+
+        status = if abs(last_t - expected_last_t) < 1.0e-04, do: :halt, else: :continue
+        # Old way was to check for 10 bounces:
+        # status = if length(multi.integrations) >= 10, do: :halt, else: :continue
         {status, t, x, opts}
       end
 
@@ -72,12 +78,16 @@ defmodule Integrator.MultiIntegratorTest do
       expected_t = read_nx_list("test/fixtures/octave_results/ballode/default/t.csv") |> Enum.take(amount_to_check)
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
-      {output_t, output_x} = DataCollector.get_data(pid) |> Enum.take(amount_to_check) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} =
+        DataCollector.get_data(pid)
+        |> Point.filter_out_points_with_same_t()
+        |> Enum.take(amount_to_check)
+        |> Point.split_points_into_t_and_x()
 
-      # actual_t = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
-      # File.write!("test/fixtures/octave_results/ballode/default/junk_t_elixir.csv", actual_t)
-      # actual_x = output_x |> Enum.map(fn x -> "#{Nx.to_number(x[0])}    #{Nx.to_number(x[1])}\n" end)
-      # File.write!("test/fixtures/octave_results/ballode/default/junk_x_elixir.csv.csv", actual_x)
+      actual_t = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
+      File.write!("test/fixtures/octave_results/ballode/default/junk_t_elixir.csv", actual_t)
+      actual_x = output_x |> Enum.map(fn x -> "#{Nx.to_number(x[0])}    #{Nx.to_number(x[1])}\n" end)
+      File.write!("test/fixtures/octave_results/ballode/default/junk_x_elixir.csv.csv", actual_x)
 
       assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-02, rtol: 1.0e-02)
       assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-02, rtol: 1.0e-02)
