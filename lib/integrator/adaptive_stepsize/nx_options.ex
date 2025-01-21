@@ -77,7 +77,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
             #
             non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
 
-  @spec convert_opts_to_nx_options(Nx.t() | float(), Nx.t() | float(), integer(), Keyword.t()) :: NxOptions.t()
+  @spec convert_opts_to_nx_options(Nx.t() | float(), Nx.t() | float(), integer(), Keyword.t()) :: t()
   deftransform convert_opts_to_nx_options(t_start, t_end, order, opts) do
     nimble_opts = opts |> NimbleOptions.validate!(AdaptiveStepsize.options_schema()) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()

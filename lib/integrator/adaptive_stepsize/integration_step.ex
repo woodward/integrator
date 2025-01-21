@@ -140,6 +140,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     }
   end
 
+  @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status_integration(%__MODULE__{status_integration: status_value} = _integration_step) do
     status_integration(status_value)
   end
@@ -156,6 +157,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     end
   end
 
+  @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status_non_linear_eqn_root(%__MODULE__{status_non_linear_eqn_root: status_value} = _integration_step) do
     status_non_linear_eqn_root(status_value)
   end
