@@ -103,16 +103,16 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     elapsed_time_μs: Nx.s64(0)
   ]
 
-  @spec new(
-          stepper_fn :: RungeKutta.stepper_fn_t(),
-          interpolate_fn :: RungeKutta.interpolate_fn_t(),
-          ode_fn :: RungeKutta.ode_fn_t(),
-          t_start :: Nx.t(),
-          initial_tstep :: Nx.t(),
-          x0 :: Nx.t(),
-          options :: Integrator.AdaptiveStepsize.NxOptions.t(),
-          start_timestamp_μs :: pos_integer()
-        ) :: t()
+  # @spec new(
+  #         stepper_fn :: RungeKutta.stepper_fn_t(),
+  #         interpolate_fn :: RungeKutta.interpolate_fn_t(),
+  #         ode_fn :: RungeKutta.ode_fn_t(),
+  #         t_start :: Nx.t(),
+  #         initial_tstep :: Nx.t(),
+  #         x0 :: Nx.t(),
+  #         options :: Integrator.AdaptiveStepsize.NxOptions.t(),
+  #         start_timestamp_μs :: pos_integer()
+  #       ) :: t()
   deftransform new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs) do
     type = options.type
 
