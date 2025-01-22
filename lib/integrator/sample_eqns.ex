@@ -10,7 +10,7 @@ defmodule Integrator.SampleEqns do
 
   fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
   """
-  @spec van_der_pol_fn(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec van_der_pol_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn van_der_pol_fn(_t, x) do
     x0 = x[0]
     x1 = x[1]
@@ -32,7 +32,7 @@ defmodule Integrator.SampleEqns do
   Shampine, L. F., and M. K. Gordon, Computer Solution of Ordinary Differential Equations,
   W.H. Freeman & Co., 1975
   """
-  @spec euler_equations(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec euler_equations(Nx.t(), Nx.t()) :: Nx.t()
   defn euler_equations(_t, x) do
     # Octave:
     #   dxdt = [ x(2)*x(3) ;  -x(1)*x(3) ; -0.51*x(1)*x(2) ];
@@ -48,7 +48,7 @@ defmodule Integrator.SampleEqns do
   Simulates a point mass or particle falling through pass affected by gravity.  Used for comparisons
   with the Matlab/Octave `ballode.m` routine
   """
-  @spec falling_particle(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec falling_particle(Nx.t(), Nx.t()) :: Nx.t()
   defn falling_particle(_t, x) do
     x0 = x[1]
     x1 = Nx.tensor(@acc_due_to_gravity, type: Nx.type(x))
@@ -60,7 +60,7 @@ defmodule Integrator.SampleEqns do
   if x[0] is below the zero plane, or 1 if x[0] is above the zero plane.  Used for comparisons
   with the Matlab/Octave `ballode.m` routine
   """
-  @spec falling_particle_event_fn(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec falling_particle_event_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn falling_particle_event_fn(_t, x) do
     # type = Nx.type(x)
     # zero = Nx.tensor(0, type: type)

@@ -6,7 +6,7 @@ defmodule Integrator.RungeKutta.Step do
 
   import Nx.Defn
 
-  alias Integrator.AdaptiveStepsize.NxOptions
+  # alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.RungeKutta
   alias Integrator.Utils
 
@@ -55,7 +55,7 @@ defmodule Integrator.RungeKutta.Step do
   previous Runge-Kutta computation. This function basically wraps the core Runge-Kutta computation
   contained in `Integrator.RugeKutta.compute_step/8` in a `Integrator.RungaKutta.Step` struct.
   """
-  @spec compute_step(t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: t()
+  # @spec compute_step(t(), Nx.t(), RungeKutta.stepper_fn_t(), RungeKutta.ode_fn_t(), NxOptions.t()) :: t()
   defn compute_step(step, dt, stepper_fn, ode_fn, options) do
     x_old = step.x_new
     t_old = step.t_new
@@ -83,7 +83,7 @@ defmodule Integrator.RungeKutta.Step do
   @doc """
   Create the intial `Integrator.RungeKutta.Step` struct based on initial values and options
   """
-  @spec initial_step(Nx.t(), Nx.t(), Keyword.t()) :: t()
+  # @spec initial_step(Nx.t(), Nx.t(), Keyword.t()) :: t()
   defn initial_step(t0, x0, opts \\ []) do
     opts = keyword!(opts, order: 5)
     type = Nx.type(x0)
@@ -109,7 +109,7 @@ defmodule Integrator.RungeKutta.Step do
   Use the results of the Runge-Kutta computation to interpolate multiple `x` values for various
   values of `t`.
   """
-  @spec interpolate_multiple_points(fun(), Nx.t(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
+  # @spec interpolate_multiple_points(fun(), Nx.t(), t(), NxOptions.t()) :: {Nx.t(), Nx.t()}
   defn interpolate_multiple_points(interpolate_fn, t, rk_step, options) do
     refine = options.refine
     type = options.type
@@ -127,14 +127,14 @@ defmodule Integrator.RungeKutta.Step do
   @doc """
   Interpolate a single `x` value for a value of `t`
   """
-  @spec interpolate_single_specified_point(fun(), t(), Nx.t()) :: {Nx.t(), Nx.t()}
+  # @spec interpolate_single_specified_point(fun(), t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn interpolate_single_specified_point(interpolate_fn, rk_step, t_add) do
     t = Nx.stack([rk_step.t_old, rk_step.t_new])
     x = Nx.stack([rk_step.x_old, rk_step.x_new]) |> Nx.transpose()
     interpolate_fn.(t, x, rk_step.k_vals, t_add) |> Utils.last_column()
   end
 
-  @spec initial_empty_k_vals(Nx.t(), Keyword.t()) :: Nx.t()
+  # @spec initial_empty_k_vals(Nx.t(), Keyword.t()) :: Nx.t()
   defn initial_empty_k_vals(x, opts \\ []) do
     # Note that `order` needs to be passed in as an option, otherwise I get an error about a dimension
     # being a tensor if it's passed in as a standard argument

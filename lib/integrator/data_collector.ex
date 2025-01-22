@@ -7,22 +7,22 @@ defmodule Integrator.DataCollector do
 
   use GenServer
 
-  @spec start_link(Keyword.t()) :: GenServer.on_start()
+  # @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, opts)
   end
 
-  @spec add_data(pid(), Nx.t()) :: :ok
+  # @spec add_data(pid(), Nx.t()) :: :ok
   def add_data(pid, data_point) do
     GenServer.cast(pid, {:add_data, data_point})
   end
 
-  @spec get_data(pid()) :: [Nx.t()]
+  # @spec get_data(pid()) :: [Nx.t()]
   def get_data(pid) do
     GenServer.call(pid, :get_data)
   end
 
-  @spec get_last_n_data(pid(), pos_integer()) :: [Nx.t()]
+  # @spec get_last_n_data(pid(), pos_integer()) :: [Nx.t()]
   def get_last_n_data(pid, number_of_data) do
     GenServer.call(pid, {:get_last_n_data, number_of_data})
   end

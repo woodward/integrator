@@ -18,8 +18,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
 
   alias Integrator.ExternalFnAdapter
   alias Integrator.Interpolation
-  alias Integrator.NonLinearEqnRoot
-  alias Integrator.NonLinearEqnRoot.NxOptions
+  # alias Integrator.NonLinearEqnRoot
+  # alias Integrator.NonLinearEqnRoot.NxOptions
 
   @initial_mu 0.5
   defn initial_mu, do: @initial_mu
@@ -51,8 +51,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Halt - a root has been found:
   @halt 0
 
-  @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
-          NonLinearEqnRoot.t()
+  # @spec iterate(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()], NxOptions.t()) ::
+  # NonLinearEqnRoot.t()
+
   defn iterate(z, zero_fn, zero_fn_args, options) do
     continue? = Nx.tensor(1, type: :u8)
 
@@ -103,7 +104,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     tuple_args |> Tuple.to_list()
   end
 
-  @spec compute_iteration(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec compute_iteration(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration(z) do
     iteration_type = z.iteration_type
 
@@ -118,7 +119,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec compute_iteration_type_1(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec compute_iteration_type_1(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration_type_1(z) do
     # Octave:
     #   if (abs (fa) <= 1e3*abs (fb) && abs (fb) <= 1e3*abs (fa))
@@ -142,7 +143,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | c: c, d: z.u, fd: z.fu, iteration_type: 5, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_types_2_or_3(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec compute_iteration_types_2_or_3(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration_types_2_or_3(z) do
     length = number_of_unique_values(z.fa, z.fb, z.fd, z.fe)
 
@@ -170,7 +171,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | iteration_type: z.iteration_type + 1, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_type_4(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec compute_iteration_type_4(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration_type_4(z) do
     # Octave:
     #   # Double secant step.
@@ -194,7 +195,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | iteration_type: 5, c: c, interpolation_type_debug_only: interpolation_type}
   end
 
-  @spec compute_iteration_type_5(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec compute_iteration_type_5(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn compute_iteration_type_5(z) do
     # Octave:
     #   # Bisection step.
@@ -205,18 +206,18 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     %{z | iteration_type: 2, c: c, interpolation_type_debug_only: @interpolation_bisect}
   end
 
-  @spec converged?(NonLinearEqnRoot.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec converged?(NonLinearEqnRoot.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn converged?(z, machine_eps, tolerance) do
     z.b - z.a <= 2 * (2 * Nx.abs(z.u) * machine_eps + tolerance)
   end
 
-  @spec too_far?(Nx.t(), NonLinearEqnRoot.t()) :: Nx.t()
+  # @spec too_far?(Nx.t(), NonLinearEqnRoot.t()) :: Nx.t()
   defn too_far?(c, z) do
     Nx.abs(c - z.u) > 0.5 * (z.b - z.a)
   end
 
   # Modification 2: skip inverse cubic interpolation if nonmonotonicity is detected
-  @spec check_for_non_monotonicity(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec check_for_non_monotonicity(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn check_for_non_monotonicity(z) do
     if same_signs_or_any_zeros?(z.fc - z.fa, z.fc - z.fb) do
       # The new point broke monotonicity.
@@ -263,7 +264,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
           fn_eval_count: Nx.t()
         }
 
-  @spec find_2nd_starting_point(NonLinearEqnRoot.zero_fn_t(), Nx.t(), [Nx.t()]) :: map()
+  # @spec find_2nd_starting_point(NonLinearEqnRoot.zero_fn_t(), Nx.t(), [Nx.t()]) :: map()
   defn find_2nd_starting_point(zero_fn, a, zero_fn_args) do
     # For very small values, switch to absolute rather than relative search:
     a =
@@ -292,10 +293,10 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     found_x
   end
 
-  @spec found?(search_for_2nd_point_t()) :: Nx.t()
+  # @spec found?(search_for_2nd_point_t()) :: Nx.t()
   defn found?(x), do: different_signs_or_any_zeros?(x.fa, x.fb)
 
-  @spec skip_bisection_if_successful_reduction(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec skip_bisection_if_successful_reduction(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn skip_bisection_if_successful_reduction(z) do
     # Octave:
     #   if (iteration_type == 5 && (b - a) <= mba)
@@ -320,7 +321,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec update_u(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec update_u(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn update_u(z) do
     # Octave:
     #   if (abs (fa) < abs (fb))
@@ -336,7 +337,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec number_of_unique_values(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn number_of_unique_values(one, two, three, four) do
     # There's got to be a better, Nx-ey way to do this! This is brute-force (for now) - ugh!
 
@@ -356,7 +357,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec bracket(NonLinearEqnRoot.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
+  # @spec bracket(NonLinearEqnRoot.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defn bracket(z) do
     cond do
       different_signs?(z.fa, z.fc) ->
@@ -375,12 +376,12 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec is_nil?(any()) :: Nx.t()
+  # @spec is_nil?(any()) :: Nx.t()
   deftransform is_nil?(item) do
     if is_nil(item), do: 1, else: 0
   end
 
-  @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()]) :: NonLinearEqnRoot.t()
+  # @spec fn_eval_new_point(NonLinearEqnRoot.t(), NonLinearEqnRoot.zero_fn_t(), [Nx.t()]) :: NonLinearEqnRoot.t()
   defn fn_eval_new_point(z, zero_fn, zero_fn_args) do
     zero_fn_args_as_list = zero_fn_args |> to_list()
     fc = zero_fn.(z.c, zero_fn_args_as_list)
@@ -396,7 +397,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     }
   end
 
-  @spec check_for_max_iteration_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
+  # @spec check_for_max_iteration_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defnp check_for_max_iteration_count_exceeded(status_z, max_iterations) do
     {status, z} = status_z
 
@@ -407,7 +408,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec check_for_max_fn_eval_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
+  # @spec check_for_max_fn_eval_count_exceeded({Nx.t(), NonLinearEqnRoot.t()}, Nx.t()) :: {Nx.t(), NonLinearEqnRoot.t()}
   defnp check_for_max_fn_eval_count_exceeded(status_z, max_fn_eval_count) do
     {status, z} = status_z
 
@@ -418,7 +419,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
     end
   end
 
-  @spec adjust_if_too_close_to_a_or_b(NonLinearEqnRoot.t(), Nx.t(), Nx.t()) :: NonLinearEqnRoot.t()
+  # @spec adjust_if_too_close_to_a_or_b(NonLinearEqnRoot.t(), Nx.t(), Nx.t()) :: NonLinearEqnRoot.t()
   defn adjust_if_too_close_to_a_or_b(z, machine_eps, tolerance) do
     type = Nx.type(z.c)
     two = Nx.tensor(2, type: type)
@@ -438,7 +439,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   # Some debugging utils below here:
 
   # For debugging purposes
-  @spec print_line(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec print_line(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn print_line(z) do
     hook(z, fn step ->
       IO.puts("# ----------------------------------")
@@ -447,7 +448,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   # For debugging purposes
-  @spec print_number_of_unique_values(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec print_number_of_unique_values(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn print_number_of_unique_values(z) do
     hook(z, fn step ->
       IO.puts("# Number of unique values: #{inspect(Nx.to_number(number_of_unique_values(step.fa, step.fb, step.fd, step.fe)))}")
@@ -456,7 +457,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   # For debugging purposes
-  @spec print_computing_iteration_type(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec print_computing_iteration_type(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn print_computing_iteration_type(z) do
     # hook(z, fn step ->
     #   IO.puts("Computing iteration type #{inspect(Nx.to_number(step.iteration_type))}")
@@ -466,7 +467,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   # For debugging purposes
-  @spec print_z(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
+  # @spec print_z(NonLinearEqnRoot.t()) :: NonLinearEqnRoot.t()
   defn print_z(z) do
     hook(z, fn step ->
       print = &inspect(Nx.to_number(&1))
@@ -502,13 +503,13 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputations do
   end
 
   # Used in tests
-  @spec bracket_x(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
+  # @spec bracket_x(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
   def bracket_x(z) do
     {z.a, z.b}
   end
 
   # Used in tests
-  @spec bracket_fx(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
+  # @spec bracket_fx(NonLinearEqnRoot.t()) :: {Nx.t(), Nx.t()}
   def bracket_fx(z) do
     {z.fa, z.fb}
   end

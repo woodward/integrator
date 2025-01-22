@@ -19,13 +19,13 @@ defmodule Integrator.ExternalFnAdapter do
           external_fn: fun()
         }
 
-  @spec no_op_fn(any()) :: any()
+  # @spec no_op_fn(any()) :: any()
   defn no_op_fn(arg), do: arg
 
-  @spec non_defn_no_op_fn(any()) :: any()
+  # @spec non_defn_no_op_fn(any()) :: any()
   def non_defn_no_op_fn(arg), do: arg
 
-  @spec no_op_double_arity_fn(any(), any()) :: any()
+  # @spec no_op_double_arity_fn(any(), any()) :: any()
   defn no_op_double_arity_fn(_arg1, _arg2), do: Nx.u8(1)
 
   # Note that just doing &(&1) did not work here; the no_op_fn/1 had to be defined above instead
@@ -34,7 +34,7 @@ defmodule Integrator.ExternalFnAdapter do
   @doc """
   Invoke an external (i.e., Elixir) function via an Nx hook
   """
-  @spec invoke_external_fn(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec invoke_external_fn(Nx.t(), Nx.t()) :: Nx.t()
   defn invoke_external_fn(z, external_fn_adapter) do
     {z, _external_fn_adapter} =
       hook({z, external_fn_adapter}, fn {zz, adapter} ->
@@ -45,11 +45,11 @@ defmodule Integrator.ExternalFnAdapter do
     z
   end
 
-  @spec wrap_external_fn(nil | fun()) :: t()
+  # @spec wrap_external_fn(nil | fun()) :: t()
   deftransform wrap_external_fn(nil = _external_fn), do: %__MODULE__{}
   deftransform wrap_external_fn(external_fn), do: %__MODULE__{external_fn: external_fn}
 
-  @spec wrap_external_fn_double_arity(nil | fun()) :: t()
+  # @spec wrap_external_fn_double_arity(nil | fun()) :: t()
   deftransform wrap_external_fn_double_arity(nil = _external_fn),
     do: %__MODULE__{external_fn: &__MODULE__.no_op_double_arity_fn/2}
 

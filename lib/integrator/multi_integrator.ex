@@ -70,7 +70,7 @@ defmodule Integrator.MultiIntegrator do
   @doc """
   Collates the simulation output from all of the integrations
   """
-  @spec all_output_data(t(), atom()) :: [Nx.t()]
+  # @spec all_output_data(t(), atom()) :: [Nx.t()]
   def all_output_data(multi, t_or_x) do
     output =
       multi.integrations
@@ -87,16 +87,16 @@ defmodule Integrator.MultiIntegrator do
   # ===========================================================================
   # Private functions below here:
 
-  @spec integrate_next_segment(
-          multi :: t(),
-          status :: integration_status(),
-          ode_fn :: RungeKutta.ode_fn_t(),
-          transition_fn :: transition_fn_t(),
-          t_start :: float(),
-          t_end :: float(),
-          x0 :: Nx.t(),
-          opts :: Keyword.t()
-        ) :: t()
+  # @spec integrate_next_segment(
+  #         multi :: t(),
+  #         status :: integration_status(),
+  #         ode_fn :: RungeKutta.ode_fn_t(),
+  #         transition_fn :: transition_fn_t(),
+  #         t_start :: float(),
+  #         t_end :: float(),
+  #         x0 :: Nx.t(),
+  #         opts :: Keyword.t()
+  #       ) :: t()
   defp integrate_next_segment(multi, _status, _ode_fn, _transition_fn, t_start, t_end, _x0, _opts)
        when abs(t_start - t_end) < @zero_tolerance or t_start >= t_end do
     %{multi | integration_status: :completed}
@@ -120,7 +120,7 @@ defmodule Integrator.MultiIntegrator do
     integrate_next_segment(multi, status, ode_fn, transition_fn, Nx.to_number(new_t_start), t_end, new_x0, opts)
   end
 
-  @spec reverse_results(t()) :: t()
+  # @spec reverse_results(t()) :: t()
   defp reverse_results(multi) do
     %{
       multi
@@ -131,7 +131,7 @@ defmodule Integrator.MultiIntegrator do
     }
   end
 
-  @spec update(t(), Nx.t(), Nx.t(), Nx.t()) :: t()
+  # @spec update(t(), Nx.t(), Nx.t(), Nx.t()) :: t()
   defp update(multi, new_t_start, last_x, new_x0) do
     %{
       multi

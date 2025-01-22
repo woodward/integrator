@@ -13,7 +13,7 @@ defmodule Integrator.Interpolation do
 
   See [Wikipedia](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
   """
-  @spec hermite_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec hermite_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_cubic(t, x, der, t_out) do
     # Octave:
     #   dt = (t(2) - t(1));
@@ -60,7 +60,7 @@ defmodule Integrator.Interpolation do
 
   See [hermite_quartic_interpolation function in Octave](https://github.com/gnu-octave/octave/blob/default/scripts/ode/private/runge_kutta_interpolate.m#L91).
   """
-  @spec hermite_quartic(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec hermite_quartic(Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn hermite_quartic(t, x, der, t_out) do
     dt = t[1] - t[0]
     x_col1 = Nx.slice_along_axis(x, 0, 1, axis: 1)
@@ -104,7 +104,7 @@ defmodule Integrator.Interpolation do
   @doc """
   Used by `NonLinearEqnRoot`
   """
-  @spec quadratic_plus_newton(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec quadratic_plus_newton(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn quadratic_plus_newton(a, fa, b, fb, d, fd, iteration_type) do
     a0 = fa
     a1 = (fb - fa) / (b - a)
@@ -141,7 +141,7 @@ defmodule Integrator.Interpolation do
   @doc """
   Used by `NonLinearEqnRoot`
   """
-  @spec inverse_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec inverse_cubic(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn inverse_cubic(a, fa, b, fb, d, fd, e, fe) do
     q11 = (d - e) * fd / (fe - fd)
     q21 = (b - d) * fb / (fd - fb)
@@ -160,7 +160,7 @@ defmodule Integrator.Interpolation do
   @doc """
   Used by `NonLinearEqnRoot`
   """
-  @spec secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn secant(a, fa, b, fb, u, fu) do
     u - (a - b) / (fa - fb) * fu
   end
@@ -168,7 +168,7 @@ defmodule Integrator.Interpolation do
   @doc """
   Used by `NonLinearEqnRoot`
   """
-  @spec double_secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
+  # @spec double_secant(Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t(), Nx.t()) :: Nx.t()
   defn double_secant(a, fa, b, fb, u, fu) do
     u - 2.0 * (b - a) / (fb - fa) * fu
   end
@@ -176,7 +176,7 @@ defmodule Integrator.Interpolation do
   @doc """
   Used by `NonLinearEqnRoot`
   """
-  @spec bisect(Nx.t(), Nx.t()) :: Nx.t()
+  # @spec bisect(Nx.t(), Nx.t()) :: Nx.t()
   defn bisect(a, b) do
     0.5 * (b + a)
   end

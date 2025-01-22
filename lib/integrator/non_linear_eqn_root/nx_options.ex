@@ -37,7 +37,7 @@ defmodule Integrator.NonLinearEqnRoot.NxOptions do
             tolerance: 0,
             output_fn_adapter: %ExternalFnAdapter{}
 
-  @spec convert_opts_to_nx_options(Keyword.t()) :: t()
+  # @spec convert_opts_to_nx_options(Keyword.t()) :: t()
   deftransform convert_opts_to_nx_options(opts) do
     nimble_opts = opts |> NimbleOptions.validate!(NonLinearEqnRoot.options_schema()) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
