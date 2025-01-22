@@ -140,7 +140,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     }
   end
 
-  # @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
+  @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status_integration(%__MODULE__{status_integration: status_value} = _integration_step) do
     status_integration(status_value)
   end
@@ -157,7 +157,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     end
   end
 
-  # @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
+  @spec status_integration(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status_non_linear_eqn_root(%__MODULE__{status_non_linear_eqn_root: status_value} = _integration_step) do
     status_non_linear_eqn_root(status_value)
   end
@@ -166,7 +166,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     Integrator.NonLinearEqnRoot.status(status_value)
   end
 
-  # @spec to_tensor(Nx.t() | float(), Nx.Type.t()) :: Nx.t()
+  @spec to_tensor(Nx.t() | float(), Nx.Type.t()) :: Nx.t()
   deftransform to_tensor(%Nx.Tensor{} = tensor, type) do
     if Nx.type(tensor) != type do
       raise "tensor #{inspect(tensor)} is of incorrect type, #{inspect(type)} expected}"

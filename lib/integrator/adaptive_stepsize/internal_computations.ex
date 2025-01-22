@@ -7,7 +7,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
 
   # alias Integrator.ExternalFnAdapter
   alias Integrator.AdaptiveStepsize.IntegrationStep
-  # alias Integrator.AdaptiveStepsize.NxOptions
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.Point
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.Step
@@ -47,7 +47,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec compute_integration_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}
+  @spec compute_integration_step(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}
   defn compute_integration_step(step, t_end, options) do
     rk_step = RungeKutta.Step.compute_step(step.rk_step, step.dt_new, step.stepper_fn, step.ode_fn, options)
     step = step |> increment_compute_counter()
@@ -103,12 +103,12 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     rk_step.error_estimate < 1.0
   end
 
-  # @spec reset_error_count_to_zero(IntegrationStep.t()) :: IntegrationStep.t()
+  @spec reset_error_count_to_zero(IntegrationStep.t()) :: IntegrationStep.t()
   defn reset_error_count_to_zero(step) do
     %{step | error_count: 0}
   end
 
-  # @spec increment_counters(IntegrationStep.t()) :: IntegrationStep.t()
+  @spec increment_counters(IntegrationStep.t()) :: IntegrationStep.t()
   defn increment_counters(step) do
     %{
       step
@@ -118,7 +118,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     }
   end
 
-  # @spec merge_rk_step_into_integration_step(IntegrationStep.t(), RungeKutta.Step.t()) :: IntegrationStep.t()
+  @spec merge_rk_step_into_integration_step(IntegrationStep.t(), RungeKutta.Step.t()) :: IntegrationStep.t()
   defn merge_rk_step_into_integration_step(step, rk_step) do
     %{
       step
@@ -128,7 +128,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     }
   end
 
-  # @spec interpolate_output_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec interpolate_output_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_output_points(step, options) do
     cond do
       options.fixed_output_times? ->
@@ -146,7 +146,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec interpolate_output_fixed_times(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec interpolate_output_fixed_times(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_output_fixed_times(step, options) do
     {step, _} =
       while({step, options}, fixed_point_within_this_step?(step.fixed_output_t_next, step.rk_step.t_new)) do
@@ -163,7 +163,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   defn true_nx, do: Nx.u8(1)
   defn false_nx, do: Nx.u8(0)
 
-  # @spec interpolate_fixed_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec interpolate_fixed_points(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn interpolate_fixed_points(step, options) do
     fixed_output_t_next = step.fixed_output_t_next
 
@@ -181,7 +181,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec fixed_point_within_this_step?(Nx.t(), Nx.t()) :: Nx.t()
+  @spec fixed_point_within_this_step?(Nx.t(), Nx.t()) :: Nx.t()
   defnp fixed_point_within_this_step?(fixed_time, t_new) do
     fixed_time < t_new or Nx.abs(fixed_time - t_new) < @zero_tolerance
   end
@@ -217,7 +217,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  # @spec compute_sleep_time(IntegrationStep.t(), NxOptions.t(), pos_integer()) :: pos_integer() | nil
+  @spec compute_sleep_time(IntegrationStep.t(), NxOptions.t(), pos_integer()) :: pos_integer() | nil
   deftransform compute_sleep_time(step, options, time_now_μs \\ :os.system_time(:microsecond)) do
     if Nx.to_number(step.error_count) > 0 or options.speed == Nx.Constants.infinity(options.type) do
       nil
@@ -233,13 +233,13 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec continue :: Nx.t()
+  @spec continue :: Nx.t()
   defn continue, do: Nx.u8(1)
 
-  # @spec halt :: Nx.t()
+  @spec halt :: Nx.t()
   defn halt, do: Nx.u8(0)
 
-  # @spec call_event_fn(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec call_event_fn(IntegrationStep.t(), NxOptions.t()) :: IntegrationStep.t()
   defn call_event_fn(step, options) do
     event_fn_result = options.event_fn_adapter.external_fn.(step.t_current, step.x_current)
 
@@ -308,25 +308,25 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec increment_compute_counter(IntegrationStep.t()) :: IntegrationStep.t()
+  @spec increment_compute_counter(IntegrationStep.t()) :: IntegrationStep.t()
   defnp increment_compute_counter(step) do
     %{step | count_cycles__compute_step: step.count_cycles__compute_step + 1}
   end
 
-  # @spec factor(Nx.t(), Nx.Type.t()) :: Nx.t()
+  @spec factor(Nx.t(), Nx.Type.t()) :: Nx.t()
   # defnp factor(order, nx_type), do: if(order == 3, do: @factor_order3, else: @factor_order5)
   defnp factor(order, nx_type) do
     Nx.tensor(0.38, type: nx_type) ** exponent(order, nx_type)
   end
 
-  # @spec exponent(Nx.t(), Nx.Type.t()) :: Nx.t()
+  @spec exponent(Nx.t(), Nx.Type.t()) :: Nx.t()
   defnp exponent(order, nx_type), do: Nx.tensor(1, type: nx_type) / (Nx.tensor(1, type: nx_type) + order)
 
   @stepsize_factor_min 0.8
   @stepsize_factor_max 1.5
 
   # Formula taken from Hairer
-  # @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), NxOptions.t()) :: Nx.t()
+  @spec compute_next_timestep(Nx.t(), Nx.t(), integer(), Nx.t(), Nx.t(), NxOptions.t()) :: Nx.t()
   defn compute_next_timestep(dt, error, order, t_old, t_end, options) do
     type = options.type
 
@@ -346,7 +346,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     min(Nx.abs(dt), Nx.abs(t_end - t_old))
   end
 
-  # @spec bump_error_count(IntegrationStep.t(), Nx.t() | integer()) :: IntegrationStep.t()
+  @spec bump_error_count(IntegrationStep.t(), Nx.t() | integer()) :: IntegrationStep.t()
   defnp bump_error_count(step, max_number_of_errors) do
     step = %{step | error_count: step.error_count + 1}
 
@@ -357,7 +357,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     end
   end
 
-  # @spec record_elapsed_time(IntegrationStep.t()) :: IntegrationStep.t()
+  @spec record_elapsed_time(IntegrationStep.t()) :: IntegrationStep.t()
   defn record_elapsed_time(step) do
     %{step | elapsed_time_μs: timestamp_μs() - step.start_timestamp_μs}
   end

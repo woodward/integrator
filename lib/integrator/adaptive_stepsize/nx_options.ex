@@ -77,7 +77,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
             #
             non_linear_eqn_root_nx_options: %NonLinearEqnRoot.NxOptions{}
 
-  # @spec convert_opts_to_nx_options(Nx.t() | float(), Nx.t() | float(), integer(), Keyword.t()) :: t()
+  @spec convert_opts_to_nx_options(Nx.t() | float(), Nx.t() | float(), integer(), Keyword.t()) :: t()
   deftransform convert_opts_to_nx_options(t_start, t_end, order, opts) do
     nimble_opts = opts |> NimbleOptions.validate!(AdaptiveStepsize.options_schema()) |> Map.new()
     nx_type = nimble_opts[:type] |> Nx.Type.normalize!()
@@ -143,7 +143,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
     }
   end
 
-  # @spec default_max_step(Nx.t() | float(), Nx.t() | float()) :: Nx.t() | float()
+  @spec default_max_step(Nx.t() | float(), Nx.t() | float()) :: Nx.t() | float()
   deftransformp default_max_step(%Nx.Tensor{} = t_start, %Nx.Tensor{} = t_end) do
     # See Octave: integrate_adaptive.m:89
     Nx.subtract(t_start, t_end) |> Nx.abs() |> Nx.multiply(Nx.tensor(0.1, type: Nx.type(t_start)))

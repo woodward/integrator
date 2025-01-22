@@ -70,7 +70,7 @@ defmodule Integrator.MultiIntegrator do
   @doc """
   Collates the simulation output from all of the integrations
   """
-  # @spec all_output_data(t(), atom()) :: [Nx.t()]
+  @spec all_output_data(t(), atom()) :: [Nx.t()]
   def all_output_data(multi, t_or_x) do
     output =
       multi.integrations
@@ -120,7 +120,7 @@ defmodule Integrator.MultiIntegrator do
     integrate_next_segment(multi, status, ode_fn, transition_fn, Nx.to_number(new_t_start), t_end, new_x0, opts)
   end
 
-  # @spec reverse_results(t()) :: t()
+  @spec reverse_results(t()) :: t()
   defp reverse_results(multi) do
     %{
       multi

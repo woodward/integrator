@@ -241,7 +241,7 @@ defmodule Integrator.AdaptiveStepsize do
 
   # Creates a zero vector that has the length of `x`
   # Is there a better built-in Nx way of doing this?
-  # @spec zero_vector(Nx.t(), Nx.t()) :: Nx.t()
+  @spec zero_vector(Nx.t(), Nx.t()) :: Nx.t()
   defnp zero_vector(size, type) do
     0.0 |> Nx.tensor(type: type) |> Nx.broadcast({size})
   end

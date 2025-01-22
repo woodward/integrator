@@ -168,7 +168,7 @@ defmodule Integrator.NonLinearEqnRoot do
 
   """
 
-  # @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
+  @spec find_zero(zero_fn_t(), float() | Nx.t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero(zero_fn, a, b, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
     options_nx = NxOptions.convert_opts_to_nx_options(opts)
@@ -181,7 +181,7 @@ defmodule Integrator.NonLinearEqnRoot do
     %{result | elapsed_time_μs: elapsed_time_μs(start_time_μs)}
   end
 
-  # @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
+  @spec find_zero_with_single_point(zero_fn_t(), float() | Nx.t(), [float() | Nx.t()], Keyword.t()) :: t()
   deftransform find_zero_with_single_point(zero_fn, solo_point, zero_fn_args, opts \\ []) do
     start_time_μs = timestamp_μs()
     options = NxOptions.convert_opts_to_nx_options(opts)
@@ -198,7 +198,7 @@ defmodule Integrator.NonLinearEqnRoot do
     }
   end
 
-  # @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
+  @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
   defn find_zero_nx(zero_fn, a, b, zero_fn_args, options) do
     fa = zero_fn.(a, zero_fn_args)
     fb = zero_fn.(b, zero_fn_args)
@@ -252,7 +252,7 @@ defmodule Integrator.NonLinearEqnRoot do
     # end
   end
 
-  # @spec status(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
+  @spec status(t() | Nx.t() | integer()) :: :ok | {:error, String.t()}
   deftransform status(%__MODULE__{status: status} = _result) do
     status(status)
   end

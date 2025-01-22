@@ -29,7 +29,7 @@ defmodule Integrator.Utils do
 
   The third input argument `term` is the variable to be added to `sum`.
   """
-  # @spec kahan_sum(Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t()}
+  @spec kahan_sum(Nx.t(), Nx.t(), Nx.t()) :: {Nx.t(), Nx.t()}
   defn kahan_sum(sum, comp, term) do
     # Octave code:
     #   x = term - comp;
@@ -52,7 +52,7 @@ defmodule Integrator.Utils do
 
   # See [Matlab documentation](https://www.mathworks.com/help/matlab/ref/odeset.html#bu2m9z6-NormControl)
   # for a description of norm control.
-  # @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Nx.t()) :: Nx.t()
+  @spec abs_rel_norm(Nx.t(), Nx.t(), Nx.t(), float(), float(), Nx.t()) :: Nx.t()
   defn abs_rel_norm(t, t_old, x, abs_tolerance, rel_tolerance, norm_control?) do
     if norm_control? do
       # Octave code
@@ -94,7 +94,7 @@ defmodule Integrator.Utils do
 
   This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
-  # @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
+  @spec columns_as_list(Nx.t(), integer(), integer() | nil) :: [Nx.t()]
   deftransform columns_as_list(matrix, start_index, end_index \\ nil) do
     case Nx.shape(matrix) do
       {_size} ->
@@ -134,7 +134,7 @@ defmodule Integrator.Utils do
 
   This function can be deleted in the refactor when I switch to using the new %Point{} struct
   """
-  # @spec vector_as_list(Nx.t()) :: [Nx.t()]
+  @spec vector_as_list(Nx.t()) :: [Nx.t()]
   deftransform vector_as_list(vector) do
     case Nx.shape(vector) do
       {} ->
@@ -154,7 +154,7 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have the same sign
   """
-  # @spec same_signs?(Nx.t(), Nx.t()) :: Nx.t()
+  @spec same_signs?(Nx.t(), Nx.t()) :: Nx.t()
   defn same_signs?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) > 0
@@ -169,7 +169,7 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have the same sign, or if one or more of them is zero
   """
-  # @spec same_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
+  @spec same_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
   defn same_signs_or_any_zeros?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) >= 0
@@ -183,7 +183,7 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have different signs, or if one or more of them is zero
   """
-  # @spec different_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
+  @spec different_signs_or_any_zeros?(Nx.t(), Nx.t()) :: Nx.t()
   defn different_signs_or_any_zeros?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) <= 0
@@ -197,7 +197,7 @@ defmodule Integrator.Utils do
   @doc """
   Returns true if both quantities have different signs (and neither one of them is zero)
   """
-  # @spec different_signs?(Nx.t(), Nx.t()) :: Nx.t()
+  @spec different_signs?(Nx.t(), Nx.t()) :: Nx.t()
   defn different_signs?(x1, x2) do
     # In original Octave as the following; uncomment to verify working correctly:
     # sign(x1) * sign(x2) < 0
@@ -214,7 +214,7 @@ defmodule Integrator.Utils do
 
   Will this need to be a hook in order to work inside of defn?
   """
-  # @spec elapsed_time_μs(Nx.t()) :: Nx.t()
+  @spec elapsed_time_μs(Nx.t()) :: Nx.t()
   deftransform elapsed_time_μs(start_time_μs), do: Nx.subtract(Nx.s64(timestamp_μs()), start_time_μs)
 
   @doc """
@@ -222,7 +222,7 @@ defmodule Integrator.Utils do
 
   Will this need to be a hook in order to work inside of defn?
   """
-  # @spec timestamp_μs() :: Nx.t()
+  @spec timestamp_μs() :: Nx.t()
   deftransform timestamp_μs, do: Nx.s64(:os.system_time(:microsecond))
 
   @doc """
@@ -239,12 +239,12 @@ defmodule Integrator.Utils do
   deftransform convert_arg_to_nx_type(arg, _type) when is_function(arg), do: arg
   deftransform convert_arg_to_nx_type(arg, type), do: Nx.tensor(arg, type: type)
 
-  # @spec first_column(Nx.t()) :: Nx.t()
+  @spec first_column(Nx.t()) :: Nx.t()
   defn first_column(x) do
     x |> Nx.slice_along_axis(0, 1, axis: 1) |> Nx.flatten()
   end
 
-  # @spec last_column(Nx.t()) :: Nx.t()
+  @spec last_column(Nx.t()) :: Nx.t()
   defn last_column(x) do
     {_num_rows, num_colums} = Nx.shape(x)
     x |> Nx.slice_along_axis(num_colums - 1, 1, axis: 1) |> Nx.flatten()
