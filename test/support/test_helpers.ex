@@ -1,4 +1,4 @@
-defmodule Integrator.Helpers do
+defmodule Integrator.TestHelpers do
   @moduledoc false
   import ExUnit.Assertions
 

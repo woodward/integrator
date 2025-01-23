@@ -5,7 +5,7 @@ defmodule Integrator.TestCase do
 
   using do
     quote do
-      import Integrator.Helpers
+      import Integrator.TestHelpers
       import Integrator.SampleEqns, only: [van_der_pol_fn: 2, euler_equations: 2]
     end
   end
