@@ -206,8 +206,8 @@ defmodule Integrator.UtilsTest do
     end
 
     test "returns 0 if both quantities have the same sign", %{zero: zero} do
-      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(-4.0)) == zero
-      assert Utils.different_signs?(Nx.f32(3.0), Nx.f32(7.0)) == zero
+      assert_nx_equal(Utils.different_signs?(Nx.f32(-2.0), Nx.f32(-4.0)), zero)
+      assert_nx_equal(Utils.different_signs?(Nx.f32(3.0), Nx.f32(7.0)), zero)
     end
 
     test "returns 1 if the two quantities have different signs", %{one: one} do

@@ -7,22 +7,55 @@ defmodule Integrator.TestHelpers do
   Copied from [Nx.Helpers.assert_all_close/3](https://github.com/elixir-nx/nx/blob/main/nx/test/support/helpers.ex)
   (which is not included in the released version of Nx, so I cannot just invoke it).
   """
-  def assert_all_close(lhs, rhs, opts \\ []) do
+  def assert_all_close(left, right, opts \\ []) do
     atol = opts[:atol] || 1.0e-4
     rtol = opts[:rtol] || 1.0e-4
 
-    unless Nx.all_close(lhs, rhs, atol: atol, rtol: rtol, equal_nan: opts[:equal_nan]) ==
-             Nx.tensor(1, type: {:u, 8}) do
+    equals =
+      left
+      |> Nx.all_close(right, atol: atol, rtol: rtol)
+      |> Nx.backend_transfer(Nx.BinaryBackend)
+
+    if equals != Nx.tensor(1, type: {:u, 8}, backend: Nx.BinaryBackend) do
       flunk("""
       expected
 
-      #{inspect(lhs)}
+      #{inspect(left)}
 
       to be within tolerance of
 
-      #{inspect(rhs)}
+      #{inspect(right)}
       """)
     end
+  end
+
+  defmacro assert_nx_equal(left, right) do
+    # Assert against binary backend tensors to show diff on failure
+    quote do
+      assert unquote(left) |> to_binary_backend() == unquote(right) |> to_binary_backend()
+    end
+  end
+
+  # defmacro assert_nx_true(tensor) do
+  #   # Assert against binary backend tensors to show diff on failure
+  #   nx_true = Nx.u8(1)
+
+  #   quote do
+  #     assert unquote(tensor) |> to_binary_backend() == unquote(nx_true) |> to_binary_backend()
+  #   end
+  # end
+
+  # defmacro assert_nx_false(tensor) do
+  #   # Assert against binary backend tensors to show diff on failure
+  #   nx_false = Nx.u8(0)
+
+  #   quote do
+  #     assert unquote(tensor) |> to_binary_backend() == unquote(nx_false) |> to_binary_backend()
+  #   end
+  # end
+
+  def to_binary_backend(tensor) do
+    Nx.backend_copy(tensor, Nx.BinaryBackend)
   end
 
   @doc """
