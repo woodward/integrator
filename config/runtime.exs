@@ -3,9 +3,9 @@ import Config
 os_type = :os.type()
 apple_arm64? = :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
 
-case System.get_env("NX_BACKEND", "BINARY") do
+case System.get_env("NX_BACKEND", "binary") |> String.to_atom() do
   # ------------------------------------------------------------------------------------------------
-  "EXLA" ->
+  :exla ->
     # config :exla, :add_backend_on_inspect, config_env() != :test
 
     config :exla, :clients,
@@ -25,13 +25,13 @@ case System.get_env("NX_BACKEND", "BINARY") do
     Nx.Defn.global_default_options(compiler: EXLA)
 
   # ------------------------------------------------------------------------------------------------
-  "TORCHX" ->
+  :torchx ->
     config :torchx,
       add_backend_on_inspect: config_env() != :test,
       check_shape_and_type: config_env() == :test,
       is_apple_arm64: apple_arm64?
 
   # ------------------------------------------------------------------------------------------------
-  "BINARY" ->
+  :binary ->
     Nx.global_default_backend(Nx.BinaryBackend)
 end
