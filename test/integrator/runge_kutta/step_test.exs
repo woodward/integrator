@@ -68,7 +68,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-07, rtol: 1.0e-07)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
 
-      assert computed_step.dt == dt
+      assert_nx_equal(computed_step.dt, dt)
     end
 
     # Expected values were obtained from Octave for van der pol equation at t = 0.000345375551682:
@@ -131,7 +131,7 @@ defmodule Integrator.RungeKutta.StepTest do
       # to see how sensitive the error is to input values:
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-07, rtol: 1.0e-07)
 
-      assert computed_step.dt == dt
+      assert_nx_equal(computed_step.dt, dt)
     end
 
     # Expected values and inputs were obtained from Octave for van der pol equation at t = 0.000239505625605:
@@ -202,7 +202,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-17, rtol: 1.0e-17)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
 
-      assert computed_step.dt == dt
+      assert_nx_equal(computed_step.dt, dt)
     end
 
     # Inputs were obtained from AdaptiveStepsize for van der pol equation at t = 0.000239505625605:
@@ -274,7 +274,7 @@ defmodule Integrator.RungeKutta.StepTest do
       assert_all_close(computed_step.options_comp, expected_options_comp, atol: 1.0e-19, rtol: 1.0e-19)
       assert_all_close(computed_step.error_estimate, expected_error, atol: 1.0e-15, rtol: 1.0e-15)
 
-      assert computed_step.dt == dt
+      assert_nx_equal(computed_step.dt, dt)
     end
   end
 
@@ -293,18 +293,20 @@ defmodule Integrator.RungeKutta.StepTest do
 
       nan = Nx.Constants.nan(:f64)
 
-      assert initial_step == %Step{
-               t_old: nan,
-               t_new: Nx.f64(1.0),
-               #
-               x_old: Nx.tensor([0.0, 0.0], type: :f64),
-               x_new: Nx.f64([2.0, 3.0]),
-               #
-               k_vals: expected_k_vals,
-               options_comp: Nx.f64(0.0),
-               error_estimate: nan,
-               dt: nan
-             }
+      expected_initial_step = %Step{
+        t_old: nan,
+        t_new: Nx.f64(1.0),
+        #
+        x_old: Nx.tensor([0.0, 0.0], type: :f64),
+        x_new: Nx.f64([2.0, 3.0]),
+        #
+        k_vals: expected_k_vals,
+        options_comp: Nx.f64(0.0),
+        error_estimate: nan,
+        dt: nan
+      }
+
+      assert_rk_steps_equal(initial_step, expected_initial_step)
     end
   end
 

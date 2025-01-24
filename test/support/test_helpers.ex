@@ -151,4 +151,17 @@ defmodule Integrator.TestHelpers do
 
   def assert_nx_f32(nx_value), do: assert(Nx.type(nx_value) |> Nx.Type.to_string() == "f32")
   def assert_nx_f64(nx_value), do: assert(Nx.type(nx_value) |> Nx.Type.to_string() == "f64")
+
+  def assert_rk_steps_equal(actual, expected) do
+    assert_nx_equal(actual.t_old, expected.t_old)
+    assert_nx_equal(actual.t_new, expected.t_new)
+
+    assert_nx_equal(actual.x_old, expected.x_old)
+    assert_nx_equal(actual.x_new, expected.x_new)
+
+    assert_nx_equal(actual.k_vals, expected.k_vals)
+    assert_nx_equal(actual.options_comp, expected.options_comp)
+    assert_nx_equal(actual.error_estimate, expected.error_estimate)
+    assert_nx_equal(actual.dt, expected.dt)
+  end
 end
