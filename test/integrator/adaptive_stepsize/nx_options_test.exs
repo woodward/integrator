@@ -17,17 +17,17 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       assert %NxOptions{} = nx_options
 
       assert nx_options.type == {:f, 32}
-      assert nx_options.max_number_of_errors == Nx.s32(5_000)
-      assert nx_options.max_step == Nx.f32(1.0)
+      assert_nx_equal(nx_options.max_number_of_errors, Nx.s32(5_000))
+      assert_nx_equal(nx_options.max_step, Nx.f32(1.0))
       assert nx_options.refine == 4
-      assert nx_options.speed == Nx.Constants.infinity(:f32)
-      assert nx_options.fixed_output_times? == Nx.u8(0)
-      assert nx_options.fixed_output_step == Nx.f32(0.0)
+      assert_nx_equal(nx_options.speed, Nx.Constants.infinity(:f32))
+      assert_nx_equal(nx_options.fixed_output_times?, Nx.u8(0))
+      assert_nx_equal(nx_options.fixed_output_step, Nx.f32(0.0))
       assert nx_options.order == 5
-      assert nx_options.norm_control? == Nx.u8(1)
-      assert nx_options.abs_tol == Nx.f32(1.0e-06)
-      assert nx_options.rel_tol == Nx.f32(1.0e-03)
-      assert nx_options.nx_while_loop_integration? == Nx.u8(1)
+      assert_nx_equal(nx_options.norm_control?, Nx.u8(1))
+      assert_nx_equal(nx_options.abs_tol, Nx.f32(1.0e-06))
+      assert_nx_equal(nx_options.rel_tol, Nx.f32(1.0e-03))
+      assert_nx_equal(nx_options.nx_while_loop_integration?, Nx.u8(1))
 
       assert nx_options.event_fn_adapter == %ExternalFnAdapter{external_fn: &Integrator.ExternalFnAdapter.no_op_double_arity_fn/2}
       assert nx_options.output_fn_adapter == %ExternalFnAdapter{external_fn: &Integrator.ExternalFnAdapter.non_defn_no_op_fn/1}
@@ -62,7 +62,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       nx_options = NxOptions.convert_opts_to_nx_options(t_start, t_end, order, use_default_opts)
       assert %NxOptions{} = nx_options
 
-      assert nx_options.max_step == Nx.f32(1.0)
+      assert_nx_equal(nx_options.max_step, Nx.f32(1.0))
     end
 
     test "sets :refine to 1 if using fixed sizes, regardless of the value" do
@@ -109,17 +109,17 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       assert %NxOptions{} = nx_options
 
       assert nx_options.type == {:f, 64}
-      assert nx_options.max_number_of_errors == Nx.s32(2)
-      assert nx_options.max_step == Nx.f64(3.0)
+      assert_nx_equal(nx_options.max_number_of_errors, Nx.s32(2))
+      assert_nx_equal(nx_options.max_step, Nx.f64(3.0))
       assert nx_options.refine == 1
-      assert nx_options.speed == Nx.f64(0.5)
-      assert nx_options.fixed_output_times? == Nx.u8(1)
-      assert nx_options.fixed_output_step == Nx.f64(0.5)
+      assert_nx_equal(nx_options.speed, Nx.f64(0.5))
+      assert_nx_equal(nx_options.fixed_output_times?, Nx.u8(1))
+      assert_nx_equal(nx_options.fixed_output_step, Nx.f64(0.5))
       assert nx_options.order == 3
-      assert nx_options.norm_control? == Nx.u8(0)
-      assert nx_options.abs_tol == Nx.f64(1.0e-08)
-      assert nx_options.rel_tol == Nx.f64(1.0e-04)
-      assert nx_options.nx_while_loop_integration? == Nx.u8(0)
+      assert_nx_equal(nx_options.norm_control?, Nx.u8(0))
+      assert_nx_equal(nx_options.abs_tol, Nx.f64(1.0e-08))
+      assert_nx_equal(nx_options.rel_tol, Nx.f64(1.0e-04))
+      assert_nx_equal(nx_options.nx_while_loop_integration?, Nx.u8(0))
 
       assert nx_options.event_fn_adapter == %ExternalFnAdapter{external_fn: &:erlang.max/2}
       assert nx_options.output_fn_adapter == %ExternalFnAdapter{external_fn: &Math.sin/1}
