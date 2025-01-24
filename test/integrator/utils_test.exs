@@ -21,8 +21,8 @@ defmodule Integrator.UtilsTest do
 
       assert_all_close(sum, expected_sum, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(comp, expected_comp, atol: 1.0e-14, rtol: 1.0e-14)
-      assert_nx_f64(sum)
-      assert_nx_f64(comp)
+      assert_nx_f64 sum
+      assert_nx_f64 comp
     end
 
     test "another test case" do
@@ -59,16 +59,21 @@ defmodule Integrator.UtilsTest do
         # Nx.tensor([4, 9]),
       ]
 
-      assert cols_as_list == expected_cols_as_list
+      assert length(cols_as_list) == 3
+
+      Enum.zip(cols_as_list, expected_cols_as_list)
+      |> Enum.each(fn {actual, expected} ->
+        assert_nx_equal(actual, expected)
+      end)
     end
 
     test "works if it's just a single column" do
       matrix = Nx.f64([1.0, 2.0])
       cols_as_list = Utils.columns_as_list(matrix, 0)
 
-      expected_cols_as_list = [Nx.f64([1.0, 2.0])]
-
-      assert cols_as_list == expected_cols_as_list
+      assert length(cols_as_list) == 1
+      [elem] = cols_as_list
+      assert_nx_equal(elem, Nx.f64([1.0, 2.0]))
     end
 
     test "goes all the way to the end if the end_index is left out" do
@@ -83,7 +88,10 @@ defmodule Integrator.UtilsTest do
         Nx.tensor([4, 9])
       ]
 
-      assert cols_as_list == expected_cols_as_list
+      Enum.zip(cols_as_list, expected_cols_as_list)
+      |> Enum.each(fn {actual, expected} ->
+        assert_nx_equal(actual, expected)
+      end)
     end
   end
 
@@ -92,155 +100,133 @@ defmodule Integrator.UtilsTest do
       vector = Nx.tensor([1, 2, 3], type: :f64)
       vector_as_list = vector |> Utils.vector_as_list()
 
-      assert vector_as_list == [
-               Nx.f64(1),
-               Nx.f64(2),
-               Nx.f64(3)
-             ]
+      expected_vector_as_list = [
+        Nx.f64(1),
+        Nx.f64(2),
+        Nx.f64(3)
+      ]
+
+      Enum.zip(vector_as_list, expected_vector_as_list)
+      |> Enum.each(fn {actual, expected} ->
+        assert_nx_equal(actual, expected)
+      end)
 
       [first | [second | [third]]] = vector_as_list
-      assert_nx_f64(first)
-      assert_nx_f64(second)
-      assert_nx_f64(third)
+      assert_nx_f64 first
+      assert_nx_f64 second
+      assert_nx_f64 third
     end
 
     test "works for an individual tensor" do
       vector = Nx.f64(1)
       vector_as_list = vector |> Utils.vector_as_list()
 
-      assert vector_as_list == [
-               Nx.f64(1)
-             ]
-
       [first] = vector_as_list
-      assert_nx_f64(first)
+      assert_nx_f64 first
+      assert_nx_equal(first, Nx.f64(1))
     end
   end
 
   describe "same_signs?/2" do
-    setup do
-      one = Nx.u8(1)
-      zero = Nx.u8(0)
-      [zero: zero, one: one]
+    test "returns 1 if both quantities have the same sign" do
+      assert_nx_true Utils.same_signs?(Nx.f32(-2.0), Nx.f32(-4.0))
+      assert_nx_true Utils.same_signs?(Nx.f32(3.0), Nx.f32(7.0))
     end
 
-    test "returns 1 if both quantities have the same sign", %{one: one} do
-      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(-4.0)) == one
-      assert Utils.same_signs?(Nx.f32(3.0), Nx.f32(7.0)) == one
+    test "returns 0 if both quantities have different signs" do
+      assert_nx_false Utils.same_signs?(Nx.f32(-2.0), Nx.f32(4.0))
+      assert_nx_false Utils.same_signs?(Nx.f32(3.0), Nx.f32(-7.0))
     end
 
-    test "returns 0 if both quantities have different signs", %{zero: zero} do
-      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(4.0)) == zero
-      assert Utils.same_signs?(Nx.f32(3.0), Nx.f32(-7.0)) == zero
+    test "returns 0 if one quantity is zero" do
+      assert_nx_false Utils.same_signs?(Nx.f32(-2.0), Nx.f32(0.0))
+      assert_nx_false Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0))
     end
 
-    test "returns 0 if one quantity is zero", %{zero: zero} do
-      assert Utils.same_signs?(Nx.f32(-2.0), Nx.f32(0.0)) == zero
-      assert Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
-    end
-
-    test "returns 0 if both quantities are zero", %{zero: zero} do
-      assert Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    test "returns 0 if both quantities are zero" do
+      assert_nx_false Utils.same_signs?(Nx.f32(0.0), Nx.f32(0.0))
     end
   end
 
   describe "same_signs_or_any_zeros?/2" do
-    setup do
-      one = Nx.u8(1)
-      zero = Nx.u8(0)
-      [zero: zero, one: one]
+    test "returns 1 if both quantities have the same sign" do
+      assert_nx_true Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(-4.0))
+      assert_nx_true Utils.same_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(7.0))
     end
 
-    test "returns 1 if both quantities have the same sign", %{one: one} do
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(-4.0)) == one
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(7.0)) == one
+    test "returns 0 if both quantities have different signs" do
+      assert_nx_false Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(4.0))
+      assert_nx_false Utils.same_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(-7.0))
     end
 
-    test "returns 0 if both quantities have different signs", %{zero: zero} do
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(4.0)) == zero
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(-7.0)) == zero
+    test "returns 1 if one quantity is zero" do
+      assert_nx_true Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(0.0))
+      assert_nx_true Utils.same_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0))
     end
 
-    test "returns 1 if one quantity is zero", %{one: one} do
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(0.0)) == one
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0)) == one
-    end
-
-    test "returns 1 if both quantities are zero", %{one: one} do
-      assert Utils.same_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    test "returns 1 if both quantities are zero" do
+      assert_nx_true Utils.same_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0))
     end
   end
 
   describe "different_signs_or_any_zeros?/2" do
-    setup do
-      one = Nx.u8(1)
-      zero = Nx.u8(0)
-      [zero: zero, one: one]
+    test "returns 0 if both quantities have the same sign" do
+      assert_nx_false Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(-4.0))
+      assert_nx_false Utils.different_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(7.0))
     end
 
-    test "returns 0 if both quantities have the same sign", %{zero: zero} do
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(-4.0)) == zero
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(7.0)) == zero
+    test "returns 1 if both quantities have different signs" do
+      assert_nx_true Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(4.0))
+      assert_nx_true Utils.different_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(-7.0))
     end
 
-    test "returns 1 if both quantities have different signs", %{one: one} do
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(4.0)) == one
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(3.0), Nx.f32(-7.0)) == one
+    test "returns 1 if one quantity is zero" do
+      assert_nx_true Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(0.0))
+      assert_nx_true Utils.different_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0))
     end
 
-    test "returns 1 if one quantity is zero", %{one: one} do
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(-2.0), Nx.f32(0.0)) == one
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0)) == one
-    end
-
-    test "returns 1 if both quantities are zero", %{one: one} do
-      assert Utils.different_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0)) == one
+    test "returns 1 if both quantities are zero" do
+      assert_nx_true Utils.different_signs_or_any_zeros?(Nx.f32(0.0), Nx.f32(0.0))
     end
   end
 
   describe "different_signs?/2" do
-    setup do
-      one = Nx.u8(1)
-      zero = Nx.u8(0)
-      [zero: zero, one: one]
+    test "returns 0 if both quantities have the same sign" do
+      assert_nx_false Utils.different_signs?(Nx.f32(-2.0), Nx.f32(-4.0))
+      assert_nx_false Utils.different_signs?(Nx.f32(3.0), Nx.f32(7.0))
     end
 
-    test "returns 0 if both quantities have the same sign", %{zero: zero} do
-      assert_nx_equal(Utils.different_signs?(Nx.f32(-2.0), Nx.f32(-4.0)), zero)
-      assert_nx_equal(Utils.different_signs?(Nx.f32(3.0), Nx.f32(7.0)), zero)
+    test "returns 1 if the two quantities have different signs" do
+      assert_nx_true Utils.different_signs?(Nx.f32(-2.0), Nx.f32(4.0))
+      assert_nx_true Utils.different_signs?(Nx.f32(3.0), Nx.f32(-7.0))
     end
 
-    test "returns 1 if the two quantities have different signs", %{one: one} do
-      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(4.0)) == one
-      assert Utils.different_signs?(Nx.f32(3.0), Nx.f32(-7.0)) == one
+    test "returns 0 if one quantity is zero" do
+      assert_nx_false Utils.different_signs?(Nx.f32(-2.0), Nx.f32(0.0))
+      assert_nx_false Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0))
     end
 
-    test "returns 0 if one quantity is zero", %{zero: zero} do
-      assert Utils.different_signs?(Nx.f32(-2.0), Nx.f32(0.0)) == zero
-      assert Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
-    end
-
-    test "returns 0 if both quantities are zero", %{zero: zero} do
-      assert Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0)) == zero
+    test "returns 0 if both quantities are zero" do
+      assert_nx_false Utils.different_signs?(Nx.f32(0.0), Nx.f32(0.0))
     end
   end
 
   describe "convert_arg_to_nx_type" do
     test "passes through tensors (if they are of the correct type)" do
       arg = Nx.f64(1.0)
-      assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+      assert_nx_equal(Utils.convert_arg_to_nx_type(arg, {:f, 64}), Nx.f64(1.0))
     end
 
     test "converts floats to tensors of the appropriate type" do
       arg = 1.0
-      assert Utils.convert_arg_to_nx_type(arg, {:f, 32}) == Nx.f32(1.0)
-      assert Utils.convert_arg_to_nx_type(arg, {:f, 64}) == Nx.f64(1.0)
+      assert_nx_equal(Utils.convert_arg_to_nx_type(arg, {:f, 32}), Nx.f32(1.0))
+      assert_nx_equal(Utils.convert_arg_to_nx_type(arg, {:f, 64}), Nx.f64(1.0))
     end
 
     test "converts integers to :s32 or :s64 tensors" do
       arg = 10
-      assert Utils.convert_arg_to_nx_type(arg, {:s, 32}) == Nx.s32(10)
-      assert Utils.convert_arg_to_nx_type(arg, {:s, 64}) == Nx.s64(10)
+      assert_nx_equal(Utils.convert_arg_to_nx_type(arg, {:s, 32}), Nx.s32(10))
+      assert_nx_equal(Utils.convert_arg_to_nx_type(arg, {:s, 64}), Nx.s64(10))
     end
 
     test "allows functions to pass through" do
@@ -498,12 +484,12 @@ defmodule Integrator.UtilsTest do
 
     test "first_column/1 retrieves the first column", %{x: x} do
       x0 = Utils.first_column(x)
-      assert x0 == Nx.s32([1, 2, 3, 4])
+      assert_nx_equal(x0, Nx.s32([1, 2, 3, 4]))
     end
 
     test "last_column/1 gets the last column", %{x: x} do
       x0 = Utils.last_column(x)
-      assert x0 == Nx.s32([17, 18, 19, 20])
+      assert_nx_equal(x0, Nx.s32([17, 18, 19, 20]))
     end
   end
 end

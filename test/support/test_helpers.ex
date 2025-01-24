@@ -36,23 +36,21 @@ defmodule Integrator.TestHelpers do
     end
   end
 
-  # defmacro assert_nx_true(tensor) do
-  #   # Assert against binary backend tensors to show diff on failure
-  #   nx_true = Nx.u8(1)
+  defmacro assert_nx_true(tensor) do
+    # Assert against binary backend tensors to show diff on failure
 
-  #   quote do
-  #     assert unquote(tensor) |> to_binary_backend() == unquote(nx_true) |> to_binary_backend()
-  #   end
-  # end
+    quote do
+      assert unquote(tensor) |> to_binary_backend() == Nx.u8(1) |> to_binary_backend()
+    end
+  end
 
-  # defmacro assert_nx_false(tensor) do
-  #   # Assert against binary backend tensors to show diff on failure
-  #   nx_false = Nx.u8(0)
+  defmacro assert_nx_false(tensor) do
+    # Assert against binary backend tensors to show diff on failure
 
-  #   quote do
-  #     assert unquote(tensor) |> to_binary_backend() == unquote(nx_false) |> to_binary_backend()
-  #   end
-  # end
+    quote do
+      assert unquote(tensor) |> to_binary_backend() == Nx.u8(0) |> to_binary_backend()
+    end
+  end
 
   def to_binary_backend(tensor) do
     Nx.backend_copy(tensor, Nx.BinaryBackend)
