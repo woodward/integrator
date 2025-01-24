@@ -46,6 +46,8 @@ defmodule Integrator.MixProject do
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
       {:nx, "~> 0.9"}
+      # {:torchx, "~> 0.9.2"}
+      # {:torchx, "~> 0.9.2", only: :test},
       # {:nx, path: "/Users/Greg/Development/nx/nx"}
     ]
   end
