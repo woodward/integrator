@@ -29,8 +29,8 @@ defmodule Integrator.PointTest do
         Nx.f64([7.0, 8.0])
       ]
 
-      assert t == expected_t
-      assert x == expected_x
+      assert_nx_lists_equal(t, expected_t)
+      assert_nx_lists_equal(x, expected_x)
     end
   end
 
@@ -43,20 +43,16 @@ defmodule Integrator.PointTest do
 
   describe "filter_out_points_with_same_t/1" do
     test "gets rid of points with the same t value" do
-      points = [
-        %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])},
-        %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])},
-        %Point{t: Nx.f64(0.2), x: Nx.f64([5.0, 6.0])},
-        %Point{t: Nx.f64(0.3), x: Nx.f64([7.0, 8.0])}
-      ]
+      point_1 = %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])}
+      point_2_1 = %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])}
+      point_2_2 = %Point{t: Nx.f64(0.2), x: Nx.f64([5.0, 6.0])}
+      point_3 = %Point{t: Nx.f64(0.3), x: Nx.f64([7.0, 8.0])}
+
+      points = [point_1, point_2_1, point_2_2, point_3]
 
       filtered_points = Point.filter_out_points_with_same_t(points)
 
-      assert filtered_points == [
-               %Point{t: Nx.f64(0.1), x: Nx.f64([1.0, 2.0])},
-               %Point{t: Nx.f64(0.2), x: Nx.f64([3.0, 4.0])},
-               %Point{t: Nx.f64(0.3), x: Nx.f64([7.0, 8.0])}
-             ]
+      assert filtered_points == [point_1, point_2_1, point_3]
     end
   end
 end

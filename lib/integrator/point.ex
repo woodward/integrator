@@ -39,8 +39,10 @@ defmodule Integrator.Point do
   def filter_out_points_with_same_t(points) do
     points
     |> Enum.reduce({-1, []}, fn point, {last_t, points} ->
-      if last_t != point.t do
-        {point.t, [point | points]}
+      point_t_number = Nx.to_number(point.t)
+
+      if last_t != point_t_number do
+        {point_t_number, [point | points]}
       else
         {last_t, points}
       end
