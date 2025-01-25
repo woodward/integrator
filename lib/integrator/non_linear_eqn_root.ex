@@ -93,34 +93,36 @@ defmodule Integrator.NonLinearEqnRoot do
           interpolation_type_debug_only: Nx.t()
         }
 
-  defstruct a: 0.0,
-            b: 0.0,
-            c: 0.0,
-            d: 0.0,
-            e: 0.0,
-            u: 0.0,
-            #
-            # Function evaluations; e.g., fb is fn(b):
-            fa: 0.0,
-            fb: 0.0,
-            fc: 0.0,
-            fd: 0.0,
-            fe: 0.0,
-            fu: 0.0,
-            #
-            # x (and fx) are the actual found values (i.e., fx should be very close to zero):
-            x: 0.0,
-            fx: 0.0,
-            #
-            mu_ba: 0.0,
-            #
-            elapsed_time_μs: 0,
-            fn_eval_count: 0,
-            iteration_count: 0,
-            # Change iteration_type to a more descriptive atom later (possibly?):
-            iteration_type: 1,
-            status: Nx.u8(1),
-            interpolation_type_debug_only: 0
+  defstruct [
+    :a,
+    :b,
+    :c,
+    :d,
+    :e,
+    :u,
+    #
+    # Function evaluations; e.g., fb is fn(b):
+    :fa,
+    :fb,
+    :fc,
+    :fd,
+    :fe,
+    :fu,
+    #
+    # x (and fx) are the actual found values (i.e., fx should be very close to zero):
+    :x,
+    :fx,
+    #
+    :mu_ba,
+    #
+    :elapsed_time_μs,
+    :fn_eval_count,
+    :iteration_count,
+    # Change iteration_type to a more descriptive atom later (possibly?):
+    :iteration_type,
+    :status,
+    :interpolation_type_debug_only
+  ]
 
   options = [
     max_iterations: [
@@ -237,7 +239,12 @@ defmodule Integrator.NonLinearEqnRoot do
       #
       fn_eval_count: fn_eval_count,
       iteration_type: 1,
-      mu_ba: (b - a) * InternalComputations.initial_mu()
+      mu_ba: (b - a) * InternalComputations.initial_mu(),
+      #
+      elapsed_time_μs: 0,
+      iteration_count: 0,
+      status: 1,
+      interpolation_type_debug_only: 0
     }
 
     if same_signs?(z.fa, z.fb) do
