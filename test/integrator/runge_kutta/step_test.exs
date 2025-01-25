@@ -18,12 +18,12 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.628266220377807  -1.528057633442594  -1.484796318238127  -1.272143242010950  -1.231218923718637  -1.191362260138565  -1.201879818436319
       ]f64
 
-      dt = Nx.tensor(0.153290715538041, type: :f64)
+      dt = Nx.f64(0.153290715538041)
 
       step = %Step{
-        t_new: Nx.tensor(0.170323017264490, type: :f64),
-        x_new: Nx.tensor([1.975376830028490, -0.266528851971234], type: :f64),
-        options_comp: Nx.tensor(-1.387778780781446e-17, type: :f64),
+        t_new: Nx.f64(0.170323017264490),
+        x_new: Nx.f64([1.975376830028490, -0.266528851971234]),
+        options_comp: Nx.f64(-1.387778780781446e-17),
         #
         # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
         dt: Nx.f64(0.0),
@@ -47,16 +47,16 @@ defmodule Integrator.RungeKutta.StepTest do
 
       computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
-      expected_t_next = Nx.tensor(0.323613732802532, type: :f64)
-      expected_x_next = Nx.tensor([1.922216228514310, -0.416811343851152], type: :f64)
+      expected_t_next = Nx.f64(0.323613732802532)
+      expected_x_next = Nx.f64([1.922216228514310, -0.416811343851152])
 
       expected_k_vals = ~MAT[
         -0.266528851971234  -0.303376255443000  -0.318166975994861  -0.394383609924488  -0.412602091137911  -0.426290366186482  -0.416811343851152
         -1.201879818436319  -1.096546739499175  -1.055438526511377  -0.852388604155395  -0.804214989044028  -0.771328619755717  -0.798944990281621
       ]f64
 
-      expected_options_comp = Nx.tensor(0.0, type: :f64)
-      expected_error = Nx.tensor(1.586715304267830e-02, type: :f64)
+      expected_options_comp = Nx.f64(0.0)
+      expected_error = Nx.f64(1.586715304267830e-02)
 
       assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
@@ -78,12 +78,12 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00
       ]f64
 
-      dt = Nx.tensor(1.048148240128353e-04, type: :f64)
+      dt = Nx.f64(1.048148240128353e-04)
 
       step = %Step{
-        t_new: Nx.tensor(3.453755516815583e-04, type: :f64),
-        x_new: Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64),
-        options_comp: Nx.tensor(1.355252715606881e-20, type: :f64),
+        t_new: Nx.f64(3.453755516815583e-04),
+        x_new: Nx.f64([1.999999880756917, -6.903933604135114e-04]),
+        options_comp: Nx.f64(1.355252715606881e-20),
         #
         # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
         dt: Nx.f64(0.0),
@@ -101,22 +101,22 @@ defmodule Integrator.RungeKutta.StepTest do
 
       nx_options = %NxOptions{
         norm_control?: Nx.u8(0),
-        abs_tol: Nx.tensor(1.0e-12, type: :f64),
-        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+        abs_tol: Nx.f64(1.0e-12),
+        rel_tol: Nx.f64(1.0e-12)
       }
 
       computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
-      expected_t_next = Nx.tensor(4.501903756943936e-04, type: :f64)
-      expected_x_next = Nx.tensor([1.999999797419839, -8.997729805855904e-04], type: :f64)
+      expected_t_next = Nx.f64(4.501903756943936e-04)
+      expected_x_next = Nx.f64([1.999999797419839, -8.997729805855904e-04])
 
       expected_k_vals = ~MAT[
         -6.903933604135114e-04  -7.950996330065260e-04  -8.474280732402655e-04  -8.997729805855904e-04
         -1.997928701004975e+00  -1.997614546170481e+00  -1.997457534649594e+00  -1.997300479207187e+00
       ]f64
 
-      expected_options_comp = Nx.tensor(-2.710505431213761e-20, type: :f64)
-      expected_error = Nx.tensor(0.383840528805912, type: :f64)
+      expected_options_comp = Nx.f64(-2.710505431213761e-20)
+      expected_error = Nx.f64(0.383840528805912)
 
       assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(computed_step.x_old, step.x_new, atol: 1.0e-14, rtol: 1.0e-14)
@@ -141,12 +141,12 @@ defmodule Integrator.RungeKutta.StepTest do
         -1.999224255823159e+00  -1.998893791926987e+00  -1.998728632828801e+00  -1.998563425163596e+00
       ]f64
 
-      dt = Nx.tensor(1.058699260768067e-04, type: :f64)
+      dt = Nx.f64(1.058699260768067e-04)
 
       step = %Step{
-        t_new: Nx.tensor(2.395056256047516e-04, type: :f64),
-        x_new: Nx.tensor([1.999999942650792, -4.788391990136420e-04], type: :f64),
-        options_comp: Nx.tensor(-1.355252715606881e-20, type: :f64),
+        t_new: Nx.f64(2.395056256047516e-04),
+        x_new: Nx.f64([1.999999942650792, -4.788391990136420e-04]),
+        options_comp: Nx.f64(-1.355252715606881e-20),
         #
         # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
         dt: Nx.f64(0.0),
@@ -164,15 +164,15 @@ defmodule Integrator.RungeKutta.StepTest do
 
       nx_options = %NxOptions{
         norm_control?: Nx.u8(0),
-        abs_tol: Nx.tensor(1.0e-12, type: :f64),
-        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+        abs_tol: Nx.f64(1.0e-12),
+        rel_tol: Nx.f64(1.0e-12)
       }
 
       computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
-      expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
+      expected_t_next = Nx.f64(3.453755516815583e-04)
       #                   Elixir: 3.4537555168155827e-4
-      expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
+      expected_x_next = Nx.f64([1.999999880756917, -6.903933604135114e-04])
       #                  Elixir:  [1.9999998807569168 -6.903933604135114e-4]
 
       expected_k_vals = ~MAT[
@@ -185,9 +185,9 @@ defmodule Integrator.RungeKutta.StepTest do
 
       # -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00  Octave
       # -1.998563425163596,     -1.9982460182566815,    -1.998087382041041,     -1.9979287010049749]    Elixir
-      expected_options_comp = Nx.tensor(1.355252715606881e-20, type: :f64)
+      expected_options_comp = Nx.f64(1.355252715606881e-20)
       #                       Elixir:  -2.710505431213761e-20
-      expected_error = Nx.tensor(0.395533432395734, type: :f64)
+      expected_error = Nx.f64(0.395533432395734)
       #                  Elixir: 0.3955334323957338
 
       # dbg(error)
@@ -214,13 +214,13 @@ defmodule Integrator.RungeKutta.StepTest do
       ]f64
 
       # dt is WRONG!!!!
-      # dt: Nx.tensor(1.058699260768067e-04, type: :f64),
-      dt = Nx.tensor(1.0586992285952218e-4, type: :f64)
+      # dt: Nx.f64(1.058699260768067e-04),
+      dt = Nx.f64(1.0586992285952218e-4)
 
       step = %Step{
-        t_new: Nx.tensor(2.3950562560475164e-04, type: :f64),
-        x_new: Nx.tensor([1.9999999426507922, -4.78839199013642e-4], type: :f64),
-        options_comp: Nx.tensor(0.0, type: :f64),
+        t_new: Nx.f64(2.3950562560475164e-04),
+        x_new: Nx.f64([1.9999999426507922, -4.78839199013642e-4]),
+        options_comp: Nx.f64(0.0),
         #
         # Setting dt to something to verify that its value is overridden (plus it needs to be non-nil to cross the defn boundary)
         dt: Nx.f64(0.0),
@@ -238,15 +238,15 @@ defmodule Integrator.RungeKutta.StepTest do
 
       nx_options = %NxOptions{
         norm_control?: Nx.u8(0),
-        abs_tol: Nx.tensor(1.0e-12, type: :f64),
-        rel_tol: Nx.tensor(1.0e-12, type: :f64)
+        abs_tol: Nx.f64(1.0e-12),
+        rel_tol: Nx.f64(1.0e-12)
       }
 
       computed_step = Step.compute_step(step, dt, stepper_fn, ode_fn, nx_options)
 
-      expected_t_next = Nx.tensor(3.453755516815583e-04, type: :f64)
+      expected_t_next = Nx.f64(3.453755516815583e-04)
       #                   Elixir: 3.453755 484642738e-4
-      expected_x_next = Nx.tensor([1.999999880756917, -6.903933604135114e-04], type: :f64)
+      expected_x_next = Nx.f64([1.999999880756917, -6.903933604135114e-04])
       #                  Elixir:  [1.9999998807569193 -6.903933 539856063e-4]
 
       expected_k_vals = ~MAT[
@@ -259,9 +259,9 @@ defmodule Integrator.RungeKutta.StepTest do
 
       # -1.998563425163596e+00  -1.998246018256682e+00  -1.998087382041041e+00  -1.997928701004975e+00  Octave
       # -1.998563425163596,     -1.9982460182566815,    -1.998087382041041,     -1.9979287010049749]    Elixir
-      expected_options_comp = Nx.tensor(1.355252715606881e-20, type: :f64)
+      expected_options_comp = Nx.f64(1.355252715606881e-20)
       #                       Elixir:  -2.710505431213761e-20
-      expected_error = Nx.tensor(0.395533432395734, type: :f64)
+      expected_error = Nx.f64(0.395533432395734)
       #                  Elixir: 0.3955334323957338
 
       assert_all_close(computed_step.t_old, step.t_new, atol: 1.0e-14, rtol: 1.0e-14)
@@ -297,7 +297,7 @@ defmodule Integrator.RungeKutta.StepTest do
         t_old: nan,
         t_new: Nx.f64(1.0),
         #
-        x_old: Nx.tensor([0.0, 0.0], type: :f64),
+        x_old: Nx.f64([0.0, 0.0]),
         x_new: Nx.f64([2.0, 3.0]),
         #
         k_vals: expected_k_vals,

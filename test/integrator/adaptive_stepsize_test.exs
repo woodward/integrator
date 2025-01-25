@@ -357,22 +357,22 @@ defmodule Integrator.AdaptiveStepsizeTest do
       {:ok, pid} = DataCollector.start_link()
       output_fn = &DataCollector.add_data(pid, &1)
 
-      t_start = Nx.tensor(0.0, type: :f64)
-      t_end = Nx.tensor(0.1, type: :f64)
-      x0 = Nx.tensor([2.0, 0.0], type: :f64)
+      t_start = Nx.f64(0.0)
+      t_end = Nx.f64(0.1)
+      x0 = Nx.f64([2.0, 0.0])
 
       opts = [
         speed: 0.5,
         type: :f64,
         norm_control?: false,
-        abs_tol: Nx.tensor(1.0e-11, type: :f64),
-        rel_tol: Nx.tensor(1.0e-11, type: :f64),
+        abs_tol: Nx.f64(1.0e-11),
+        rel_tol: Nx.f64(1.0e-11),
         refine: 1,
         output_fn: output_fn
       ]
 
       # From Octave (or equivalently, from AdaptiveStepsize.starting_stepsize/7):
-      initial_tstep = Nx.tensor(5.054072392284442e-03, type: :f64)
+      initial_tstep = Nx.f64(5.054072392284442e-03)
 
       result =
         AdaptiveStepsize.integrate(
@@ -834,7 +834,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       # Verify the last time step is correct (bug fix!):
       [last_time | _rest] = output_t |> Enum.reverse()
-      assert_all_close(last_time, Nx.tensor(20.0), atol: 1.0e-10, rtol: 1.0e-10)
+      assert_all_close(last_time, Nx.f64(20.0), atol: 1.0e-10, rtol: 1.0e-10)
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
@@ -999,7 +999,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
     test "works" do
       order = 5
       t0 = 0.0
-      x0 = ~VEC[2.0 0.0]f64
+      x0 = Nx.f64([2.0, 0.0])
       abs_tol = 1.0e-06
       rel_tol = 1.0e-03
       norm_control? = Nx.u8(0)
@@ -1007,43 +1007,43 @@ defmodule Integrator.AdaptiveStepsizeTest do
       starting_stepsize =
         AdaptiveStepsize.starting_stepsize(order, &van_der_pol_fn/2, t0, x0, abs_tol, rel_tol, norm_control?)
 
-      assert_all_close(starting_stepsize, Nx.tensor(0.068129, type: :f64), atol: 1.0e-6, rtol: 1.0e-6)
+      assert_all_close(starting_stepsize, Nx.f64(0.068129), atol: 1.0e-6, rtol: 1.0e-6)
     end
 
     test "works - high fidelity ballode example to double precision accuracy (works!!!)" do
       order = 5
-      t0 = ~VEC[  0.0  ]f64
-      x0 = ~VEC[  0.0 20.0  ]f64
-      abs_tol = Nx.tensor(1.0e-14, type: :f64)
-      rel_tol = Nx.tensor(1.0e-14, type: :f64)
+      t0 = Nx.f64(0.0)
+      x0 = Nx.f64([0.0, 20.0])
+      abs_tol = Nx.f64(1.0e-14)
+      rel_tol = Nx.f64(1.0e-14)
       norm_control? = Nx.u8(0)
       ode_fn = &SampleEqns.falling_particle/2
 
       starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
-      assert_all_close(starting_stepsize, Nx.tensor(0.001472499532027109, type: :f64), atol: 1.0e-14, rtol: 1.0e-14)
+      assert_all_close(starting_stepsize, Nx.f64(0.001472499532027109), atol: 1.0e-14, rtol: 1.0e-14)
     end
 
     test "does NOT work for precision :f16" do
       order = 5
-      t0 = ~VEC[  0.0  ]f16
-      x0 = ~VEC[  2.0  0.0  ]f16
-      abs_tol = Nx.tensor(1.0e-06, type: :f16)
-      rel_tol = Nx.tensor(1.0e-03, type: :f16)
+      t0 = Nx.f16(0.0)
+      x0 = Nx.f16([2.0, 0.0])
+      abs_tol = Nx.f16(1.0e-06)
+      rel_tol = Nx.f16(1.0e-03)
       norm_control? = Nx.u8(0)
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       starting_stepsize = AdaptiveStepsize.starting_stepsize(order, ode_fn, t0, x0, abs_tol, rel_tol, norm_control?)
 
-      zero_stepsize_which_is_bad = Nx.tensor(0.0, type: :f16)
+      zero_stepsize_which_is_bad = Nx.f16(0.0)
 
       assert_all_close(starting_stepsize, zero_stepsize_which_is_bad, atol: 1.0e-14, rtol: 1.0e-14)
 
       # The starting_stepsize is zero because d2 goes to infinity:
       # abs_rel_norm = abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
       # Values for abs_rel_norm and h0 captured from Elixir output:
-      abs_rel_norm = Nx.tensor(999.5, type: :f16)
-      h0 = Nx.tensor(0.01000213623046875, type: :f16)
-      one = Nx.tensor(1, type: :f16)
+      abs_rel_norm = Nx.f16(999.5)
+      h0 = Nx.f16(0.01000213623046875)
+      one = Nx.f16(1)
 
       #  d2 = one / h0 * abs_rel_norm(xh_minus_x, xh_minus_x, x_zeros, abs_tol, rel_tol, opts)
       d2 = Nx.divide(one, h0) |> Nx.multiply(abs_rel_norm)

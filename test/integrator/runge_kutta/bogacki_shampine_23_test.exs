@@ -13,9 +13,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
 
   describe "integrate" do
     test "gives the correct values" do
-      t = Nx.tensor(19.72183417709078, type: :f64)
-      x = Nx.tensor([1.923461755449107, 0.747222633689152], type: :f64)
-      dt = Nx.tensor(8.681595746273718e-02, type: :f64)
+      t = Nx.f64(19.72183417709078)
+      x = Nx.f64([1.923461755449107, 0.747222633689152])
+      dt = Nx.f64(8.681595746273718e-02)
       t_next = Nx.add(t, dt)
 
       k_vals = ~MAT[
@@ -25,9 +25,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
 
       {x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
-      expected_t_next = Nx.tensor(19.80865013455352, type: :f64)
-      expected_x_next = ~VEC[ 1.974378491284494   0.435401764107805 ]f64
-      expected_x_est = ~VEC[ 1.974483141002339   0.435472329211931 ]f64
+      expected_t_next = Nx.f64(19.80865013455352)
+      expected_x_next = Nx.f64([1.974378491284494, 0.435401764107805])
+      expected_x_est = Nx.f64([1.974483141002339, 0.435472329211931])
 
       expected_k = ~MAT[
          0.747222633689152   0.576162965809159   0.513870123583258   0.435401764107805
@@ -41,9 +41,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
     end
 
     test "works even for zero k_vals" do
-      t = Nx.tensor(0.0, type: :f64)
-      x = Nx.tensor([2.0, 0.0], type: :f64)
-      dt = Nx.tensor(1.778279410038923e-02, type: :f64)
+      t = Nx.f64(0.0)
+      x = Nx.f64([2.0, 0.0])
+      dt = Nx.f64(1.778279410038923e-02)
       t_next = Nx.add(t, dt)
 
       k_vals = ~MAT[
@@ -53,9 +53,9 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
 
       {x_next, x_est, k} = BogackiShampine23.integrate(&van_der_pol_fn/2, t, x, dt, k_vals, t_next)
 
-      expected_t_next = Nx.tensor(1.778279410038923e-02, type: :f64)
-      expected_x_next = ~VEC[ 1.999689395647235 -3.463209532501924e-02 ]f64
-      expected_x_est = ~VEC[ 1.999690064807873 -3.463392797090165e-02 ]f64
+      expected_t_next = Nx.f64(1.778279410038923e-02)
+      expected_x_next = Nx.f64([1.999689395647235, -3.463209532501924e-02])
+      expected_x_est = Nx.f64([1.999690064807873, -3.463392797090165e-02])
 
       expected_k = ~MAT[
          0.0                -0.017782794100389  -0.025962678677046  -0.034632095325019
@@ -73,9 +73,10 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
     setup do
       # These test values were obtained from Octave:
 
-      t = ~VEC[ 19.93160917528972   19.98632183505794 ]f64
+      t = Nx.f64([19.93160917528972, 19.98632183505794])
 
-      x = ~MAT[ 2.006095079498698e+00   2.008123006213831e+00
+      x = ~MAT[
+              2.006095079498698e+00   2.008123006213831e+00
               9.651712593193962e-02  -1.946454118495647e-02
           ]f64
 
@@ -84,7 +85,7 @@ defmodule Integrator.RungeKutta.BogackiShampine23Test do
        -2.298003161127339e+00  -2.110870447939130e+00  -2.037468411516576e+00  -1.949095655969686e+00
       ]f64
 
-      t_out = ~VEC[ 19.94528734023178   19.95896550517383   19.97264367011589   19.98632183505794 ]f64
+      t_out = Nx.f64([19.94528734023178, 19.95896550517383, 19.97264367011589, 19.98632183505794])
 
       expected_x_out = ~MAT[
         2.007204462555976e+00   2.007902251042804e+00   2.008203435436362e+00   2.008123006213831e+00
