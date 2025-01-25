@@ -15,7 +15,7 @@ defmodule Integrator.DataCollectorTest do
 
     points = DataCollector.get_data(pid)
 
-    assert points == [Nx.f32(1.0), Nx.f32(2.0)]
+    assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
   end
 
   test "can add multiple data points in one call, and retrieve them from the data collector" do
@@ -28,7 +28,7 @@ defmodule Integrator.DataCollectorTest do
 
     points = DataCollector.get_data(pid)
 
-    assert points == [Nx.f32(1.0), Nx.f32(2.0)]
+    assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
   end
 
   test "can get n number of data points data collector" do
@@ -43,6 +43,6 @@ defmodule Integrator.DataCollectorTest do
 
     points = DataCollector.get_last_n_data(pid, 2)
 
-    assert points == [Nx.f32(3.0), Nx.f32(4.0)]
+    assert_nx_lists_equal(points, [Nx.f32(3.0), Nx.f32(4.0)])
   end
 end
