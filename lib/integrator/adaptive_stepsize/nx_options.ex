@@ -18,7 +18,6 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
      :norm_control?,
      :fixed_output_times?,
      :fixed_output_step,
-     :speed,
      :max_step,
      :max_number_of_errors,
      :nx_while_loop_integration?,
@@ -32,6 +31,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
    keep: [
      :order,
      :refine,
+     :speed,
      :type
    ]}
 
@@ -42,7 +42,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
           order: integer(),
           fixed_output_times?: Nx.t(),
           fixed_output_step: Nx.t(),
-          speed: Nx.t(),
+          speed: float() | atom(),
           refine: integer(),
           type: Nx.Type.t(),
           max_step: Nx.t(),
@@ -64,7 +64,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
             order: 0,
             fixed_output_times?: Nx.u8(0),
             fixed_output_step: 1000.0,
-            speed: Nx.Constants.nan(:f64),
+            speed: :infinity,
             refine: 0,
             type: {:f, 64},
             max_step: 0.0,
@@ -106,9 +106,9 @@ defmodule Integrator.AdaptiveStepsize.NxOptions do
 
     {speed, nx_while_loop_integration?} =
       case nimble_opts[:speed] do
-        :infinite -> {Nx.Constants.infinity(nx_type), nx_while_loop_integration?}
+        :infinite -> {:infinite, nx_while_loop_integration?}
         # If the speed is set to a number other than :infinity, then the Nx `while` loop can no longer be used:
-        some_number -> {some_number |> Utils.convert_arg_to_nx_type(nx_type), Nx.u8(0)}
+        some_number -> {some_number, Nx.u8(0)}
       end
 
     event_fn_adapter = ExternalFnAdapter.wrap_external_fn_double_arity(nimble_opts[:event_fn])

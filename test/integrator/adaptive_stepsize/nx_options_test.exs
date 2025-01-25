@@ -20,7 +20,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       assert_nx_equal(nx_options.max_number_of_errors, Nx.s32(5_000))
       assert_nx_equal(nx_options.max_step, Nx.f32(1.0))
       assert nx_options.refine == 4
-      assert_nx_equal(nx_options.speed, Nx.Constants.infinity(:f32))
+      assert nx_options.speed == :infinite
       assert_nx_equal(nx_options.fixed_output_times?, Nx.u8(0))
       assert_nx_equal(nx_options.fixed_output_step, Nx.f32(0.0))
       assert nx_options.order == 5
@@ -112,7 +112,7 @@ defmodule Integrator.AdaptiveStepsize.NxOptionsTest do
       assert_nx_equal(nx_options.max_number_of_errors, Nx.s32(2))
       assert_nx_equal(nx_options.max_step, Nx.f64(3.0))
       assert nx_options.refine == 1
-      assert_nx_equal(nx_options.speed, Nx.f64(0.5))
+      assert nx_options.speed == 0.5
       assert_nx_equal(nx_options.fixed_output_times?, Nx.u8(1))
       assert_nx_equal(nx_options.fixed_output_step, Nx.f64(0.5))
       assert nx_options.order == 3

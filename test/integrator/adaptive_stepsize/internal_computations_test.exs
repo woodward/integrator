@@ -141,20 +141,20 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
       step = %IntegrationStep{error_count: 3}
       options = %NxOptions{}
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
-      assert sleep_time_ms == nil
+      assert sleep_time_ms == 0
     end
 
     test "returns nil if the speed is set to infinity" do
       step = %IntegrationStep{error_count: 0}
-      options = %NxOptions{speed: Nx.Constants.infinity(:f64), type: {:f, 64}}
+      options = %NxOptions{speed: :infinite}
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
-      assert sleep_time_ms == nil
+      assert sleep_time_ms == 0
     end
 
     test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 1.0 speed" do
       rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
       step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
-      options = %NxOptions{speed: Nx.f64(1.0)}
+      options = %NxOptions{speed: 1.0}
       timestamp_now_μs = 1100
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)
 
@@ -165,7 +165,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
     test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 0.5 speed" do
       rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
       step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
-      options = %NxOptions{speed: Nx.f64(0.5)}
+      options = %NxOptions{speed: 0.5}
       timestamp_now_μs = 1100
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)
 

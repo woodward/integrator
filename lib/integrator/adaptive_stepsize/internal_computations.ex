@@ -35,7 +35,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
       {step, t_end, options} = compute_integration_step(step, t_end, options)
       sleep_time_ms = compute_sleep_time(step, options)
 
-      if sleep_time_ms && sleep_time_ms > 0 do
+      if sleep_time_ms > 0 do
         Process.sleep(sleep_time_ms)
         %{step | step_timestamp_μs: timestamp_μs()}
       else
@@ -217,14 +217,15 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     step
   end
 
-  @spec compute_sleep_time(IntegrationStep.t(), NxOptions.t(), pos_integer()) :: pos_integer() | nil
+  @spec compute_sleep_time(IntegrationStep.t(), NxOptions.t(), pos_integer()) :: integer()
   deftransform compute_sleep_time(step, options, time_now_μs \\ :os.system_time(:microsecond)) do
-    if Nx.to_number(step.error_count) > 0 or options.speed == Nx.Constants.infinity(options.type) do
-      nil
+    speed = options.speed
+
+    if Nx.to_number(step.error_count) > 0 or speed == :infinite do
+      0
     else
       t_new = Nx.to_number(step.t_current)
       t_old = Nx.to_number(step.rk_step.t_old)
-      speed = Nx.to_number(options.speed)
       step_timestamp_μs = Nx.to_number(step.step_timestamp_μs)
 
       desired_time_interval_ms = (t_new - t_old) * 1000.0 / speed
