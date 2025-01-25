@@ -164,4 +164,34 @@ defmodule Integrator.TestHelpers do
     assert_nx_equal(actual.error_estimate, expected.error_estimate)
     assert_nx_equal(actual.dt, expected.dt)
   end
+
+  def assert_integration_steps_equal(actual, expected) do
+    assert_rk_steps_equal(actual.rk_step, expected.rk_step)
+
+    assert_nx_equal(actual.t_current, expected.t_current)
+    assert_nx_equal(actual.x_current, expected.x_current)
+    assert_nx_equal(actual.dt_new, expected.dt_new)
+    assert_nx_equal(actual.dt_new, expected.dt_new)
+
+    assert actual.stepper_fn == expected.stepper_fn
+    assert actual.ode_fn == expected.ode_fn
+    assert actual.interpolate_fn == expected.interpolate_fn
+
+    assert_nx_equal(actual.fixed_output_t_next, expected.fixed_output_t_next)
+    assert_nx_equal(actual.fixed_output_t_within_step?, expected.fixed_output_t_within_step?)
+
+    assert_nx_equal(actual.count_loop__increment_step, expected.count_loop__increment_step)
+    assert_nx_equal(actual.count_cycles__compute_step, expected.count_cycles__compute_step)
+    assert_nx_equal(actual.error_count, expected.error_count)
+    assert_nx_equal(actual.i_step, expected.i_step)
+
+    assert_nx_equal(actual.terminal_event, expected.terminal_event)
+    assert_nx_equal(actual.terminal_output, expected.terminal_output)
+    assert_nx_equal(actual.status_integration, expected.status_integration)
+    assert_nx_equal(actual.status_non_linear_eqn_root, expected.status_non_linear_eqn_root)
+
+    assert_nx_equal(actual.start_timestamp_μs, expected.start_timestamp_μs)
+    assert_nx_equal(actual.step_timestamp_μs, expected.step_timestamp_μs)
+    assert_nx_equal(actual.elapsed_time_μs, expected.elapsed_time_μs)
+  end
 end

@@ -64,7 +64,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
         elapsed_time_μs: Nx.s64(0)
       }
 
-      assert step == expected_step
+      assert_integration_steps_equal(step, expected_step)
     end
 
     test "returns an initial step for a Bogacki-Shampine23 integration" do
@@ -120,7 +120,7 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStepTest do
         elapsed_time_μs: Nx.s64(0)
       }
 
-      assert step == expected_step
+      assert_integration_steps_equal(step, expected_step)
     end
   end
 
