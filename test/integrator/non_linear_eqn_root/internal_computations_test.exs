@@ -28,7 +28,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       machine_epsilon = Nx.Constants.epsilon(:f64)
       tolerance = Nx.Constants.epsilon(:f64)
 
-      assert InternalComputations.converged?(z, machine_epsilon, tolerance) == Nx.u8(0)
+      assert_nx_equal(InternalComputations.converged?(z, machine_epsilon, tolerance), Nx.u8(0))
     end
 
     test "returns true (i.e., 1) if converged" do
@@ -41,7 +41,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       machine_epsilon = Nx.Constants.epsilon(:f64)
       tolerance = Nx.Constants.epsilon(:f64)
 
-      assert InternalComputations.converged?(z, machine_epsilon, tolerance) == Nx.u8(1)
+      assert_nx_equal(InternalComputations.converged?(z, machine_epsilon, tolerance), Nx.u8(1))
     end
   end
 
@@ -53,7 +53,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         u: Nx.f64(4.0)
       }
 
-      assert InternalComputations.too_far?(Nx.f64(3.0), z) == Nx.u8(1)
+      assert_nx_equal(InternalComputations.too_far?(Nx.f64(3.0), z), Nx.u8(1))
     end
 
     test "returns false if not too far" do
@@ -63,7 +63,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         u: Nx.f64(3.141592614571824)
       }
 
-      assert InternalComputations.too_far?(Nx.f64(3.141592692610915), z) == Nx.u8(0)
+      assert_nx_equal(InternalComputations.too_far?(Nx.f64(3.141592692610915), z), Nx.u8(0))
     end
   end
 
@@ -115,8 +115,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       assert_all_close(z.fx, Nx.f64(3.109168853400020e-04), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.x, Nx.f64(3.141281736699444), atol: 1.0e-16, rtol: 1.0e-16)
 
-      assert z.iteration_count == Nx.s32(2)
-      assert z.fn_eval_count == Nx.s32(4)
+      assert_nx_equal(z.iteration_count, Nx.s32(2))
+      assert_nx_equal(z.fn_eval_count, Nx.s32(4))
     end
   end
 
@@ -159,21 +159,21 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       fa = Nx.f64(-1.0)
       fb = Nx.f64(2.0)
       x = %SearchFor2ndPoint{fa: fa, fb: fb}
-      assert InternalComputations.found?(x) == Nx.u8(1)
+      assert_nx_equal(InternalComputations.found?(x), Nx.u8(1))
     end
 
     test "returns false if signs are the same" do
       fa = Nx.f64(3.0)
       fb = Nx.f64(4.0)
       x = %SearchFor2ndPoint{fa: fa, fb: fb}
-      assert InternalComputations.found?(x) == Nx.u8(0)
+      assert_nx_equal(InternalComputations.found?(x), Nx.u8(0))
     end
 
     test "returns false if signs are the same - 2nd case" do
       fa = Nx.f64(-5.0)
       fb = Nx.f64(-6.0)
       x = %SearchFor2ndPoint{fa: fa, fb: fb}
-      assert InternalComputations.found?(x) == Nx.u8(0)
+      assert_nx_equal(InternalComputations.found?(x), Nx.u8(0))
     end
   end
 
@@ -188,7 +188,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       assert_all_close(result.b, Nx.f64(3.3), atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(result.fb, Nx.f64(-0.1577456941432482), atol: 1.0e-12, rtol: 1.0e-12)
       assert_all_close(result.fa, Nx.f64(0.1411200080598672), atol: 1.0e-12, rtol: 1.0e-12)
-      assert result.fn_eval_count == Nx.s32(5)
+      assert_nx_equal(result.fn_eval_count, Nx.s32(5))
     end
 
     test "works if x0 is very close to zero" do
@@ -207,7 +207,7 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       # -0.09983341 81294999
       # -0.09983341 664682815
 
-      assert result.fn_eval_count == Nx.s32(8)
+      assert_nx_equal(result.fn_eval_count, Nx.s32(8))
     end
   end
 
@@ -223,8 +223,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.f64(-3.902112221087341e-08)
       }
 
+      {status, z} = InternalComputations.bracket(z)
       continue = Nx.s32(1)
-      {^continue, z} = InternalComputations.bracket(z)
+      assert_nx_equal(status, continue)
 
       assert_all_close(z.d, Nx.f64(3.157162792479947), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fd, Nx.f64(-1.556950978832860e-02), atol: 1.0e-16, rtol: 1.0e-16)
@@ -244,8 +245,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.f64(3.901796897832363e-08)
       }
 
+      {status, z} = InternalComputations.bracket(z)
       continue = Nx.s32(1)
-      {^continue, z} = InternalComputations.bracket(z)
+      assert_nx_equal(status, continue)
 
       assert_all_close(z.d, Nx.f64(3.141281736699444), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fd, Nx.f64(3.109168853400020e-04), atol: 1.0e-16, rtol: 1.0e-16)
@@ -264,8 +266,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fc: Nx.f64(0.0)
       }
 
+      {status, z} = InternalComputations.bracket(z)
       halt = Nx.s32(0)
-      {^halt, z} = InternalComputations.bracket(z)
+      assert_nx_equal(status, halt)
 
       assert_all_close(z.a, Nx.f64(1.0), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fa, Nx.f64(0.0), atol: 1.0e-16, rtol: 1.0e-16)
@@ -285,8 +288,8 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
       }
 
       {_, result} = InternalComputations.bracket(z)
-      assert result.status == Nx.u8(3)
-      assert result.iteration_count == Nx.s32(0)
+      assert_nx_equal(result.status, Nx.u8(3))
+      assert_nx_equal(result.iteration_count, Nx.s32(0))
     end
 
     test "bug fix - first iteration of first bounce of ballode.m" do
@@ -302,8 +305,9 @@ defmodule Integrator.NonLinearEqnRoot.InternalComputationsTest do
         fd: Nx.f64(-4.564518118928532)
       }
 
+      {status, z} = InternalComputations.bracket(z)
       continue = Nx.s32(1)
-      {^continue, z} = InternalComputations.bracket(z)
+      assert_nx_equal(status, continue)
 
       assert_all_close(z.a, Nx.f64(3.995471442091821), atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(z.fa, Nx.f64(1.607028863214206), atol: 1.0e-16, rtol: 1.0e-16)
