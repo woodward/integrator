@@ -122,7 +122,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       x1 = 3.0
 
       result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
-      assert result.status == Nx.u8(2)
+      assert_nx_equal(result.status, Nx.u8(2))
     end
 
     test "sine function - raises an error if invalid initial bracket - negative sine" do
@@ -131,7 +131,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       x1 = 4.0
 
       result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [])
-      assert result.status == Nx.u8(2)
+      assert_nx_equal(result.status, Nx.u8(2))
     end
 
     test "sine function - raises an error if max iterations exceeded" do
@@ -141,7 +141,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
 
-      assert result.status == Nx.u8(5)
+      assert_nx_equal(result.status, Nx.u8(5))
     end
 
     test "sine function - raises an error if max function evaluations exceeded" do
@@ -151,7 +151,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
       result = NonLinearEqnRoot.find_zero(&TestFunctions.sin/2, x0, x1, [], opts)
 
-      assert result.status == Nx.u8(4)
+      assert_nx_equal(result.status, Nx.u8(4))
     end
 
     test "sine function - outputs values if a function is given" do

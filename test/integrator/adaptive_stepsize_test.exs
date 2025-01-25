@@ -1,7 +1,6 @@
 defmodule Integrator.AdaptiveStepsizeTest do
   @moduledoc false
   use Integrator.TestCase, async: true
-  import Nx, only: :sigils
 
   alias Integrator.AdaptiveStepsize
   alias Integrator.DataCollector
@@ -50,9 +49,9 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      assert result.count_cycles__compute_step == Nx.s32(78)
-      assert result.count_loop__increment_step == Nx.s32(50)
-      assert result.error_count == Nx.s32(0)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(78))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(50))
+      assert_nx_equal(result.error_count, Nx.s32(0))
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
@@ -107,8 +106,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      assert result.count_cycles__compute_step == Nx.s32(78)
-      assert result.count_loop__increment_step == Nx.s32(50)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(78))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(50))
 
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
@@ -169,8 +168,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      assert result.count_cycles__compute_step == Nx.s32(78)
-      assert result.count_loop__increment_step == Nx.s32(50)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(78))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(50))
 
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
@@ -230,10 +229,10 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      assert result.count_cycles__compute_step == Nx.s32(9)
-      assert result.count_loop__increment_step == Nx.s32(8)
-      assert result.terminal_event == Nx.u8(0)
-      assert result.status_non_linear_eqn_root == Nx.u8(1)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(9))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(8))
+      assert_nx_equal(result.terminal_event, Nx.u8(0))
+      assert_nx_equal(result.status_non_linear_eqn_root, Nx.u8(1))
       # assert result.terminal_output == :continue
 
       points = DataCollector.get_data(pid)
@@ -700,8 +699,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
-      assert result.count_cycles__compute_step == Nx.s32(10)
-      assert result.count_loop__increment_step == Nx.s32(9)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(10))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(9))
       # assert length(result.ode_t) == 10
       # assert length(result.ode_x) == 10
       # assert length(result.output_t) == 61
@@ -825,8 +824,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
-      assert result.count_cycles__compute_step == Nx.s32(189)
-      assert result.count_loop__increment_step == Nx.s32(171)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(189))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(171))
       # assert length(result.ode_t) == 172
       # assert length(result.ode_x) == 172
       # assert length(result.output_t) == 685
@@ -892,8 +891,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
-      assert result.count_cycles__compute_step == Nx.s32(952)
-      assert result.count_loop__increment_step == Nx.s32(950)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(952))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(950))
       # assert length(result.ode_t) == 951
       # assert length(result.ode_x) == 951
       # assert length(result.output_t) == 3_801
@@ -962,8 +961,8 @@ defmodule Integrator.AdaptiveStepsizeTest do
       points = DataCollector.get_data(pid)
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
-      assert result.count_cycles__compute_step == Nx.s32(952)
-      assert result.count_loop__increment_step == Nx.s32(950)
+      assert_nx_equal(result.count_cycles__compute_step, Nx.s32(952))
+      assert_nx_equal(result.count_loop__increment_step, Nx.s32(950))
       # assert length(result.ode_t) == 951
       # assert length(result.ode_x) == 951
       # assert length(result.output_t) == 951
