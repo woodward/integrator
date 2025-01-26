@@ -196,8 +196,8 @@ defmodule IntegratorTest do
       solution = Integrator.integrate(&euler_equations/2, t_start, t_end, x0, opts)
       {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
 
-      assert solution.count_cycles__compute_step == Nx.s32(78)
-      assert solution.count_loop__increment_step == Nx.s32(78)
+      assert_nx_equal(solution.count_cycles__compute_step, Nx.s32(78))
+      assert_nx_equal(solution.count_loop__increment_step, Nx.s32(78))
       # assert length(solution.ode_t) == 79
       # assert length(solution.ode_x) == 79
       assert length(output_t) == 313
@@ -240,8 +240,8 @@ defmodule IntegratorTest do
       solution = Integrator.integrate(&euler_equations/2, t_start, t_end, x0, opts)
       {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
 
-      assert solution.count_cycles__compute_step == Nx.s32(847)
-      assert solution.count_loop__increment_step == Nx.s32(846)
+      assert_nx_equal(solution.count_cycles__compute_step, Nx.s32(847))
+      assert_nx_equal(solution.count_loop__increment_step, Nx.s32(846))
       # assert length(solution.ode_t) == 847
       # assert length(solution.ode_x) == 847
       assert length(output_t) == 847
