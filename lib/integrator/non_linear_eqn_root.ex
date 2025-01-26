@@ -202,50 +202,7 @@ defmodule Integrator.NonLinearEqnRoot do
 
   @spec find_zero_nx(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
   defn find_zero_nx(zero_fn, a, b, zero_fn_args, options) do
-    fa = zero_fn.(a, zero_fn_args)
-    fb = zero_fn.(b, zero_fn_args)
-    fn_eval_count = 2
-
-    {u, fu} = if Nx.abs(fa) < Nx.abs(fb), do: {a, fa}, else: {b, fb}
-    {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
-
-    c = Nx.tensor(0.0, type: options.type)
-    fc = Nx.tensor(0.0, type: options.type)
-    x = Nx.tensor(0.0, type: options.type)
-    fx = Nx.tensor(0.0, type: options.type)
-
-    # These don't seem to work:
-    # c = Nx.Constants.nan(type: options.type)
-    # fc = Nx.Constants.nan(type: options.type)
-    # x = Nx.Constants.nan(type: options.type)
-    # fx = Nx.Constants.nan(type: options.type)
-
-    z = %__MODULE__{
-      a: a,
-      b: b,
-      c: c,
-      d: u,
-      e: u,
-      u: u,
-      x: x,
-      #
-      fa: fa,
-      fb: fb,
-      fc: fc,
-      fd: fu,
-      fe: fu,
-      fu: fu,
-      fx: fx,
-      #
-      fn_eval_count: fn_eval_count,
-      iteration_type: 1,
-      mu_ba: (b - a) * InternalComputations.initial_mu(),
-      #
-      elapsed_time_μs: 0,
-      iteration_count: 0,
-      status: 1,
-      interpolation_type_debug_only: 0
-    }
+    z = new(zero_fn, a, b, zero_fn_args, options)
 
     if same_signs?(z.fa, z.fb) do
       %{z | status: invalid_initial_bracket()}
@@ -277,5 +234,53 @@ defmodule Integrator.NonLinearEqnRoot do
       @max_iterations_exceeded -> {:error, "Too many iterations"}
       _ -> {:error, "Unknown error"}
     end
+  end
+
+  @spec new(zero_fn_t(), Nx.t(), Nx.t(), [Nx.t()], NxOptions.t()) :: t()
+  defnp new(zero_fn, a, b, zero_fn_args, options) do
+    fa = zero_fn.(a, zero_fn_args)
+    fb = zero_fn.(b, zero_fn_args)
+    fn_eval_count = 2
+
+    {u, fu} = if Nx.abs(fa) < Nx.abs(fb), do: {a, fa}, else: {b, fb}
+    {a, b, fa, fb} = if b < a, do: {b, a, fb, fa}, else: {a, b, fa, fb}
+
+    c = Nx.tensor(0.0, type: options.type)
+    fc = Nx.tensor(0.0, type: options.type)
+    x = Nx.tensor(0.0, type: options.type)
+    fx = Nx.tensor(0.0, type: options.type)
+
+    # These don't seem to work:
+    # c = Nx.Constants.nan(type: options.type)
+    # fc = Nx.Constants.nan(type: options.type)
+    # x = Nx.Constants.nan(type: options.type)
+    # fx = Nx.Constants.nan(type: options.type)
+
+    %__MODULE__{
+      a: a,
+      b: b,
+      c: c,
+      d: u,
+      e: u,
+      u: u,
+      x: x,
+      #
+      fa: fa,
+      fb: fb,
+      fc: fc,
+      fd: fu,
+      fe: fu,
+      fu: fu,
+      fx: fx,
+      #
+      fn_eval_count: fn_eval_count,
+      iteration_type: 1,
+      mu_ba: (b - a) * InternalComputations.initial_mu(),
+      #
+      elapsed_time_μs: 0,
+      iteration_count: 0,
+      status: 1,
+      interpolation_type_debug_only: 0
+    }
   end
 end
