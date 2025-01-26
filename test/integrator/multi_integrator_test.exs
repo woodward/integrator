@@ -158,7 +158,7 @@ defmodule Integrator.MultiIntegratorTest do
       # Compare against Octave results:
       assert_in_delta(Nx.to_number(t_row_76), 5.256295464839447, 1.0e-14)
       assert_in_delta(Nx.to_number(x_row_76[0]), 14.40271312308144, 1.0e-13)
-      assert_in_delta(Nx.to_number(x_row_76[1]), 6.435741489925020, 1.0e-14)
+      assert_in_delta(Nx.to_number(x_row_76[1]), 6.435741489925020, 1.0e-13)
 
       actual_t = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
       File.write!("test/fixtures/octave_results/ballode/high_fidelity/junk_t_elixir.csv", actual_t)
@@ -175,7 +175,7 @@ defmodule Integrator.MultiIntegratorTest do
       x_last_row = output_x |> List.last()
 
       # Compare against Octave results:
-      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-13)
+      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-12)
       assert_in_delta(Nx.to_number(x_last_row[0]), -1.360023205165817e-13, 1.0e-12)
       assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end

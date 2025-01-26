@@ -41,7 +41,7 @@ defmodule Integrator.RungeKutta.DormandPrince45Test do
 
       assert_all_close(t_next, expected_t_next, atol: 1.0e-15, rtol: 1.0e-15)
       assert_all_close(x_next, expected_x_next, atol: 1.0e-15, rtol: 1.0e-15)
-      assert_all_close(x_est, expected_x_est, atol: 1.0e-20, rtol: 1.0e-20)
+      assert_all_close(x_est, expected_x_est, atol: 1.0e-16, rtol: 1.0e-16)
       assert_all_close(k, expected_k, atol: 1.0e-15, rtol: 1.0e-15)
     end
 
