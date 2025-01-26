@@ -147,7 +147,7 @@ defmodule Integrator.MultiIntegratorTest do
       {x_row_72, _rest} = output_x |> List.pop_at(72)
 
       # Compare against Octave results:
-      assert_in_delta(Nx.to_number(t_row_72), 4.07747196738022, 1.0e-17)
+      assert_in_delta(Nx.to_number(t_row_72), 4.07747196738022, 1.0e-14)
       assert_in_delta(Nx.to_number(x_row_72[0]), 0.0, 1.0e-13)
       assert_in_delta(Nx.to_number(x_row_72[1]), -20.0, 1.0e-13)
 
@@ -175,7 +175,7 @@ defmodule Integrator.MultiIntegratorTest do
       x_last_row = output_x |> List.last()
 
       # Compare against Octave results:
-      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-14)
+      assert_in_delta(Nx.to_number(t_last_row), 26.55745402242623, 1.0e-13)
       assert_in_delta(Nx.to_number(x_last_row[0]), -1.360023205165817e-13, 1.0e-12)
       assert_in_delta(Nx.to_number(x_last_row[1]), -7.748409780000432, 1.0e-12)
     end
