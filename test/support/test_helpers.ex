@@ -194,4 +194,36 @@ defmodule Integrator.TestHelpers do
     assert_nx_equal(actual.step_timestamp_μs, expected.step_timestamp_μs)
     assert_nx_equal(actual.elapsed_time_μs, expected.elapsed_time_μs)
   end
+
+  def new_non_linear_eqn_root do
+    %Integrator.NonLinearEqnRoot{
+      a: 0.0,
+      b: 0.0,
+      c: 0.0,
+      d: 0.0,
+      e: 0.0,
+      u: 0.0,
+      #
+      fa: 0.0,
+      fb: 0.0,
+      fc: 0.0,
+      fd: 0.0,
+      fe: 0.0,
+      fu: 0.0,
+      #
+      #
+      x: 0.0,
+      fx: 0.0,
+      # #
+      mu_ba: 0.0,
+      # #
+      elapsed_time_μs: 0,
+      fn_eval_count: 0,
+      iteration_count: 0,
+      #
+      iteration_type: 0,
+      status: 0,
+      interpolation_type_debug_only: 0
+    }
+  end
 end
