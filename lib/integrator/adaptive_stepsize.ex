@@ -166,7 +166,7 @@ defmodule Integrator.AdaptiveStepsize do
     # Broadcast the initial conditions (t_start & x0) as the first output point (if there is an output function):
     %Point{t: initial_step.t_current, x: initial_step.x_current} |> options.output_fn_adapter.external_fn.()
 
-    if options.nx_while_loop_integration? == Nx.u8(1) do
+    if Nx.equal(options.nx_while_loop_integration?, Nx.u8(1)) do
       InternalComputations.integrate_via_nx_while_loop(initial_step, t_end, options)
     else
       InternalComputations.integrate_via_elixir_recursion(initial_step, t_end, options)
