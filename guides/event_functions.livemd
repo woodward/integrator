@@ -1,15 +1,44 @@
-# Untitled notebook
+# Using Event Functions with Integrator (and different Nx backends)
 
-## Event Functions
+## Section
 
 ```elixir
-Mix.install([
-  {:integrator, github: "woodward/integrator"},
+# nx_backend = :binary
+# nx_backend = :torchx
+nx_backend = :exla
+
+apple_arm64? = :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
+
+deps = [
+  {:integrator, github: "woodward/integrator", branch: "exla"},
   {:kino_vega_lite, "~> 0.1"}
-])
+]
+
+{deps, config} =
+  case nx_backend do
+    :binary -> {deps, []}
+    :torchx -> {deps ++ [{:torchx, "~> 0.9.2"}], []}
+    :exla -> {deps ++ [{:exla, "~> 0.9.2"}], [exla: [default_client: :host, is_mac_arm: apple_arm64?]]}
+  end
+
+Mix.install(deps, config: config)
+
+case nx_backend do
+  :binary ->
+    Nx.global_default_backend(Nx.BinaryBackend)
+
+  :torchx ->
+    Nx.global_default_backend(Torchx.Backend)
+    Nx.Defn.global_default_options(compiler: Torchx)
+
+  :exla ->
+    Nx.global_default_backend(EXLA.Backend)
+    Nx.Defn.global_default_options(compiler: EXLA)
+end
+
 ```
 
-### Usage
+#### Usage
 
 An event function lets you terminate a simulation based on some event (such as a collision).  For this example, we're going to mimic the [Matlab `ballode.m`](https://www.mathworks.com/help/matlab/math/ode-event-location.html) bouncing ball example. See also [here](https://github.com/kuo-courses/hw00/blob/master/ballode.m).
 
