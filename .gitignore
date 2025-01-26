@@ -35,3 +35,5 @@ matlab
 *_elixir.csv
 
 .envrc
+
+/cache

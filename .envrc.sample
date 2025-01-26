@@ -1,3 +1,6 @@
 # export NX_BACKEND=exla
 # export NX_BACKEND=torchx
 export NX_BACKEND=binary
+
+export LIBTORCH_DIR="~/Development/integrator/cache/libtorch-2.4.0-cpu"
+export LIBTORCH_VERSION="2.4.0"
