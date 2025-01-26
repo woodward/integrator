@@ -153,7 +153,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
 
     test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 1.0 speed" do
       rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
-      step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
+
+      step = %IntegrationStep{
+        rk_step: rk_step,
+        t_current: Nx.f64(10.1),
+        step_timestamp_μs: Nx.s64(100),
+        error_count: 0
+      }
+
       options = %NxOptions{speed: 1.0}
       timestamp_now_μs = 1100
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)
@@ -164,7 +171,14 @@ defmodule Integrator.AdaptiveStepsize.InternalComputationsTest do
 
     test "returns the number of milliseconds to sleep to stay in sync with the desired speed - 0.5 speed" do
       rk_step = %RungeKutta.Step{t_old: Nx.f64(10.0)}
-      step = %IntegrationStep{rk_step: rk_step, t_current: Nx.f64(10.1), step_timestamp_μs: Nx.s64(100)}
+
+      step = %IntegrationStep{
+        rk_step: rk_step,
+        t_current: Nx.f64(10.1),
+        step_timestamp_μs: Nx.s64(100),
+        error_count: 0
+      }
+
       options = %NxOptions{speed: 0.5}
       timestamp_now_μs = 1100
       sleep_time_ms = InternalComputations.compute_sleep_time(step, options, timestamp_now_μs)

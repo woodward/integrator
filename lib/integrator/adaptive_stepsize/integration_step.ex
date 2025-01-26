@@ -83,24 +83,24 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
     :ode_fn,
     :interpolate_fn,
     #
-    fixed_output_t_next: Nx.f64(0),
-    fixed_output_t_within_step?: Nx.u8(0),
+    :fixed_output_t_next,
+    :fixed_output_t_within_step?,
     #
-    count_loop__increment_step: Nx.s32(0),
-    count_cycles__compute_step: Nx.s32(0),
+    :count_loop__increment_step,
+    :count_cycles__compute_step,
     #
     # ireject in Octave:
-    error_count: Nx.s32(0),
-    i_step: Nx.s32(0),
+    :error_count,
+    :i_step,
     #
-    terminal_event: Nx.u8(1),
-    terminal_output: Nx.s32(0),
-    status_integration: Nx.u8(1),
-    status_non_linear_eqn_root: Nx.s32(1),
+    :terminal_event,
+    :terminal_output,
+    :status_integration,
+    :status_non_linear_eqn_root,
     #
-    start_timestamp_μs: Nx.s64(0),
-    step_timestamp_μs: Nx.s64(0),
-    elapsed_time_μs: Nx.s64(0)
+    :start_timestamp_μs,
+    :step_timestamp_μs,
+    :elapsed_time_μs
   ]
 
   # @spec new(
@@ -133,6 +133,20 @@ defmodule Integrator.AdaptiveStepsize.IntegrationStep do
       step_timestamp_μs: start_timestamp_μs,
       rk_step: initial_rk_step,
       fixed_output_t_next: fixed_output_t_next,
+      fixed_output_t_within_step?: Nx.u8(0),
+      #
+      count_loop__increment_step: Nx.s32(0),
+      count_cycles__compute_step: Nx.s32(0),
+      #
+      error_count: Nx.s32(0),
+      i_step: Nx.s32(0),
+      #
+      terminal_event: Nx.u8(1),
+      terminal_output: Nx.s32(0),
+      status_integration: Nx.u8(1),
+      status_non_linear_eqn_root: Nx.s32(1),
+      #
+      elapsed_time_μs: Nx.s64(0),
       #
       stepper_fn: stepper_fn,
       ode_fn: ode_fn,
