@@ -7,17 +7,17 @@
 # nx_backend = :torchx
 nx_backend = :exla
 
-apple_arm64? = :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
+apple_arm64? = :os.type() == {:unix, :darwin} and :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
 
 deps = [
-  {:integrator, github: "woodward/integrator", branch: "exla"},
+  {:integrator, github: "woodward/integrator"},
   {:kino_vega_lite, "~> 0.1"}
 ]
 
 {deps, config} =
   case nx_backend do
     :binary -> {deps, []}
-    :torchx -> {deps ++ [{:torchx, "~> 0.9.2"}], []}
+    :torchx -> {deps ++ [{:torchx, "~> 0.9.2"}], [is_apple_arm64: apple_arm64?, add_backend_on_inspect: true]}
     :exla -> {deps ++ [{:exla, "~> 0.9.2"}], [exla: [default_client: :host, is_mac_arm: apple_arm64?]]}
   end
 

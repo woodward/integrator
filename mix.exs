@@ -41,14 +41,11 @@ defmodule Integrator.MixProject do
       {:csv, "~> 3.2", only: :test},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:ex_doc, "~> 0.34", only: :dev},
-      {:exla, "~> 0.9"},
-      # {:exla, "~> 0.9", only: :test},
+      {:exla, "~> 0.9", only: :test},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
       {:nx, "~> 0.9"}
-      # {:torchx, "~> 0.9.2"}
-      # {:torchx, "~> 0.9.2", only: :test},
-      # {:nx, path: "/Users/Greg/Development/nx/nx"}
+      # {:torchx, "~> 0.9", only: :test}
     ]
   end
 
