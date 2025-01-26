@@ -1,0 +1,3 @@
+# export NX_BACKEND=exla
+# export NX_BACKEND=torchx
+export NX_BACKEND=binary
