@@ -36,6 +36,11 @@ if config_env() == :test do
         # It uses `Nx.Defn.Evaluator` as the compiler
 
     # ------------------------------------------------------------------------------------------------
+    :emlx ->
+      Nx.default_backend(EMLX.Backend)
+      Nx.Defn.default_options(compiler: EMLX)
+
+    # ------------------------------------------------------------------------------------------------
     :binary ->
       Nx.global_default_backend(Nx.BinaryBackend)
   end
