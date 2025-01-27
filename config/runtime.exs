@@ -31,8 +31,9 @@ if config_env() == :test do
         check_shape_and_type: config_env() == :test,
         is_apple_arm64: apple_arm64?
 
-      Nx.global_default_backend(Torchx.Backend)
-      Nx.Defn.global_default_options(compiler: Torchx)
+        Nx.global_default_backend(Torchx.Backend)
+        # Note that Torchx does not have its own compiler!
+        # It uses `Nx.Defn.Evaluator` as the compiler
 
     # ------------------------------------------------------------------------------------------------
     :binary ->

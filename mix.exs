@@ -44,8 +44,8 @@ defmodule Integrator.MixProject do
       {:exla, "~> 0.9", only: :test},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
-      {:nx, "~> 0.9"}
-      # {:torchx, "~> 0.9", only: :test}
+      {:nx, "~> 0.9"},
+      {:torchx, "~> 0.9", only: :test}
     ]
   end
 
