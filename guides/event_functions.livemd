@@ -3,9 +3,10 @@
 ## Section
 
 ```elixir
-# nx_backend = :binary
+nx_backend = :binary
 # nx_backend = :torchx
-nx_backend = :exla
+# nx_backend = :emlx
+# nx_backend = :exla
 
 apple_arm64? = :os.type() == {:unix, :darwin} and :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
 
@@ -19,6 +20,7 @@ deps = [
     :binary -> {deps, []}
     :torchx -> {deps ++ [{:torchx, "~> 0.9.2"}], [is_apple_arm64: apple_arm64?, add_backend_on_inspect: true]}
     :exla -> {deps ++ [{:exla, "~> 0.9.2"}], [exla: [default_client: :host, is_mac_arm: apple_arm64?]]}
+    :emlx -> {deps ++ [{:emlx, github: "elixir-nx/emlx"}], []}
   end
 
 Mix.install(deps, config: config)
@@ -29,11 +31,14 @@ case nx_backend do
 
   :torchx ->
     Nx.global_default_backend(Torchx.Backend)
-    Nx.Defn.global_default_options(compiler: Torchx)
 
   :exla ->
     Nx.global_default_backend(EXLA.Backend)
     Nx.Defn.global_default_options(compiler: EXLA)
+
+  :emlx ->
+    Nx.default_backend(EMLX.Backend)
+    Nx.Defn.default_options(compiler: EMLX)
 end
 
 ```
