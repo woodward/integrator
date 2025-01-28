@@ -31,6 +31,8 @@ case nx_backend do
 
   :torchx ->
     Nx.global_default_backend(Torchx.Backend)
+    # Note that Torchx does not have its own compiler!
+    # It uses `Nx.Defn.Evaluator` as the compiler
 
   :exla ->
     Nx.global_default_backend(EXLA.Backend)
