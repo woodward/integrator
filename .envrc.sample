@@ -2,3 +2,7 @@
 # export NX_BACKEND=torchx
 #export NX_BACKEND=emlx
 export NX_BACKEND=binary
+
+# For Intel Macs - this is the last available precompiled version; see the list of available versions here:
+# https://download.pytorch.org/libtorch/cpu/
+# export LIBTORCH_VERSION="2.1.2"
