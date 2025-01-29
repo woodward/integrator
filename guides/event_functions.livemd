@@ -4,9 +4,12 @@
 
 ```elixir
 nx_backend = :binary
-# nx_backend = :torchx
 # nx_backend = :emlx
 # nx_backend = :exla
+# nx_backend = :torchx
+# Note that if you enable :torchx you also need to add a Livebook environment variable `PATH` 
+# which points to the directory which contains cmake (e.g., do `which cmake` and then add that 
+# directory to `PATH`). In Livebook, go to Settings -> Environment Variables
 
 apple_arm64? = :os.type() == {:unix, :darwin} and :erlang.system_info(:system_architecture) |> List.starts_with?(~c"aarch64")
 
