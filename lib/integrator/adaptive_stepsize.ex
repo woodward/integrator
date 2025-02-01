@@ -147,24 +147,11 @@ defmodule Integrator.AdaptiveStepsize do
           order :: integer(),
           opts :: Keyword.t()
         ) :: IntegrationStep.t()
-
   deftransform integrate(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, opts \\ []) do
-    start_timestamp_μs = timestamp_μs()
-    options = NxOptions.convert_opts_to_nx_options(t_start, t_end, order, opts)
-    t_end = IntegrationStep.to_tensor(t_end, options.type)
+    {initial_step, t_end, options} =
+      setup(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, timestamp_μs(), opts)
 
-    initial_tstep =
-      if initial_tstep do
-        initial_tstep
-      else
-        starting_stepsize(order, ode_fn, t_start, x0, options.abs_tol, options.rel_tol, options.norm_control?)
-      end
-
-    initial_step =
-      IntegrationStep.new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs)
-
-    # Broadcast the initial conditions (t_start & x0) as the first output point (if there is an output function):
-    %Point{t: initial_step.t_current, x: initial_step.x_current} |> options.output_fn_adapter.external_fn.()
+    broadcast_initial_point(initial_step, options)
 
     if Nx.equal(options.nx_while_loop_integration?, Nx.u8(1)) do
       InternalComputations.integrate_via_nx_while_loop(initial_step, t_end, options)
@@ -244,5 +231,39 @@ defmodule Integrator.AdaptiveStepsize do
   @spec zero_vector(Nx.t(), Nx.t()) :: Nx.t()
   defnp zero_vector(size, type) do
     0.0 |> Nx.tensor(type: type) |> Nx.broadcast({size})
+  end
+
+  @spec setup(
+          stepper_fn :: RungeKutta.stepper_fn_t(),
+          interpolate_fn :: RungeKutta.interpolate_fn_t(),
+          ode_fn :: RungeKutta.ode_fn_t(),
+          t_start :: Nx.t(),
+          t_end :: Nx.t(),
+          initial_tstep :: Nx.t(),
+          x0 :: Nx.t(),
+          order :: integer(),
+          start_timestamp_ms :: Nx.t(),
+          opts :: Keyword.t()
+        ) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}
+  deftransform setup(stepper_fn, interpolate_fn, ode_fn, t_start, t_end, initial_tstep, x0, order, start_timestamp_μs, opts \\ []) do
+    options = NxOptions.convert_opts_to_nx_options(t_start, t_end, order, opts)
+    t_end = IntegrationStep.to_tensor(t_end, options.type)
+
+    initial_tstep =
+      if initial_tstep do
+        initial_tstep
+      else
+        starting_stepsize(order, ode_fn, t_start, x0, options.abs_tol, options.rel_tol, options.norm_control?)
+      end
+
+    initial_step =
+      IntegrationStep.new(stepper_fn, interpolate_fn, ode_fn, t_start, initial_tstep, x0, options, start_timestamp_μs)
+
+    {initial_step, t_end, options}
+  end
+
+  @spec broadcast_initial_point(IntegrationStep.t(), NxOptions.t()) :: any()
+  deftransform broadcast_initial_point(initial_step, options) do
+    %Point{t: initial_step.t_current, x: initial_step.x_current} |> options.output_fn_adapter.external_fn.()
   end
 end
