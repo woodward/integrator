@@ -43,7 +43,7 @@ defmodule Integrator do
       """,
       type: :boolean,
       default: false
-    ],
+    ]
   ]
 
   @options_schema_integrator_only NimbleOptions.new!(options)
@@ -74,13 +74,7 @@ defmodule Integrator do
           opts :: Keyword.t()
         ) :: IntegrationStep.t()
   def integrate(ode_fn, t_start, t_end, x0, opts \\ []) do
-    local_opt_keys = options_schema_integrator_only() |> Map.get(:schema) |> Keyword.keys()
-    {local_opts, remaining_opts} = Keyword.split(opts, local_opt_keys)
-    local_opts = local_opts |> NimbleOptions.validate!(@options_schema_integrator_only)
-
-    integrator_mod = Keyword.get(local_opts, :integrator)
-    initial_step = Keyword.get(local_opts, :initial_step)
-    order = integrator_mod.order()
+    {integrator_mod, initial_step, order, remaining_opts} = setup(opts)
 
     AdaptiveStepsize.integrate(
       &integrator_mod.integrate/6,
@@ -93,5 +87,18 @@ defmodule Integrator do
       order,
       remaining_opts
     )
+  end
+
+  @spec setup(Keyword.t()) :: {module(), Nx.t() | float(), integer(), Keyword.t()}
+  def setup(opts) do
+    local_opt_keys = options_schema_integrator_only() |> Map.get(:schema) |> Keyword.keys()
+    {local_opts, remaining_opts} = Keyword.split(opts, local_opt_keys)
+    local_opts = local_opts |> NimbleOptions.validate!(@options_schema_integrator_only)
+
+    integrator_mod = Keyword.get(local_opts, :integrator)
+    initial_step = Keyword.get(local_opts, :initial_step)
+    order = integrator_mod.order()
+
+    {integrator_mod, initial_step, order, remaining_opts}
   end
 end
