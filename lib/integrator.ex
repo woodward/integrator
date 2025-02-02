@@ -10,6 +10,7 @@ defmodule Integrator do
 
   alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.IntegrationStep
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.RungeKutta
   alias Integrator.RungeKutta.BogackiShampine23
   alias Integrator.RungeKutta.DormandPrince45
@@ -100,5 +101,33 @@ defmodule Integrator do
     order = integrator_mod.order()
 
     {integrator_mod, initial_step, order, remaining_opts}
+  end
+
+  @spec setup_all(
+          ode_fn :: RungeKutta.ode_fn_t(),
+          t_start :: Nx.t(),
+          t_end :: Nx.t(),
+          x0 :: Nx.t(),
+          start_timestamp_ms :: Nx.t(),
+          opts :: Keyword.t()
+        ) :: {IntegrationStep.t(), Nx.t(), NxOptions.t()}
+  def setup_all(ode_fn, t_start, t_end, x0, timestamp_μs, opts) do
+    {integrator_mod, initial_tstep, order, remaining_opts} = setup(opts)
+
+    stepper_fn = &integrator_mod.integrate/6
+    interpolate_fn = &integrator_mod.interpolate/4
+
+    AdaptiveStepsize.setup(
+      stepper_fn,
+      interpolate_fn,
+      ode_fn,
+      t_start,
+      t_end,
+      initial_tstep,
+      x0,
+      order,
+      timestamp_μs,
+      remaining_opts
+    )
   end
 end
