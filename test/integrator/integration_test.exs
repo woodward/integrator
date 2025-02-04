@@ -41,6 +41,12 @@ defmodule Integrator.IntegrationTest do
       Process.sleep(1000)
 
       {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
+
+      # actual_t = output_t |> Enum.map(&Nx.to_number(&1)) |> Enum.join("\n")
+      # File.write!("test/fixtures/octave_results/van_der_pol/default/junk_actual_t.csv", actual_t)
+      # actual_x = output_x |> Enum.map(fn x -> "#{Nx.to_number(x[0])}    #{Nx.to_number(x[1])}\n" end)
+      # File.write!("test/fixtures/octave_results/van_der_pol/default/junk_actual_x.csv", actual_x)
+
       assert length(output_t) == 201
       assert length(output_x) == 201
 

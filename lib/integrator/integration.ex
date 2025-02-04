@@ -49,7 +49,7 @@ defmodule Integrator.Integration do
   @impl GenServer
   def handle_info(:step, %{step: step, t_end: t_end, options: options} = state) do
     step =
-      if Nx.equal(InternalComputations.continue_stepping?(step, t_end), Nx.u8(1)) do
+      if Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1 do
         step = %{step | step_timestamp_μs: timestamp_μs()}
         {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
         sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
