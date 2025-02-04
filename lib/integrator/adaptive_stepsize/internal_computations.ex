@@ -296,7 +296,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   end
 
   # @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
-  defnp continue_stepping?(step, t_end) do
+  defn continue_stepping?(step, t_end) do
     # Also check the step's status here
 
     #                                        if    close to end time                                  or past end time

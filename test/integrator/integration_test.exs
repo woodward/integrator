@@ -22,8 +22,8 @@ defmodule Integrator.IntegrationTest do
       # fvdp = @(t,x) [x(2); (1 - x(1)^2) * x(2) - x(1)];
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
-      {:ok, pid} = DataCollector.start_link()
-      output_fn = &DataCollector.add_data(pid, &1)
+      {:ok, data_pid} = DataCollector.start_link()
+      output_fn = &DataCollector.add_data(data_pid, &1)
 
       opts = [
         type: :f64,
@@ -35,16 +35,20 @@ defmodule Integrator.IntegrationTest do
       ]
 
       {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
+      Integration.run_async(pid)
 
-      # {output_t, output_x} = DataCollector.get_data(pid) |> Point.split_points_into_t_and_x()
-      # assert length(output_t) == 201
-      # assert length(output_x) == 201
+      # Get rid of this sleep!
+      Process.sleep(1000)
 
-      # expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
-      # expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
+      {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
+      assert length(output_t) == 201
+      assert length(output_x) == 201
 
-      # assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
-      # assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
+      expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/default/t.csv")
+      expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/default/x.csv")
+
+      assert_nx_lists_equal(output_t, expected_t, atol: 1.0e-04, rtol: 1.0e-04)
+      assert_nx_lists_equal(output_x, expected_x, atol: 1.0e-04, rtol: 1.0e-04)
     end
   end
 end
