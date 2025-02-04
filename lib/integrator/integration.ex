@@ -6,6 +6,7 @@ defmodule Integrator.Integration do
   use GenServer
 
   alias Integrator.AdaptiveStepsize
+  alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.RungeKutta
 
@@ -13,7 +14,14 @@ defmodule Integrator.Integration do
 
   @genserver_options [:name, :timeout, :debug, :spawn_opt, :hibernate_after]
 
-  defstruct [:step, :t_end, :options]
+  @type t :: %__MODULE__{
+          step: IntegrationStep.t(),
+          t_end: Nx.t(),
+          options: AdaptiveStepsize.NxOptions.t(),
+          caller: GenServer.from() | nil
+        }
+
+  defstruct [:step, :t_end, :options, :caller]
 
   @spec start_link(
           ode_fn :: RungeKutta.ode_fn_t(),
@@ -27,8 +35,14 @@ defmodule Integrator.Integration do
     GenServer.start_link(__MODULE__, [ode_fn, t_start, t_end, x0, integrator_opts], genserver_opts)
   end
 
+  @spec run_async(GenServer.server()) :: any()
   def run_async(pid) do
     GenServer.cast(pid, :run_async)
+  end
+
+  @spec run(GenServer.server()) :: :ok | {:error, String.t()}
+  def run(pid) do
+    GenServer.call(pid, :run)
   end
 
   @impl GenServer
@@ -47,6 +61,18 @@ defmodule Integrator.Integration do
   end
 
   @impl GenServer
+  def handle_call(:run, from, state) do
+    Process.send(self(), :step, [])
+    {:noreply, Map.put(state, :caller, from)}
+  end
+
+  @impl GenServer
+  def handle_info(:run_completed, state) do
+    result = state.step.status_integration |> IntegrationStep.status_integration()
+    if state.caller, do: GenServer.reply(state.caller, result)
+    {:noreply, state}
+  end
+
   def handle_info(:step, %{step: step, t_end: t_end, options: options} = state) do
     step =
       if Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1 do
@@ -63,6 +89,7 @@ defmodule Integrator.Integration do
           step
         end
       else
+        Process.send(self(), :run_completed, [])
         step
       end
 
