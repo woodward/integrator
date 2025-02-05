@@ -30,20 +30,6 @@ defmodule Integrator do
       """,
       type: {:in, [DormandPrince45, BogackiShampine23]},
       default: DormandPrince45
-    ],
-    integrate_in_genserver?: [
-      doc: """
-      Run the integration within its own genserver.
-      """,
-      type: :boolean,
-      default: false
-    ],
-    store_data_in_genserver?: [
-      doc: """
-      Store the output data in the genserver.
-      """,
-      type: :boolean,
-      default: false
     ]
   ]
 
