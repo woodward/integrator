@@ -8,6 +8,7 @@ defmodule Integrator.Integration do
   alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.Point
   alias Integrator.RungeKutta
 
   import Integrator.Utils, only: [timestamp_μs: 0]
@@ -18,10 +19,30 @@ defmodule Integrator.Integration do
           step: IntegrationStep.t(),
           t_end: Nx.t(),
           options: AdaptiveStepsize.NxOptions.t(),
-          caller: GenServer.from() | nil
+          caller: GenServer.from() | nil,
+          data: [Point.t()]
         }
 
-  defstruct [:step, :t_end, :options, :caller]
+  defstruct [
+    :step,
+    :t_end,
+    :options,
+    :caller,
+    data: []
+  ]
+
+  options = [
+    store_data_in_genserver?: [
+      doc: """
+      Store the output data in the genserver.
+      """,
+      type: :boolean,
+      default: false
+    ]
+  ]
+
+  @options_schema_integration_only NimbleOptions.new!(options)
+  def options_schema_integration_only, do: @options_schema_integration_only
 
   @spec start_link(
           ode_fn :: RungeKutta.ode_fn_t(),
@@ -40,15 +61,28 @@ defmodule Integrator.Integration do
     GenServer.cast(pid, :run_async)
   end
 
+  @spec add_data_point(GenServer.server(), Point.t()) :: any()
+  def add_data_point(pid, point) do
+    GenServer.cast(pid, {:add_data_point, point})
+  end
+
   @spec run(GenServer.server()) :: :ok | {:error, String.t()}
   def run(pid) do
     GenServer.call(pid, :run)
   end
 
+  @spec get_data(GenServer.server()) :: [Point.t()]
+  def get_data(pid) do
+    GenServer.call(pid, :get_data)
+  end
+
   @impl GenServer
   def init(args) do
     [ode_fn, t_start, t_end, x0, opts] = args
-    {initial_step, t_end, options} = Integrator.setup_all(ode_fn, t_start, t_end, x0, timestamp_μs(), opts)
+    {integration_opts, integrator_opts} = split_opts(opts)
+    integration_opts = integration_opts |> NimbleOptions.validate!(options_schema_integration_only())
+    integrator_opts = integrator_opts |> add_data_collector(self(), Keyword.get(integration_opts, :store_data_in_genserver?))
+    {initial_step, t_end, options} = Integrator.setup_all(ode_fn, t_start, t_end, x0, timestamp_μs(), integrator_opts)
     AdaptiveStepsize.broadcast_initial_point(initial_step, options)
 
     {:ok, %__MODULE__{step: initial_step, t_end: t_end, options: options}}
@@ -60,10 +94,20 @@ defmodule Integrator.Integration do
     {:noreply, state}
   end
 
+  def handle_cast({:add_data_point, point}, state) do
+    point = [point] |> List.flatten()
+    state = %{state | data: point ++ state.data}
+    {:noreply, state}
+  end
+
   @impl GenServer
   def handle_call(:run, from, state) do
     Process.send(self(), :step, [])
     {:noreply, Map.put(state, :caller, from)}
+  end
+
+  def handle_call(:get_data, _from, state) do
+    {:reply, state.data |> Enum.reverse(), state}
   end
 
   @impl GenServer
@@ -94,5 +138,23 @@ defmodule Integrator.Integration do
       end
 
     {:noreply, %{state | step: step}}
+  end
+
+  defp split_opts(opts) do
+    integration_opt_keys = options_schema_integration_only() |> Map.get(:schema) |> Keyword.keys()
+    opts |> Keyword.split(integration_opt_keys)
+  end
+
+  defp add_data_collector(integrator_opts, _pid, false = _store_data_in_genserver?), do: integrator_opts
+
+  defp add_data_collector(integrator_opts, pid, true = _store_data_in_genserver?) do
+    output_fn = Keyword.get(integrator_opts, :output_fn)
+
+    new_output_fn = fn point ->
+      output_fn.(point)
+      add_data_point(pid, point)
+    end
+
+    integrator_opts |> Keyword.merge(output_fn: new_output_fn)
   end
 end
