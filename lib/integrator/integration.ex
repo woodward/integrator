@@ -8,6 +8,7 @@ defmodule Integrator.Integration do
   alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.InternalComputations
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.Point
   alias Integrator.RungeKutta
 
@@ -76,6 +77,16 @@ defmodule Integrator.Integration do
     GenServer.call(pid, :get_data)
   end
 
+  @spec get_step(GenServer.server()) :: IntegrationStep.t()
+  def get_step(pid) do
+    GenServer.call(pid, :get_step)
+  end
+
+  @spec get_options(GenServer.server()) :: NxOptions.t()
+  def get_options(pid) do
+    GenServer.call(pid, :get_options)
+  end
+
   @impl GenServer
   def init(args) do
     [ode_fn, t_start, t_end, x0, opts] = args
@@ -108,6 +119,14 @@ defmodule Integrator.Integration do
 
   def handle_call(:get_data, _from, state) do
     {:reply, state.data |> Enum.reverse(), state}
+  end
+
+  def handle_call(:get_step, _from, state) do
+    {:reply, state.step, state}
+  end
+
+  def handle_call(:get_options, _from, state) do
+    {:reply, state.options, state}
   end
 
   @impl GenServer

@@ -2,6 +2,8 @@ defmodule Integrator.IntegrationTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 
+  alias Integrator.AdaptiveStepsize.IntegrationStep
+  alias Integrator.AdaptiveStepsize.NxOptions
   alias Integrator.DataCollector
   alias Integrator.Point
   alias Integrator.Integration
@@ -140,6 +142,21 @@ defmodule Integrator.IntegrationTest do
 
       assert length(genserver_output_t) == 201
       assert length(genserver_output_x) == 201
+    end
+
+    test "can get the integration step and options from the genserver", %{
+      initial_x: initial_x,
+      t_initial: t_initial,
+      t_final: t_final
+    } do
+      opts = [type: :f64]
+      {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
+
+      step = Integration.get_step(pid)
+      assert match?(%IntegrationStep{}, step)
+
+      options = Integration.get_options(pid)
+      assert match?(%NxOptions{}, options)
     end
   end
 end
