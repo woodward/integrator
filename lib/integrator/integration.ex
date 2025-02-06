@@ -72,6 +72,11 @@ defmodule Integrator.Integration do
     GenServer.call(pid, :run)
   end
 
+  @spec step(GenServer.server()) :: {:ok, IntegrationStep.t()}
+  def step(pid) do
+    GenServer.call(pid, :step)
+  end
+
   @spec get_data(GenServer.server()) :: [Point.t()]
   def get_data(pid) do
     GenServer.call(pid, :get_data)
@@ -92,7 +97,7 @@ defmodule Integrator.Integration do
     [ode_fn, t_start, t_end, x0, opts] = args
     {integration_opts, integrator_opts} = split_opts(opts)
     integration_opts = integration_opts |> NimbleOptions.validate!(options_schema_integration_only())
-    integrator_opts = integrator_opts |> add_data_collector(self(), Keyword.get(integration_opts, :store_data_in_genserver?))
+    integrator_opts = integrator_opts |> add_data_collector(self(), integration_opts[:store_data_in_genserver?])
     {initial_step, t_end, options} = Integrator.setup_all(ode_fn, t_start, t_end, x0, timestamp_μs(), integrator_opts)
     AdaptiveStepsize.broadcast_initial_point(initial_step, options)
 
@@ -114,6 +119,12 @@ defmodule Integrator.Integration do
   def handle_call(:run, from, state) do
     Process.send(self(), :step, [])
     {:noreply, Map.put(state, :caller, from)}
+  end
+
+  def handle_call(:step, _from, %{step: step, t_end: t_end, options: options} = state) do
+    step = %{step | step_timestamp_μs: timestamp_μs()}
+    {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
+    {:reply, {:ok, step}, %{state | step: step, options: options}}
   end
 
   def handle_call(:get_data, _from, state) do
