@@ -98,6 +98,7 @@ defmodule Integrator.Integration do
   end
 
   # ------------------------------------------------------------------------------------------------
+  # Callbacks:
 
   @impl GenServer
   def init(args) do
@@ -180,11 +181,15 @@ defmodule Integrator.Integration do
     {:noreply, %{state | step: step}}
   end
 
+  # ------------------------------------------------------------------------------------------------
+
+  @spec split_opts(Keyword.t()) :: {Keyword.t(), Keyword.t()}
   defp split_opts(opts) do
     integration_opt_keys = options_schema_integration_only() |> Map.get(:schema) |> Keyword.keys()
     opts |> Keyword.split(integration_opt_keys)
   end
 
+  # @spec add_data_collector(NxOptions.t(), GenServer.server(), boolean()) :: NxOptions.t()
   defp add_data_collector(integrator_opts, _pid, false = _store_data_in_genserver?), do: integrator_opts
 
   defp add_data_collector(integrator_opts, pid, true = _store_data_in_genserver?) do
@@ -198,6 +203,7 @@ defmodule Integrator.Integration do
     integrator_opts |> Keyword.merge(output_fn: new_output_fn)
   end
 
+  @spec can_continue_stepping?(IntegrationStep.t(), Nx.t()) :: boolean()
   defp can_continue_stepping?(step, t_end) do
     Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1
   end

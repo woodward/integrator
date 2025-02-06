@@ -184,10 +184,18 @@ defmodule Integrator.IntegrationTest do
 
       {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
 
-      1..78
-      |> Enum.each(fn _i ->
-        {:ok, _step} = Integration.step(pid)
-      end)
+      number_of_steps =
+        1..1_000
+        |> Enum.reduce_while(0, fn _i, i_step ->
+          if Integration.can_continue_stepping?(pid) do
+            {:ok, _step} = Integration.step(pid)
+            {:cont, i_step + 1}
+          else
+            {:halt, i_step}
+          end
+        end)
+
+      assert number_of_steps == 78
 
       {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
 
