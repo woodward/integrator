@@ -106,8 +106,7 @@ defmodule Integrator.Integration do
   end
 
   def handle_cast({:add_data_point, point}, state) do
-    point = [point] |> List.flatten()
-    state = %{state | data: point ++ state.data}
+    state = %{state | data: List.wrap(point) ++ state.data}
     {:noreply, state}
   end
 
