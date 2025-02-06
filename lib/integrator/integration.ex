@@ -77,6 +77,11 @@ defmodule Integrator.Integration do
     GenServer.call(pid, :step)
   end
 
+  @spec can_continue_stepping?(GenServer.server()) :: boolean()
+  def can_continue_stepping?(pid) do
+    GenServer.call(pid, :can_continue_stepping?)
+  end
+
   @spec get_data(GenServer.server()) :: [Point.t()]
   def get_data(pid) do
     GenServer.call(pid, :get_data)
@@ -91,6 +96,8 @@ defmodule Integrator.Integration do
   def get_options(pid) do
     GenServer.call(pid, :get_options)
   end
+
+  # ------------------------------------------------------------------------------------------------
 
   @impl GenServer
   def init(args) do
@@ -127,6 +134,10 @@ defmodule Integrator.Integration do
     {:reply, {:ok, step}, %{state | step: step, options: options}}
   end
 
+  def handle_call(:can_continue_stepping?, _from, %{step: step, t_end: t_end} = state) do
+    {:reply, can_continue_stepping?(step, t_end), state}
+  end
+
   def handle_call(:get_data, _from, state) do
     {:reply, state.data |> Enum.reverse(), state}
   end
@@ -148,7 +159,7 @@ defmodule Integrator.Integration do
 
   def handle_info(:step, %{step: step, t_end: t_end, options: options} = state) do
     step =
-      if Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1 do
+      if can_continue_stepping?(step, t_end) do
         step = %{step | step_timestamp_μs: timestamp_μs()}
         {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
         sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
@@ -185,5 +196,9 @@ defmodule Integrator.Integration do
     end
 
     integrator_opts |> Keyword.merge(output_fn: new_output_fn)
+  end
+
+  defp can_continue_stepping?(step, t_end) do
+    Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1
   end
 end
