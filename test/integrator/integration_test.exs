@@ -41,10 +41,15 @@ defmodule Integrator.IntegrationTest do
       ]
 
       {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
+      assert Integration.get_status(pid) == :initialized
+
       Integration.run_async(pid)
+      assert Integration.get_status(pid) == :running
 
       # Change from Process.sleep() to something that periodicaly checks whether the integration is done
       Process.sleep(1_000)
+
+      assert Integration.get_status(pid) == :completed
 
       {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
 
@@ -82,7 +87,10 @@ defmodule Integrator.IntegrationTest do
       ]
 
       {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
+      assert Integration.get_status(pid) == :initialized
+
       :ok = Integration.run(pid)
+      assert Integration.get_status(pid) == :completed
 
       {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
 
@@ -183,17 +191,21 @@ defmodule Integrator.IntegrationTest do
       ]
 
       {:ok, pid} = Integration.start_link(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
+      assert Integration.get_status(pid) == :initialized
 
       number_of_steps =
         1..1_000
         |> Enum.reduce_while(0, fn _i, i_step ->
           if Integration.can_continue_stepping?(pid) do
             {:ok, _step} = Integration.step(pid)
+            assert Integration.get_status(pid) == :paused
             {:cont, i_step + 1}
           else
             {:halt, i_step}
           end
         end)
+
+      assert Integration.get_status(pid) == :paused
 
       assert number_of_steps == 78
 

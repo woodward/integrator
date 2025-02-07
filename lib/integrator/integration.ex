@@ -16,11 +16,14 @@ defmodule Integrator.Integration do
 
   @genserver_options [:name, :timeout, :debug, :spawn_opt, :hibernate_after]
 
+  @type integration_status :: :initialized | :running | :paused | :completed
+
   @type t :: %__MODULE__{
           step: IntegrationStep.t(),
           t_end: Nx.t(),
           options: AdaptiveStepsize.NxOptions.t(),
           caller: GenServer.from() | nil,
+          status: integration_status(),
           data: [Point.t()]
         }
 
@@ -29,6 +32,7 @@ defmodule Integrator.Integration do
     :t_end,
     :options,
     :caller,
+    status: :initialized,
     data: []
   ]
 
@@ -87,6 +91,11 @@ defmodule Integrator.Integration do
     GenServer.call(pid, :get_data)
   end
 
+  @spec get_status(GenServer.server()) :: [Point.t()]
+  def get_status(pid) do
+    GenServer.call(pid, :get_status)
+  end
+
   @spec get_step(GenServer.server()) :: IntegrationStep.t()
   def get_step(pid) do
     GenServer.call(pid, :get_step)
@@ -115,7 +124,7 @@ defmodule Integrator.Integration do
   @impl GenServer
   def handle_cast(:run_async, state) do
     Process.send(self(), :step, [])
-    {:noreply, state}
+    {:noreply, %{state | status: :running}}
   end
 
   def handle_cast({:add_data_point, point}, state) do
@@ -132,7 +141,7 @@ defmodule Integrator.Integration do
   def handle_call(:step, _from, %{step: step, t_end: t_end, options: options} = state) do
     step = %{step | step_timestamp_μs: timestamp_μs()}
     {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
-    {:reply, {:ok, step}, %{state | step: step, options: options}}
+    {:reply, {:ok, step}, %{state | step: step, options: options, status: :paused}}
   end
 
   def handle_call(:can_continue_stepping?, _from, %{step: step, t_end: t_end} = state) do
@@ -141,6 +150,10 @@ defmodule Integrator.Integration do
 
   def handle_call(:get_data, _from, state) do
     {:reply, state.data |> Enum.reverse(), state}
+  end
+
+  def handle_call(:get_status, _from, state) do
+    {:reply, state.status, state}
   end
 
   def handle_call(:get_step, _from, state) do
@@ -155,7 +168,7 @@ defmodule Integrator.Integration do
   def handle_info(:run_completed, state) do
     result = state.step.status_integration |> IntegrationStep.status_integration()
     if state.caller, do: GenServer.reply(state.caller, result)
-    {:noreply, state}
+    {:noreply, %{state | status: :completed}}
   end
 
   def handle_info(:step, %{step: step, t_end: t_end, options: options} = state) do
