@@ -44,7 +44,7 @@ defmodule Integrator.IntegrationTest do
       Integration.run_async(pid)
 
       # Change from Process.sleep() to something that periodicaly checks whether the integration is done
-      Process.sleep(500)
+      Process.sleep(1_000)
 
       {output_t, output_x} = DataCollector.get_data(data_pid) |> Point.split_points_into_t_and_x()
 
