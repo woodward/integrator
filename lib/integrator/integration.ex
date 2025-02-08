@@ -66,6 +66,16 @@ defmodule Integrator.Integration do
     GenServer.cast(pid, :run_async)
   end
 
+  @spec pause(GenServer.server()) :: any()
+  def pause(pid) do
+    GenServer.cast(pid, :pause)
+  end
+
+  @spec continue(GenServer.server()) :: any()
+  def continue(pid) do
+    GenServer.cast(pid, :continue)
+  end
+
   @spec add_data_point(GenServer.server(), Point.t()) :: any()
   def add_data_point(pid, point) do
     GenServer.cast(pid, {:add_data_point, point})
@@ -127,6 +137,15 @@ defmodule Integrator.Integration do
     {:noreply, %{state | status: :running}}
   end
 
+  def handle_cast(:pause, state) do
+    {:noreply, %{state | status: :paused}}
+  end
+
+  def handle_cast(:continue, state) do
+    Process.send(self(), :step, [])
+    {:noreply, %{state | status: :running}}
+  end
+
   def handle_cast({:add_data_point, point}, state) do
     state = %{state | data: List.wrap(point) ++ state.data}
     {:noreply, state}
@@ -135,7 +154,7 @@ defmodule Integrator.Integration do
   @impl GenServer
   def handle_call(:run, from, state) do
     Process.send(self(), :step, [])
-    {:noreply, Map.put(state, :caller, from)}
+    {:noreply, %{state | caller: from, status: :running}}
   end
 
   def handle_call(:step, _from, %{step: step, t_end: t_end, options: options} = state) do
@@ -171,9 +190,9 @@ defmodule Integrator.Integration do
     {:noreply, %{state | status: :completed}}
   end
 
-  def handle_info(:step, %{step: step, t_end: t_end, options: options} = state) do
+  def handle_info(:step, %{step: step, t_end: t_end, options: options, status: status} = state) do
     step =
-      if can_continue_stepping?(step, t_end) do
+      if can_continue_running?(status, step, t_end) do
         step = %{step | step_timestamp_μs: timestamp_μs()}
         {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
         sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
@@ -219,5 +238,10 @@ defmodule Integrator.Integration do
   @spec can_continue_stepping?(IntegrationStep.t(), Nx.t()) :: boolean()
   defp can_continue_stepping?(step, t_end) do
     Nx.to_number(InternalComputations.continue_stepping?(step, t_end)) == 1
+  end
+
+  @spec can_continue_running?(integration_status(), IntegrationStep.t(), Nx.t()) :: boolean()
+  defp can_continue_running?(status, step, t_end) do
+    status == :running && can_continue_stepping?(step, t_end)
   end
 end
