@@ -32,7 +32,7 @@ defmodule Integrator.Integration do
     :t_end,
     :options,
     :caller,
-    status: :initialized,
+    :status,
     data: []
   ]
 
@@ -62,59 +62,37 @@ defmodule Integrator.Integration do
   end
 
   @spec run_async(GenServer.server()) :: any()
-  def run_async(pid) do
-    GenServer.cast(pid, :run_async)
-  end
+  def run_async(pid), do: GenServer.cast(pid, :run_async)
 
   @spec pause(GenServer.server()) :: any()
-  def pause(pid) do
-    GenServer.cast(pid, :pause)
-  end
+  def pause(pid), do: GenServer.cast(pid, :pause)
 
   @spec continue(GenServer.server()) :: any()
-  def continue(pid) do
-    GenServer.cast(pid, :continue)
-  end
+  def continue(pid), do: GenServer.cast(pid, :continue)
 
   @spec add_data_point(GenServer.server(), Point.t()) :: any()
-  def add_data_point(pid, point) do
-    GenServer.cast(pid, {:add_data_point, point})
-  end
+  def add_data_point(pid, point), do: GenServer.cast(pid, {:add_data_point, point})
 
   @spec run(GenServer.server()) :: :ok | {:error, String.t()}
-  def run(pid) do
-    GenServer.call(pid, :run)
-  end
+  def run(pid), do: GenServer.call(pid, :run)
 
   @spec step(GenServer.server()) :: {:ok, IntegrationStep.t()}
-  def step(pid) do
-    GenServer.call(pid, :step)
-  end
+  def step(pid), do: GenServer.call(pid, :step)
 
   @spec can_continue_stepping?(GenServer.server()) :: boolean()
-  def can_continue_stepping?(pid) do
-    GenServer.call(pid, :can_continue_stepping?)
-  end
+  def can_continue_stepping?(pid), do: GenServer.call(pid, :can_continue_stepping?)
 
   @spec get_data(GenServer.server()) :: [Point.t()]
-  def get_data(pid) do
-    GenServer.call(pid, :get_data)
-  end
+  def get_data(pid), do: GenServer.call(pid, :get_data)
 
   @spec get_status(GenServer.server()) :: [Point.t()]
-  def get_status(pid) do
-    GenServer.call(pid, :get_status)
-  end
+  def get_status(pid), do: GenServer.call(pid, :get_status)
 
   @spec get_step(GenServer.server()) :: IntegrationStep.t()
-  def get_step(pid) do
-    GenServer.call(pid, :get_step)
-  end
+  def get_step(pid), do: GenServer.call(pid, :get_step)
 
   @spec get_options(GenServer.server()) :: NxOptions.t()
-  def get_options(pid) do
-    GenServer.call(pid, :get_options)
-  end
+  def get_options(pid), do: GenServer.call(pid, :get_options)
 
   # ------------------------------------------------------------------------------------------------
   # Callbacks:
@@ -128,7 +106,7 @@ defmodule Integrator.Integration do
     {initial_step, t_end, options} = Integrator.setup_all(ode_fn, t_start, t_end, x0, timestamp_μs(), integrator_opts)
     AdaptiveStepsize.broadcast_initial_point(initial_step, options)
 
-    {:ok, %__MODULE__{step: initial_step, t_end: t_end, options: options}}
+    {:ok, %__MODULE__{step: initial_step, t_end: t_end, options: options, status: :initialized}}
   end
 
   @impl GenServer
@@ -221,14 +199,14 @@ defmodule Integrator.Integration do
     opts |> Keyword.split(integration_opt_keys)
   end
 
-  # @spec add_data_collector(NxOptions.t(), GenServer.server(), boolean()) :: NxOptions.t()
+  @spec add_data_collector(Keyword.t(), GenServer.server(), boolean()) :: Keyword.t()
   defp add_data_collector(integrator_opts, _pid, false = _store_data_in_genserver?), do: integrator_opts
 
   defp add_data_collector(integrator_opts, pid, true = _store_data_in_genserver?) do
-    output_fn = Keyword.get(integrator_opts, :output_fn)
+    existing_output_fn = Keyword.get(integrator_opts, :output_fn)
 
     new_output_fn = fn point ->
-      output_fn.(point)
+      existing_output_fn.(point)
       add_data_point(pid, point)
     end
 
