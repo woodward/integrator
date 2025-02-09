@@ -3,6 +3,9 @@
 ## Section
 
 ```elixir
+
+# Uncomment one of the following backends: 
+
 nx_backend = :binary
 # nx_backend = :emlx
 # nx_backend = :exla

@@ -1,6 +1,7 @@
 defmodule Integrator.Integration do
   @moduledoc """
-  A genserver which holds the simulation state for one particular integration
+  A genserver which holds the simulation state for one particular integration.  This GenServer basically
+  wraps the pure module functions contained in `Integrator` and `Integrator.AdaptiveStepsize`.
   """
 
   use GenServer
