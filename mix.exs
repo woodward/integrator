@@ -41,7 +41,7 @@ defmodule Integrator.MixProject do
       {:csv, "~> 3.2", only: :test},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:emlx, github: "elixir-nx/emlx", only: :test},
-      {:ex_doc, "~> 0.34", only: :dev},
+      {:ex_doc, "~> 0.37", only: :dev},
       {:exla, "~> 0.9", only: :test},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
