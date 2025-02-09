@@ -37,15 +37,19 @@ defmodule Integrator.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:csv, "~> 3.2", only: :test},
-      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
-      {:emlx, github: "elixir-nx/emlx", only: :test},
-      {:ex_doc, "~> 0.37", only: :dev},
-      {:exla, "~> 0.9", only: :test},
       {:math, "~> 0.7"},
       {:nimble_options, "~> 1.1"},
       {:nx, "~> 0.9"},
+      #
+      # Dev only (or dev & test):
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.37", only: :dev},
+      #
+      # Test only:
+      {:csv, "~> 3.2", only: :test},
+      {:emlx, github: "elixir-nx/emlx", only: :test},
+      {:exla, "~> 0.9", only: :test},
       {:torchx, "~> 0.9", only: :test}
     ]
   end
