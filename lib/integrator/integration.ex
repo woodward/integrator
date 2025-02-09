@@ -137,8 +137,8 @@ defmodule Integrator.Integration do
 
   def handle_call(:step, _from, %{step: step, t_end: t_end, options: options} = state) do
     step = %{step | step_timestamp_μs: timestamp_μs()}
-    {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
-    {:reply, {:ok, step}, %{state | step: step, options: options, status: :paused}}
+    step = InternalComputations.compute_integration_step(step, t_end, options)
+    {:reply, {:ok, step}, %{state | step: step, status: :paused}}
   end
 
   def handle_call(:can_continue_stepping?, _from, %{step: step, t_end: t_end} = state) do
@@ -172,7 +172,7 @@ defmodule Integrator.Integration do
     step =
       if can_continue_running?(status, step, t_end) do
         step = %{step | step_timestamp_μs: timestamp_μs()}
-        {step, _t_end, options} = InternalComputations.compute_integration_step(step, t_end, options)
+        step = InternalComputations.compute_integration_step(step, t_end, options)
         sleep_time_ms = InternalComputations.compute_sleep_time(step, options)
 
         if sleep_time_ms > 0 do
