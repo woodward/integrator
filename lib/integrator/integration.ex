@@ -10,8 +10,11 @@ defmodule Integrator.Integration do
   alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.AdaptiveStepsize.NxOptions
+  alias Integrator.DataCollector
   alias Integrator.Point
   alias Integrator.RungeKutta
+
+  @behaviour DataCollector
 
   import Integrator.Utils, only: [timestamp_μs: 0]
 
@@ -71,9 +74,6 @@ defmodule Integrator.Integration do
   @spec continue(GenServer.server()) :: any()
   def continue(pid), do: GenServer.cast(pid, :continue)
 
-  @spec add_data_point(GenServer.server(), Point.t()) :: any()
-  def add_data_point(pid, point), do: GenServer.cast(pid, {:add_data_point, point})
-
   @spec run(GenServer.server()) :: :ok | {:error, String.t()}
   def run(pid), do: GenServer.call(pid, :run)
 
@@ -83,9 +83,6 @@ defmodule Integrator.Integration do
   @spec can_continue_stepping?(GenServer.server()) :: boolean()
   def can_continue_stepping?(pid), do: GenServer.call(pid, :can_continue_stepping?)
 
-  @spec get_data(GenServer.server()) :: [Point.t()]
-  def get_data(pid), do: GenServer.call(pid, :get_data)
-
   @spec get_status(GenServer.server()) :: [Point.t()]
   def get_status(pid), do: GenServer.call(pid, :get_status)
 
@@ -94,6 +91,18 @@ defmodule Integrator.Integration do
 
   @spec get_options(GenServer.server()) :: NxOptions.t()
   def get_options(pid), do: GenServer.call(pid, :get_options)
+
+  @impl DataCollector
+  def add_data(pid, point), do: GenServer.cast(pid, {:add_data, point})
+
+  @impl DataCollector
+  def get_data(pid), do: GenServer.call(pid, :get_data)
+
+  @impl DataCollector
+  def pop_data(pid), do: GenServer.call(pid, :pop_data)
+
+  @impl DataCollector
+  def get_last_n_data(pid, number_of_data), do: GenServer.call(pid, {:get_last_n_data, number_of_data})
 
   # ------------------------------------------------------------------------------------------------
   # Callbacks:
@@ -125,7 +134,7 @@ defmodule Integrator.Integration do
     {:noreply, %{state | status: :running}}
   end
 
-  def handle_cast({:add_data_point, point}, state) do
+  def handle_cast({:add_data, point}, state) do
     state = %{state | data: List.wrap(point) ++ state.data}
     {:noreply, state}
   end
@@ -148,6 +157,14 @@ defmodule Integrator.Integration do
 
   def handle_call(:get_data, _from, state) do
     {:reply, state.data |> Enum.reverse(), state}
+  end
+
+  def handle_call(:pop_data, _from, state) do
+    {:reply, state.data |> Enum.reverse(), %{state | data: []}}
+  end
+
+  def handle_call({:get_last_n_data, number_of_data}, _from, state) do
+    {:reply, state.data |> Enum.take(number_of_data) |> Enum.reverse(), state}
   end
 
   def handle_call(:get_status, _from, state) do
@@ -208,7 +225,7 @@ defmodule Integrator.Integration do
 
     new_output_fn = fn point ->
       existing_output_fn.(point)
-      add_data_point(pid, point)
+      add_data(pid, point)
     end
 
     integrator_opts |> Keyword.merge(output_fn: new_output_fn)
