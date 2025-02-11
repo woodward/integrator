@@ -27,6 +27,11 @@ defmodule Integrator.DataSet do
   end
 
   @impl DataCollector
+  def pop_data(pid) do
+    GenServer.call(pid, :pop_data)
+  end
+
+  @impl DataCollector
   def get_last_n_data(pid, number_of_data) do
     GenServer.call(pid, {:get_last_n_data, number_of_data})
   end
@@ -44,7 +49,6 @@ defmodule Integrator.DataSet do
     {:noreply, %{state | data: new_data}}
   end
 
-  @impl true
   def handle_cast({:add_data, data_point}, state) do
     new_data = [data_point | state.data]
     {:noreply, %{state | data: new_data}}
@@ -55,7 +59,10 @@ defmodule Integrator.DataSet do
     {:reply, state.data |> Enum.reverse(), state}
   end
 
-  @impl true
+  def handle_call(:pop_data, _from, state) do
+    {:reply, state.data |> Enum.reverse(), %{state | data: []}}
+  end
+
   def handle_call({:get_last_n_data, number_of_data}, _from, state) do
     {:reply, state.data |> Enum.take(number_of_data) |> Enum.reverse(), state}
   end

@@ -9,7 +9,7 @@ defmodule Integrator.DataCollector do
 
   @callback get_data(pid()) :: [Point.t()]
 
-  # @callback pop_data(pid()) :: [Point.t()]
+  @callback pop_data(pid()) :: [Point.t()]
 
   @callback get_last_n_data(pid(), pos_integer()) :: [Point.t()]
 end
