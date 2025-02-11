@@ -13,7 +13,7 @@ Numerical integration is easy with `Integrator`.  For example, let's integrate t
 Van der Pol equation `Integrator.SampleEqns.van_der_pol_fn` for 20 seconds:
 
 ```elixir
-alias Integrator.DataCollector
+alias Integrator.DataSet
 alias Integrator.Point
 alias Integrator.SampleEqns
 
@@ -21,8 +21,8 @@ t_initial = Nx.f64(0.0)
 t_final = Nx.f64(20.0)
 x_initial = Nx.f64([2.0, 0.0])
 
-{:ok, pid} = DataCollector.start_link()
-output_fn = &DataCollector.add_data(pid, &1)
+{:ok, pid} = DataSet.start_link()
+output_fn = &DataSet.add_data(pid, &1)
 
 opts = [type: :f64, output_fn: output_fn]
 Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
@@ -34,7 +34,7 @@ Now you can plot the results via Kino:
 alias VegaLite, as: VL
 
 data =
-  DataCollector.get_data(pid)
+  DataSet.get_data(pid)
   |> Enum.map(&Point.to_number(&1))
   |> Enum.map(fn point ->
     %{t: t, x: x} = point
