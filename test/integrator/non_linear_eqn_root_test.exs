@@ -4,7 +4,7 @@ defmodule Integrator.NonLinearEqnRootTest do
 
   import Nx, only: :sigils
 
-  alias Integrator.DataSet
+  alias Integrator.DataSink
   alias Integrator.NonLinearEqnRoot
   alias Integrator.NonLinearEqnRoot.InternalComputations
   alias Integrator.RungeKutta.DormandPrince45
@@ -164,8 +164,8 @@ defmodule Integrator.NonLinearEqnRootTest do
       x0 = Nx.f64(3.0)
       x1 = Nx.f64(4.0)
 
-      {:ok, pid} = DataSet.start_link()
-      output_fn = &DataSet.add_data(pid, &1)
+      {:ok, pid} = DataSink.start_link()
+      output_fn = &DataSink.add_data(pid, &1)
 
       opts = [nonlinear_eqn_root_output_fn: output_fn]
 
@@ -173,7 +173,7 @@ defmodule Integrator.NonLinearEqnRootTest do
       assert_all_close(result.x, Nx.f64(3.1415926535897936), atol: 1.0e-14, rtol: 1.0e-14)
       assert_all_close(result.fx, Nx.f64(-3.216245299353273e-16), atol: 1.0e-14, rtol: 1.0e-14)
 
-      data = DataSet.get_data(pid)
+      data = DataSink.get_data(pid)
       assert length(data) == 6
 
       # From Octave:

@@ -2,7 +2,7 @@ defmodule Integrator.MultiIntegratorTest do
   @moduledoc false
   use Integrator.TestCase, async: true
 
-  alias Integrator.DataSet
+  alias Integrator.DataSink
   alias Integrator.MultiIntegrator
   alias Integrator.Point
   alias Integrator.SampleEqns
@@ -46,15 +46,15 @@ defmodule Integrator.MultiIntegratorTest do
       event_fn: event_fn,
       coefficient_of_restitution: coefficient_of_restitution
     } do
-      {:ok, pid} = DataSet.start_link()
-      output_fn = &DataSet.add_data(pid, &1)
+      {:ok, pid} = DataSink.start_link()
+      output_fn = &DataSink.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
       transition_fn = fn t, x, multi, opts ->
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        last_five_points = DataSet.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+        last_five_points = DataSink.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
 
         last_point = last_five_points |> List.last()
         fifth_from_last_point = last_five_points |> List.first()
@@ -77,7 +77,7 @@ defmodule Integrator.MultiIntegratorTest do
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
       {output_t, output_x} =
-        DataSet.get_data(pid)
+        DataSink.get_data(pid)
         |> Point.filter_out_points_with_same_t()
         |> Enum.take(amount_to_check)
         |> Point.split_points_into_t_and_x()
@@ -100,8 +100,8 @@ defmodule Integrator.MultiIntegratorTest do
       event_fn: event_fn,
       coefficient_of_restitution: coefficient_of_restitution
     } do
-      {:ok, pid} = DataSet.start_link()
-      output_fn = &DataSet.add_data(pid, &1)
+      {:ok, pid} = DataSink.start_link()
+      output_fn = &DataSink.add_data(pid, &1)
 
       opts =
         opts
@@ -116,7 +116,7 @@ defmodule Integrator.MultiIntegratorTest do
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        last_five_points = DataSet.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+        last_five_points = DataSink.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
 
         last_point = last_five_points |> List.last()
         fifth_from_last_point = last_five_points |> List.first()
@@ -138,7 +138,7 @@ defmodule Integrator.MultiIntegratorTest do
       amount_to_check = 153
 
       {output_t, output_x} =
-        DataSet.get_data(pid)
+        DataSink.get_data(pid)
         |> Point.filter_out_points_with_same_t()
         |> Enum.take(amount_to_check)
         |> Point.split_points_into_t_and_x()
@@ -189,8 +189,8 @@ defmodule Integrator.MultiIntegratorTest do
       event_fn: event_fn,
       coefficient_of_restitution: coefficient_of_restitution
     } do
-      {:ok, pid} = DataSet.start_link()
-      output_fn = &DataSet.add_data(pid, &1)
+      {:ok, pid} = DataSink.start_link()
+      output_fn = &DataSink.add_data(pid, &1)
       opts = opts |> Keyword.merge(output_fn: output_fn)
 
       number_of_bounces = 2
@@ -199,7 +199,7 @@ defmodule Integrator.MultiIntegratorTest do
         x0 = Nx.f64(0.0)
         x1 = Nx.multiply(coefficient_of_restitution, x[1])
         x = Nx.stack([x0, x1])
-        last_five_points = DataSet.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
+        last_five_points = DataSink.get_last_n_data(pid, 5) |> Enum.map(&Point.to_number(&1))
 
         last_point = last_five_points |> List.last()
         fifth_from_last_point = last_five_points |> List.first()
@@ -222,7 +222,7 @@ defmodule Integrator.MultiIntegratorTest do
       expected_x = read_nx_list("test/fixtures/octave_results/ballode/default/x.csv") |> Enum.take(amount_to_check)
 
       {output_t, output_x} =
-        DataSet.get_data(pid)
+        DataSink.get_data(pid)
         |> Point.filter_out_points_with_same_t()
         |> Enum.take(amount_to_check)
         |> Point.split_points_into_t_and_x()

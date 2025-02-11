@@ -14,18 +14,18 @@ for every solution of the ODE.
 
 ```elixir
 alias Integrator.SampleEqns
-alias Integrator.DataSet
+alias Integrator.DataSink
 
 t_initial = Nx.f64(0.0)
 t_final = Nx.f64(20.0)
 x_initial = Nx.f64([2.0, 0.0])
-{:ok, pid} = DataSet.start_link()
-output_fn = &DataSet.add_data(pid, &1)
+{:ok, pid} = DataSink.start_link()
+output_fn = &DataSink.add_data(pid, &1)
 
 opts = [type: :f64, output_fn: output_fn]
 
 _solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
-points = DataSet.get_data(pid)
+points = DataSink.get_data(pid)
 
 ```
 
@@ -75,8 +75,8 @@ t_initial = Nx.f64(0.0)
 t_final = Nx.f64(20.0)
 x_initial = Nx.f64([2.0, 0.0])
 
-{:ok, pid} = DataSet.start_link()
-output_fn = &DataSet.add_data(pid, &1)
+{:ok, pid} = DataSink.start_link()
+output_fn = &DataSink.add_data(pid, &1)
 
 opts = [type: :f64, output_fn: output_fn, refine: 1]
 
@@ -84,7 +84,7 @@ opts = [type: :f64, output_fn: output_fn, refine: 1]
 _solution =
   Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
 
-points = DataSet.get_data(pid)
+points = DataSink.get_data(pid)
 VanDerPol.plot(points)
 ```
 
@@ -99,12 +99,12 @@ t_initial = Nx.f64(0.0)
 t_final = Nx.f64(20.0)
 x_initial = Nx.f64([2.0, 0.0])
 
-{:ok, pid} = DataSet.start_link()
-output_fn = &DataSet.add_data(pid, &1)
+{:ok, pid} = DataSink.start_link()
+output_fn = &DataSink.add_data(pid, &1)
 
 opts = [type: :f64, refine: 1, fixed_output_times?: Nx.u8(1), fixed_output_step: Nx.f64(0.1), output_fn: output_fn]
 
 _solution = Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
-points = DataSet.get_data(pid)
+points = DataSink.get_data(pid)
 VanDerPol.plot(points)
 ```

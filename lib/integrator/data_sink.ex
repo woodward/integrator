@@ -1,4 +1,4 @@
-defmodule Integrator.DataSet do
+defmodule Integrator.DataSink do
   @moduledoc """
   Collects data from an integration (or when finding a root).
   Data is stored in reverse order in the genserver, and then its order is reversed when returned
