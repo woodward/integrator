@@ -18,52 +18,49 @@ defmodule Integrator.DataSink do
 
   @impl DataCollector
   def add_data(pid, data_point) do
-    GenServer.cast(pid, {:add_data, data_point})
+    GenServer.cast(pid, {:add_data, data_point, self()})
   end
 
   @impl DataCollector
   def get_data(pid) do
-    GenServer.call(pid, :get_data)
+    GenServer.call(pid, {:get_data, self()})
   end
 
   @impl DataCollector
   def pop_data(pid) do
-    GenServer.call(pid, :pop_data)
+    GenServer.call(pid, {:pop_data, self()})
   end
 
   @impl DataCollector
   def get_last_n_data(pid, number_of_data) do
-    GenServer.call(pid, {:get_last_n_data, number_of_data})
+    GenServer.call(pid, {:get_last_n_data, number_of_data, self()})
   end
 
   # ------------------------------------------------------------------------------------------------
 
   @impl true
   def init(_args) do
-    {:ok, %{data: []}}
+    {:ok, %{data: %{}}}
   end
 
   @impl true
-  def handle_cast({:add_data, data_points}, state) when is_list(data_points) do
-    new_data = Enum.reverse(data_points) ++ state.data
-    {:noreply, %{state | data: new_data}}
-  end
-
-  def handle_cast({:add_data, data_point}, state) do
-    new_data = [data_point | state.data]
-    {:noreply, %{state | data: new_data}}
+  def handle_cast({:add_data, data_points, caller_pid}, state) do
+    existing_data = Map.get(state.data, caller_pid, [])
+    new_data = (List.wrap(data_points) |> Enum.reverse()) ++ existing_data
+    {:noreply, %{state | data: Map.put(state.data, caller_pid, new_data)}}
   end
 
   @impl true
-  def handle_call(:get_data, _from, state) do
-    {:reply, state.data |> Enum.reverse(), state}
+  def handle_call({:get_data, caller_pid}, _from, state) do
+    {:reply, state.data |> Map.get(caller_pid, []) |> Enum.reverse(), state}
   end
 
-  def handle_call(:pop_data, _from, state) do
-    {:reply, state.data |> Enum.reverse(), %{state | data: []}}
+  def handle_call({:pop_data, caller_pid}, _from, state) do
+    points = state.data |> Map.get(caller_pid, []) |> Enum.reverse()
+    {:reply, points, %{state | data: Map.put(state.data, caller_pid, [])}}
   end
 
-  def handle_call({:get_last_n_data, number_of_data}, _from, state) do
-    {:reply, state.data |> Enum.take(number_of_data) |> Enum.reverse(), state}
+  def handle_call({:get_last_n_data, number_of_data, caller_pid}, _from, state) do
+    {:reply, state.data |> Map.get(caller_pid) |> Enum.take(number_of_data) |> Enum.reverse(), state}
   end
 end
