@@ -188,7 +188,7 @@ defmodule Integrator.IntegrationTest do
       assert length(output_t) == 201
       assert length(output_x) == 201
 
-      {genserver_output_t, genserver_output_x} = Integration.get_data(pid) |> Point.split_points_into_t_and_x()
+      {genserver_output_t, genserver_output_x} = Integration.get_data(pid, pid) |> Point.split_points_into_t_and_x()
 
       assert length(genserver_output_t) == 201
       assert length(genserver_output_x) == 201

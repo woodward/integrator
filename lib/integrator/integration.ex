@@ -5,6 +5,7 @@ defmodule Integrator.Integration do
   """
 
   use GenServer
+  use Integrator.DataCollector
 
   alias Integrator.AdaptiveStepsize
   alias Integrator.AdaptiveStepsize.IntegrationStep
@@ -25,7 +26,7 @@ defmodule Integrator.Integration do
           options: AdaptiveStepsize.NxOptions.t(),
           caller: GenServer.from() | nil,
           status: integration_status(),
-          data: [Point.t()]
+          data: %{term() => [Point.t()]}
         }
 
   defstruct [
@@ -34,7 +35,7 @@ defmodule Integrator.Integration do
     :options,
     :caller,
     :status,
-    data: []
+    data: %{}
   ]
 
   options = [
@@ -89,14 +90,6 @@ defmodule Integrator.Integration do
   @spec get_options(GenServer.server()) :: NxOptions.t()
   def get_options(pid), do: GenServer.call(pid, :get_options)
 
-  def add_data(pid, point), do: GenServer.cast(pid, {:add_data, point})
-
-  def get_data(pid), do: GenServer.call(pid, :get_data)
-
-  def pop_data(pid), do: GenServer.call(pid, :pop_data)
-
-  def get_last_n_data(pid, number_of_data), do: GenServer.call(pid, {:get_last_n_data, number_of_data})
-
   # ------------------------------------------------------------------------------------------------
   # Callbacks:
 
@@ -146,18 +139,6 @@ defmodule Integrator.Integration do
 
   def handle_call(:can_continue_stepping?, _from, %{step: step, t_end: t_end} = state) do
     {:reply, can_continue_stepping?(step, t_end), state}
-  end
-
-  def handle_call(:get_data, _from, state) do
-    {:reply, state.data |> Enum.reverse(), state}
-  end
-
-  def handle_call(:pop_data, _from, state) do
-    {:reply, state.data |> Enum.reverse(), %{state | data: []}}
-  end
-
-  def handle_call({:get_last_n_data, number_of_data}, _from, state) do
-    {:reply, state.data |> Enum.take(number_of_data) |> Enum.reverse(), state}
   end
 
   def handle_call(:get_status, _from, state) do
@@ -218,7 +199,7 @@ defmodule Integrator.Integration do
 
     new_output_fn = fn point ->
       existing_output_fn.(point)
-      add_data(pid, point)
+      add_data(pid, pid, point)
     end
 
     integrator_opts |> Keyword.merge(output_fn: new_output_fn)
