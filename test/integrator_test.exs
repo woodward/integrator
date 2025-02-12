@@ -24,7 +24,7 @@ defmodule IntegratorTest do
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       opts = [
         type: :f64,
@@ -37,7 +37,7 @@ defmodule IntegratorTest do
 
       _solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
 
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
       assert length(output_t) == 201
       assert length(output_x) == 201
 
@@ -57,7 +57,7 @@ defmodule IntegratorTest do
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0], opt);
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       opts = [
         type: :f64,
@@ -70,7 +70,7 @@ defmodule IntegratorTest do
       ]
 
       _solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/initial_step_specified/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/initial_step_specified/x.csv")
@@ -87,7 +87,7 @@ defmodule IntegratorTest do
       # [t,x] = ode45 (fvdp, [0, 20], [2, 0]);
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       opts = [
         type: :f64,
@@ -101,7 +101,7 @@ defmodule IntegratorTest do
       ]
 
       _solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/fixed_stepsize_output/x.csv")
@@ -112,7 +112,7 @@ defmodule IntegratorTest do
 
     test "performs the integration - high fidelity", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       opts = [
         abs_tol: Nx.f64(1.0e-10),
@@ -125,7 +125,7 @@ defmodule IntegratorTest do
       ]
 
       _solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/high_fidelity/x.csv")
@@ -136,7 +136,7 @@ defmodule IntegratorTest do
 
     test "works - uses Bogacki-Shampine23", %{initial_x: initial_x, t_initial: t_initial, t_final: t_final} do
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       opts = [
         type: :f64,
@@ -150,7 +150,7 @@ defmodule IntegratorTest do
       ]
 
       _solution = Integrator.integrate(&van_der_pol_fn/2, t_initial, t_final, initial_x, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/bogacki_shampine_23/x.csv")
@@ -178,7 +178,7 @@ defmodule IntegratorTest do
       #   opt = odeset ("RelTol", 1.0e-07, "AbsTol", 1.0e-07);
       #   [t, x] = ode45(f_euler, tspan, x0, opt);
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(12.0)
@@ -194,7 +194,7 @@ defmodule IntegratorTest do
       ]
 
       solution = Integrator.integrate(&euler_equations/2, t_start, t_end, x0, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(solution.count_cycles__compute_step, Nx.s32(78))
       assert_nx_equal(solution.count_loop__increment_step, Nx.s32(78))
@@ -212,7 +212,7 @@ defmodule IntegratorTest do
 
     test "works with ode23" do
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       # Octave:
       #   format long
@@ -238,7 +238,7 @@ defmodule IntegratorTest do
       ]
 
       solution = Integrator.integrate(&euler_equations/2, t_start, t_end, x0, opts)
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(solution.count_cycles__compute_step, Nx.s32(847))
       assert_nx_equal(solution.count_loop__increment_step, Nx.s32(846))

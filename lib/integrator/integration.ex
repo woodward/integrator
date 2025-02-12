@@ -10,11 +10,8 @@ defmodule Integrator.Integration do
   alias Integrator.AdaptiveStepsize.IntegrationStep
   alias Integrator.AdaptiveStepsize.InternalComputations
   alias Integrator.AdaptiveStepsize.NxOptions
-  alias Integrator.DataCollector
   alias Integrator.Point
   alias Integrator.RungeKutta
-
-  @behaviour DataCollector
 
   import Integrator.Utils, only: [timestamp_μs: 0]
 
@@ -92,16 +89,12 @@ defmodule Integrator.Integration do
   @spec get_options(GenServer.server()) :: NxOptions.t()
   def get_options(pid), do: GenServer.call(pid, :get_options)
 
-  @impl DataCollector
   def add_data(pid, point), do: GenServer.cast(pid, {:add_data, point})
 
-  @impl DataCollector
   def get_data(pid), do: GenServer.call(pid, :get_data)
 
-  @impl DataCollector
   def pop_data(pid), do: GenServer.call(pid, :pop_data)
 
-  @impl DataCollector
   def get_last_n_data(pid, number_of_data), do: GenServer.call(pid, {:get_last_n_data, number_of_data})
 
   # ------------------------------------------------------------------------------------------------

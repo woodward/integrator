@@ -22,7 +22,7 @@ t_final = Nx.f64(20.0)
 x_initial = Nx.f64([2.0, 0.0])
 
 {:ok, pid} = DataSink.start_link()
-output_fn = &DataSink.add_data(pid, &1)
+output_fn = &DataSink.add_data(pid, self(), &1)
 
 opts = [type: :f64, output_fn: output_fn]
 Integrator.integrate(&SampleEqns.van_der_pol_fn/2, t_initial, t_final, x_initial, opts)
@@ -34,7 +34,7 @@ Now you can plot the results via Kino:
 alias VegaLite, as: VL
 
 data =
-  DataSink.get_data(pid)
+  DataSink.get_data(pid, self())
   |> Enum.map(&Point.to_number(&1))
   |> Enum.map(fn point ->
     %{t: t, x: x} = point

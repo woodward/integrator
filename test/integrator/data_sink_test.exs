@@ -10,10 +10,12 @@ defmodule Integrator.DataSinkTest do
     data_point1 = Nx.f32(1.0)
     data_point2 = Nx.f32(2.0)
 
-    DataSink.add_data(pid, data_point1)
-    DataSink.add_data(pid, data_point2)
+    data_set_id = self()
 
-    points = DataSink.get_data(pid)
+    DataSink.add_data(pid, data_set_id, data_point1)
+    DataSink.add_data(pid, data_set_id, data_point2)
+
+    points = DataSink.get_data(pid, data_set_id)
 
     assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
   end
@@ -26,19 +28,22 @@ defmodule Integrator.DataSinkTest do
     data_point3 = Nx.f32(3.0)
     data_point4 = Nx.f32(4.0)
 
-    DataSink.add_data(pid, data_point1)
-    DataSink.add_data(pid, data_point2)
+    data_set_id = self()
+
+    DataSink.add_data(pid, data_set_id, data_point1)
+    DataSink.add_data(pid, data_set_id, data_point2)
 
     Task.async(fn ->
-      DataSink.add_data(pid, data_point3)
-      DataSink.add_data(pid, data_point4)
+      data_set_id_2 = self()
+      DataSink.add_data(pid, data_set_id_2, data_point3)
+      DataSink.add_data(pid, data_set_id_2, data_point4)
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, data_set_id_2)
       assert_nx_lists_equal(points, [Nx.f32(3.0), Nx.f32(4.0)])
     end)
     |> Task.await()
 
-    points = DataSink.get_data(pid)
+    points = DataSink.get_data(pid, data_set_id)
 
     assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
   end
@@ -49,9 +54,11 @@ defmodule Integrator.DataSinkTest do
     data_point1 = Nx.f32(1.0)
     data_point2 = Nx.f32(2.0)
 
-    DataSink.add_data(pid, [data_point1, data_point2])
+    data_set_id = self()
 
-    points = DataSink.get_data(pid)
+    DataSink.add_data(pid, data_set_id, [data_point1, data_point2])
+
+    points = DataSink.get_data(pid, data_set_id)
 
     assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
   end
@@ -64,9 +71,11 @@ defmodule Integrator.DataSinkTest do
     data_point3 = Nx.f32(3.0)
     data_point4 = Nx.f32(4.0)
 
-    DataSink.add_data(pid, [data_point1, data_point2, data_point3, data_point4])
+    data_set_id = self()
 
-    points = DataSink.get_last_n_data(pid, 2)
+    DataSink.add_data(pid, data_set_id, [data_point1, data_point2, data_point3, data_point4])
+
+    points = DataSink.get_last_n_data(pid, data_set_id, 2)
 
     assert_nx_lists_equal(points, [Nx.f32(3.0), Nx.f32(4.0)])
   end
@@ -77,12 +86,14 @@ defmodule Integrator.DataSinkTest do
     data_point1 = Nx.f32(1.0)
     data_point2 = Nx.f32(2.0)
 
-    DataSink.add_data(pid, [data_point1, data_point2])
+    data_set_id = self()
 
-    points = DataSink.pop_data(pid)
+    DataSink.add_data(pid, data_set_id, [data_point1, data_point2])
+
+    points = DataSink.pop_data(pid, data_set_id)
     assert_nx_lists_equal(points, [Nx.f32(1.0), Nx.f32(2.0)])
 
-    points = DataSink.pop_data(pid)
+    points = DataSink.pop_data(pid, data_set_id)
     assert points == []
   end
 end

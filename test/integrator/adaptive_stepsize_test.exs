@@ -17,7 +17,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       order = DormandPrince45.order()
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -56,7 +56,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       expected_t = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/t.csv")
       expected_x = read_nx_list("test/fixtures/octave_results/van_der_pol/no_interpolation/x.csv")
 
-      {output_t, output_x} = DataSink.get_data(pid) |> Point.split_points_into_t_and_x()
+      {output_t, output_x} = DataSink.get_data(pid, self()) |> Point.split_points_into_t_and_x()
       assert length(output_t) == 51
       assert length(output_x) == 51
 
@@ -74,7 +74,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -109,7 +109,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(78))
       assert_nx_equal(result.count_loop__increment_step, Nx.s32(50))
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert length(output_t) == 201
@@ -133,7 +133,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       order = DormandPrince45.order()
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
@@ -171,7 +171,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(78))
       assert_nx_equal(result.count_loop__increment_step, Nx.s32(50))
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert length(output_t) == 21
@@ -197,7 +197,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -235,7 +235,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_equal(result.status_non_linear_eqn_root, Nx.s32(1))
       # assert result.terminal_output == :continue
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       # assert length(result.ode_t) == 9
@@ -271,7 +271,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       order = DormandPrince45.order()
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
@@ -305,7 +305,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       [last_t | _rest] = output_t |> Enum.reverse()
@@ -355,7 +355,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(0.1)
@@ -387,7 +387,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       [last_t | _rest] = output_t |> Enum.reverse()
@@ -435,7 +435,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -469,7 +469,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(1037))
       assert_nx_equal(result.count_loop__increment_step, Nx.s32(1027))
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       # assert length(result.ode_t) == 1028
@@ -491,7 +491,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       order = DormandPrince45.order()
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       ode_fn = &SampleEqns.falling_particle/2
 
@@ -526,7 +526,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       [last_t | _rest] = output_t |> Enum.reverse()
@@ -573,7 +573,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(0.1)
@@ -604,7 +604,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       [last_t | _rest] = output_t |> Enum.reverse()
@@ -663,7 +663,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(3.0)
@@ -698,7 +698,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(10))
@@ -733,7 +733,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -767,7 +767,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
 
       assert_nx_equal(result.status_integration, Nx.u8(2))
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
 
       # This would be length 169 except for the fact that the simulation was terminated early due to the error count:
       assert length(points) == 53
@@ -787,7 +787,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(20.0)
@@ -823,7 +823,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(189))
@@ -858,7 +858,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(0.1)
@@ -890,7 +890,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(952))
@@ -928,7 +928,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
       ode_fn = &SampleEqns.van_der_pol_fn/2
 
       {:ok, pid} = DataSink.start_link()
-      output_fn = &DataSink.add_data(pid, &1)
+      output_fn = &DataSink.add_data(pid, self(), &1)
 
       t_start = Nx.f64(0.0)
       t_end = Nx.f64(0.1)
@@ -960,7 +960,7 @@ defmodule Integrator.AdaptiveStepsizeTest do
           opts
         )
 
-      points = DataSink.get_data(pid)
+      points = DataSink.get_data(pid, self())
       {output_t, output_x} = points |> Point.split_points_into_t_and_x()
 
       assert_nx_equal(result.count_cycles__compute_step, Nx.s32(952))

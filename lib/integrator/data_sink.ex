@@ -17,23 +17,23 @@ defmodule Integrator.DataSink do
   end
 
   @impl DataCollector
-  def add_data(pid, data_point) do
-    GenServer.cast(pid, {:add_data, data_point, self()})
+  def add_data(pid, data_set_id, data_point) do
+    GenServer.cast(pid, {:add_data, data_point, data_set_id})
   end
 
   @impl DataCollector
-  def get_data(pid) do
-    GenServer.call(pid, {:get_data, self()})
+  def get_data(pid, data_set_id) do
+    GenServer.call(pid, {:get_data, data_set_id})
   end
 
   @impl DataCollector
-  def pop_data(pid) do
-    GenServer.call(pid, {:pop_data, self()})
+  def pop_data(pid, data_set_id) do
+    GenServer.call(pid, {:pop_data, data_set_id})
   end
 
   @impl DataCollector
-  def get_last_n_data(pid, number_of_data) do
-    GenServer.call(pid, {:get_last_n_data, number_of_data, self()})
+  def get_last_n_data(pid, data_set_id, number_of_data) do
+    GenServer.call(pid, {:get_last_n_data, number_of_data, data_set_id})
   end
 
   # ------------------------------------------------------------------------------------------------
