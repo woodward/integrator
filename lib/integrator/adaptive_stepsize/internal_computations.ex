@@ -19,7 +19,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
   # Base zero_tolerance on precision?
   @zero_tolerance 1.0e-07
 
-  # @spec integrate_via_nx_while_loop(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec integrate_via_nx_while_loop(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   defn integrate_via_nx_while_loop(starting_step, t_end, options) do
     {updated_step, _t_end, _options} =
       while {step = starting_step, t_end, options}, continue_stepping?(step, t_end) do
@@ -30,7 +30,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     updated_step
   end
 
-  # @spec integrate_via_elixir_recursion(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
+  @spec integrate_via_elixir_recursion(IntegrationStep.t(), Nx.t(), NxOptions.t()) :: IntegrationStep.t()
   deftransform integrate_via_elixir_recursion(step, t_end, options) do
     if continue_stepping?(step, t_end) == true_nx() do
       step = compute_integration_step(step, t_end, options)
@@ -296,7 +296,7 @@ defmodule Integrator.AdaptiveStepsize.InternalComputations do
     # Nx.f64(2.161317515510217)
   end
 
-  # @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
+  @spec continue_stepping?(IntegrationStep.t(), Nx.t()) :: Nx.t()
   defn continue_stepping?(step, t_end) do
     # Also check the step's status here
 
