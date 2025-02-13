@@ -49,8 +49,8 @@ defmodule Integrator do
 
   Also see the options for these functions which are passed through:
 
-  * `Integrator.NonLinearEqnRoot.find_zero/4`
-  * `Integrator.AdaptiveStepsize.integrate/9`
+  * `Integrator.NonLinearEqnRoot.find_zero/5`
+  * `Integrator.AdaptiveStepsize.integrate/8`
 
   """
   @spec integrate(

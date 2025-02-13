@@ -51,6 +51,23 @@ defmodule Integrator.Integration do
   @options_schema_integration_only NimbleOptions.new!(options)
   def options_schema_integration_only, do: @options_schema_integration_only
 
+  @doc """
+  Starts a GenServer which performs an `Integrator` integration
+
+  ## Options
+
+  #{NimbleOptions.docs(@options_schema_integration_only)}
+
+  ### Additional Options
+
+  Also see the options for these functions which are passed through:
+
+  * `Integrator.NonLinearEqnRoot.find_zero/5`
+  * `Integrator.AdaptiveStepsize.integrate/8`
+  * [GenServer.start_link/3](https://hexdocs.pm/elixir/GenServer.html#start_link/3-options)
+
+  """
+
   @spec start_link(
           ode_fn :: RungeKutta.ode_fn_t(),
           t_start :: Nx.t() | float(),
