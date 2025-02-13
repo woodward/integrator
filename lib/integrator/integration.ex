@@ -120,11 +120,6 @@ defmodule Integrator.Integration do
     {:noreply, %{state | status: :running}}
   end
 
-  def handle_cast({:add_data, point}, state) do
-    state = %{state | data: List.wrap(point) ++ state.data}
-    {:noreply, state}
-  end
-
   @impl GenServer
   def handle_call(:run, from, state) do
     Process.send(self(), :step, [])
